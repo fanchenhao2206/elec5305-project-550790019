@@ -28,7 +28,7 @@ _*
 *.RPP-bak
 Icon?
 .DS_Stor*
-build-*
+# build-*
 !.claude/skills/build-*
 Dependencies/IPlug/CLAP_HELPERS/*
 Dependencies/IPlug/CLAP_SDK/*
@@ -48,7 +48,7 @@ Examples/*/EBWebView
 Examples/*/packages
 Examples/IPlugConvoEngine/r8brain
 **/node_modules
-Examples/*/build*
+# Examples/*/build*
 Tests/*/build*
 build/*
 .claude/settings.local.json
