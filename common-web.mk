@@ -84,7 +84,7 @@ WAM_EXPORTS = "[\
 WEB_EXPORTS = "['_malloc', '_free', '_main', '_iplug_fsready', '_iplug_syncfs', '_iplug_popup_menu_selected']"
 
 # LDFLAGS for both WAM and WEB targets
-LDFLAGS = -s ALLOW_MEMORY_GROWTH=1 --bind
+LDFLAGS = -s ALLOW_MEMORY_GROWTH=1 --bind -s DEFAULT_TO_CXX=1
 
 # We can't compile the WASM module synchronously on main thread (.wasm over 4k in size requires async compile on chrome) https://developers.google.com/web/updates/2018/04/loading-wasm
 # and you can't compile asynchronously in AudioWorklet scope
