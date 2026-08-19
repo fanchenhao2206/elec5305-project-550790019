@@ -123,7 +123,7 @@ WASM_UI_EXPORTS = "['_malloc', '_free', '_main', '_iplug_fsready', '_iplug_syncf
 WASM_WEBVIEW_UI_EXPORTS = "['_malloc', '_free', '_main', '_iplug_fsready', '_iplug_syncfs']"
 
 # Common linker flags
-LDFLAGS = -s ALLOW_MEMORY_GROWTH=1 --bind
+LDFLAGS = -s ALLOW_MEMORY_GROWTH=1 --bind -s DEFAULT_TO_CXX=1
 
 # DSP module linker flags
 # CRITICAL: SINGLE_FILE=1 embeds WASM as BASE64 for synchronous loading in AudioWorklet
