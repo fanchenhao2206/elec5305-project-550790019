@@ -1,7 +1,8 @@
-import BaseHTTPServer, SimpleHTTPServer
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map['.wasm'] = 'application/wasm'
-port = 8000
-httpd = BaseHTTPServer.HTTPServer(('localhost', 8000), SimpleHTTPServer.SimpleHTTPRequestHandler)
-print("Serving at http://localhost:8000/ waiting for connections")
-httpd.serve_forever()
+SimpleHTTPRequestHandler.extensions_map[".wasm"] = "application/wasm"
+
+server = HTTPServer(("localhost", 8000), SimpleHTTPRequestHandler)
+
+print("Serving at http://localhost:8000/")
+server.serve_forever()
