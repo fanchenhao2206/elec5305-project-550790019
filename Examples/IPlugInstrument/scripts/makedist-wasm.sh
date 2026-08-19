@@ -254,3 +254,12 @@ else
   echo ""
   echo "Not launching browser (use 'on' argument to launch)"
 fi
+
+echo ""
+echo "============================================================"
+echo "Copying /Scripts/server.py to ../build-web-wasm/"
+cp ../../../Scripts/server.py ../build-web-wasm
+echo ""
+echo "Run server.py:"
+echo "  cd ../build-web-wasm && python3 server.py"
+echo "============================================================"
