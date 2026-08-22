@@ -233,24 +233,40 @@ echo ""
 echo "Payload:"
 find . -maxdepth 2 -mindepth 1 -name .git -type d \! -prune -o \! -name .DS_Store -type f -exec du -hs {} \;
 
+# Copy script to serve files at localhost:8000
+cd $SCRIPT_DIR
+cp ./server.py ../build-web-wasm
+
 echo ""
-echo "============================================================"
-echo "IMPORTANT: Server Requirements"
-echo "============================================================"
-echo "Your server MUST send these headers for SharedArrayBuffer:"
-echo "  Cross-Origin-Opener-Policy: same-origin"
-echo "  Cross-Origin-Embedder-Policy: require-corp"
-echo ""
-echo "Use emrun or:"
-echo "  npx serve -p 8080 --cors -n"
-echo "  (with headers configured)"
+if [ "$LAUNCH_EMRUN" -eq 1 ]; then
+  echo "Launching server using python3..."
+  cd ../build-web-wasm && python3 server.py
+else
+  echo "Not launching server..."
+  echo "Use 'on' argument to launch, or run server.py:"
+  echo "  cd ../build-web-wasm && python3 server.py"
+fi
 echo "============================================================"
 
-if [ "$LAUNCH_EMRUN" -eq 1 ]; then
-  echo ""
-  echo "Launching browser with emrun..."
-  emrun --browser $EMRUN_BROWSER --no_emrun_detect index.html
-else
-  echo ""
-  echo "Not launching browser (use 'on' argument to launch)"
-fi
+# echo ""
+# echo "============================================================"
+# echo "IMPORTANT: Server Requirements"
+# echo "============================================================"
+# echo "Your server MUST send these headers for SharedArrayBuffer:"
+# echo "  Cross-Origin-Opener-Policy: same-origin"
+# echo "  Cross-Origin-Embedder-Policy: require-corp"
+# echo ""
+# echo "Use emrun or:"
+# echo "  npx serve -p 8080 --cors -n"
+# echo "  (with headers configured)"
+# echo "============================================================"
+
+# if [ "$LAUNCH_EMRUN" -eq 1 ]; then
+#   echo ""
+#   echo "Launching browser with emrun..."
+#   emrun --browser $EMRUN_BROWSER --no_emrun_detect index.html
+# else
+#   echo ""
+#   echo "Not launching browser (use 'on' argument to launch)"
+# fi
+
