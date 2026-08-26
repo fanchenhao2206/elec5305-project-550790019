@@ -9,8 +9,25 @@ mobile devices using a lightweight neural network. The goal is to improve speech
 intelligibility in noisy environments.
 \end{comment}
 
-This project aims to develop a synthesizer and sequencer---aka a digital audio workstation (DAW)---for any device capable of running a modern web browser supporting WebAudio, using the emscripten compiler toolchain 
-that turns C++ DSP code into efficient WebAssembly.
-The goal is to make sound and music production more accessible, because any device capable of running 
-a modern web browser will be able to use this DAW, not just computers or tablets running OS-dependent 
-and discrete, native DAW applications.
+This project aims to develop a synthesizer, sampler, and music sequencer for any device capable of 
+running a modern web browser supporting WebAudio, using the emscripten compiler toolchain that 
+turns C++ DSP code into WebAssembly. 
+The goal is to make music production more accessible, because pretty much any computer, whether that 
+be a smartphone, laptop, or even a single-board computer, can run a modern web browser that supports 
+WebAudio. 
+This is important because anyone should be able to play with and make music, without needing to 
+install and learn an OS-dependent digital audio workstation, packed full of comprehensive features 
+but designed for professional musicians and not them.
+
+Though the advent of generative AI has lowered the barrier of entry to music creation tremendously, 
+empowering authors to create music to their taste with just a few text prompts and a bit of luck, 
+it has come at the cost of abstracting away the underlying signal processing and audio theory that 
+makes it all work. 
+This project aims to expose all of that, the wires, knobs, and switches of music making, with the 
+hopes of allowing the prospective musician to see and poke at the machine that makes modern music 
+tick, whose invention and decades of production is what allows powerful GenAI tools like Suno or 
+Udio to even exist.
+
+% Frontend is built using nanovg, itself a library for implementing UI's using OpenGL. 
+% Then, emcc converts into a javascript-based UI... Or, it just paints the OpenGL onto 
+% the screen; aka WebGL.
