@@ -15,18 +15,18 @@ turns C++ DSP code into WebAssembly.
 The goal is to make music production more accessible, because pretty much any computer, whether that 
 be a smartphone, laptop, or even a single-board computer, can run a modern web browser that supports 
 WebAudio. 
-This is important because anyone should be able to play with and make music, without needing to 
-install and learn an OS-dependent digital audio workstation, packed full of comprehensive features 
-but designed for professional musicians and not them.
+This is important because anyone should be able to play with and make music without needing to 
+install and learn a comprehensive digital audio workstation, designed for professional musicians and 
+not the general public. 
 
-Though the advent of generative AI has lowered the barrier of entry to music creation tremendously, 
-empowering authors to create music to their taste with just a few text prompts and a bit of luck, 
-it has come at the cost of abstracting away the underlying signal processing and audio theory that 
-makes it all work. 
+Though the advent of generative AI in music creation has lowered the barrier of entry tremendously, 
+empowering authors to make and tune music to their taste with just a few text prompts and a bit of 
+luck, it has come at the cost of abstracting away the underlying signal processing and audio 
+intuitions that makes it all work. 
 This project aims to expose all of that, the wires, knobs, and switches of music making, with the 
 hopes of allowing the prospective musician to see and poke at the machine that makes modern music 
-tick, whose invention and decades of production is what allows powerful GenAI tools like Suno or 
-Udio to even exist.
+tick, whose human invention and decades of production is what allows powerful GenAI tools like Suno 
+or Udio to even exist.
 
 % Frontend is built using nanovg, itself a library for implementing UI's using OpenGL. 
 % Then, emcc converts into a javascript-based UI... Or, it just paints the OpenGL onto 
