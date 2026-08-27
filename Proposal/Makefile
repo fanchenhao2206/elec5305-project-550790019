@@ -1,9 +1,9 @@
 TEXFILES := $(wildcard *.tex)
 
 main.pdf: $(TEXFILES) references.bib 
-	pdflatex main.tex
+	pdflatex -shell-escape main.tex
 	bibtex main
-	pdflatex main.tex
-	pdflatex main.tex
+	pdflatex -shell-escape main.tex
+	pdflatex -shell-escape main.tex
 	open main.pdf
 
