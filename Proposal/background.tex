@@ -50,12 +50,13 @@ unusable.
 \end{comment}
 
 That is the kind of problem the WebAudio API attempts to solve, and why it has been possible for 
-synthesizers and other real time instruments to be built for the web. For example stevengoldberg's 
+synthesizers and other real time instruments to be built for the web. For example Steven Goldberg's 
 emulation of the Juno-106 synthesizer\footnote{\url{https://github.com/stevengoldberg/juno106}} 
-built for the web in 2015, to ryukau's collection of 
-synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}} build for the web which 
-use the aforementioned \texttt{AudioContext} interface as the backbone of its audio framework 
-(see Fig. \ref{fig:ryukau}).
+built for the web in 2015, or Takamitsu Endo's collection of 
+synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}} built for the web starting 
+in the 2020's which use the aforementioned \texttt{AudioContext} interface as the backbone of its audio 
+framework (see Fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
+at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 
 \begin{figure}[!hbtp]
 \begin{minted}{javascript}
@@ -95,3 +96,21 @@ export class Audio {
 \texttt{common/wave.js} which uses the WebAudio API}
 \label{fig:ryukau}
 \end{figure}
+
+There are also examples of projects for the web that combine a synthesizer with an integrated 
+sequencer, in the same vein as what this project aims to do. One notable example is certainly André 
+Michelle's opendaw\footnote{\url{https://opendaw.studio}}, which combines a traditional DAW-style 
+sample and MIDI piano-roll sequencer with a collection of instruments and sounds. But while it 
+demonstrates that a comprehensive web-based music production environment is possible, its interface 
+still closely resembles that of conventional desktop DAWs, which I argue does not necessarily make 
+it any more accessible or approachable than its native counterparts. 
+
+Another example are web-based grooveboxes TODO TODO
+
+GROOVEBOX (pads, things like that)
+
+Thus, this project argues the need for a 
+web-based DAW-like application, that at the same time does not resemble the traditional fully-featured
+desktop-based DAW it shares the same name with.
+
+DS-10
