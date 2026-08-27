@@ -1,4 +1,6 @@
-main.pdf: main.tex references.bib 
+TEXFILES := $(wildcard *.tex)
+
+main.pdf: $(TEXFILES) references.bib 
 	pdflatex main.tex
 	bibtex main
 	pdflatex main.tex
