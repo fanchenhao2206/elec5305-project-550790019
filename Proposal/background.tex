@@ -67,6 +67,7 @@ at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 // SPDX-License-Identifier: Apache-2.0
 
 export class Audio {
+<<<<<<< HEAD
   cachedBuffer = null;
   constructor() {
     // AudioContext is the backbone of WebAudio
@@ -95,6 +96,36 @@ export class Audio {
     // Play the .wav data through AudioContext
     this.source.start();
   }
+=======
+	cachedBuffer = null;
+	constructor() {
+		// AudioContext is the backbone of WebAudio
+		this.audioContext = new AudioContext();
+
+		// Custom class that represents .wav data
+		this.wave = new Wave();
+	}
+	play() {
+		if (!this.cachedBuffer) {
+			// Create and write .wav data to buffer
+			let buffer = this.audioContext.createBuffer(
+				this.audioContext.sampleRate);
+			for (let i = 0; i < this.wave.channels; ++i) {
+				buffer.copyToChannel(new Float32Array(
+					this.wave.data[i]), i, 0);
+			}
+			this.cachedBuffer = buffer;
+		}
+
+		// Set AudioContext's buffer to our one
+		this.source = 
+			this.audioContext.createBufferSource();
+		this.source.buffer = cachedBuffer;
+
+		// Play the .wav data through AudioContext
+		this.source.start();
+	}
+>>>>>>> refs/remotes/origin/master
 }
 \end{minted}
 \caption{Heavily redacted version of the custom Audio class used by ryukau\textsuperscript{6} for 
