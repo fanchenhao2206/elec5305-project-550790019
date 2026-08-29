@@ -33,7 +33,7 @@ streaming websites like Bandcamp to preview an artist's music through the web br
   \caption{Bandcamp allows artists to offer their listeners a compressed and lower bitrate MP3 preview of 
   their tracks, played in the browser through the HTML5 \texttt{<audio>} element. The text above is the result 
   of \texttt{ffprobe 1092581320.mp3}. The author has purchased this album on Bandcamp, buying access to higher
-  fidelity exports of the same songs available as free lower fidelity previews}
+  fidelity exports of the same songs, available for free if the artist chooses to as lower fidelity previews.}
   \label{fig:wanderstop}
 \end{figure}
 
@@ -57,8 +57,8 @@ synthesizers and other real time instruments to be built for the web. For exampl
 emulation of the Juno-106 synthesizer\footnote{\url{https://github.com/stevengoldberg/juno106}} 
 built for the web in 2015, or Takamitsu Endo's collection of 
 synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}} built for the web starting 
-in the 2020's which use the aforementioned \texttt{AudioContext} interface as the backbone of its audio 
-framework (Fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
+in the 2020's, both using the aforementioned \texttt{AudioContext} interface as the backbone of their 
+audio framework (e.g. Fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
 at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 
 \begin{figure}[!hbtp]
@@ -67,7 +67,6 @@ at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 // SPDX-License-Identifier: Apache-2.0
 
 export class Audio {
-<<<<<<< HEAD
   cachedBuffer = null;
   constructor() {
     // AudioContext is the backbone of WebAudio
@@ -96,36 +95,6 @@ export class Audio {
     // Play the .wav data through AudioContext
     this.source.start();
   }
-=======
-	cachedBuffer = null;
-	constructor() {
-		// AudioContext is the backbone of WebAudio
-		this.audioContext = new AudioContext();
-
-		// Custom class that represents .wav data
-		this.wave = new Wave();
-	}
-	play() {
-		if (!this.cachedBuffer) {
-			// Create and write .wav data to buffer
-			let buffer = this.audioContext.createBuffer(
-				this.audioContext.sampleRate);
-			for (let i = 0; i < this.wave.channels; ++i) {
-				buffer.copyToChannel(new Float32Array(
-					this.wave.data[i]), i, 0);
-			}
-			this.cachedBuffer = buffer;
-		}
-
-		// Set AudioContext's buffer to our one
-		this.source = 
-			this.audioContext.createBufferSource();
-		this.source.buffer = cachedBuffer;
-
-		// Play the .wav data through AudioContext
-		this.source.start();
-	}
->>>>>>> refs/remotes/origin/master
 }
 \end{minted}
 \caption{Heavily redacted version of the custom Audio class used by ryukau\textsuperscript{6} for 
