@@ -7,6 +7,7 @@ models are too large for mobile deployment. This project explores efficient arch
 for embedded systems
 \end{comment}
 
+\subsection{WebAudio}
 \noindent
 Despite its relatively recent history, with the first publication of a working draft in only 
 2011\footnote{\url{https://www.w3.org/TR/2011/WD-webaudio-20111215/}}, the WebAudio API has seen 
@@ -15,14 +16,14 @@ in 2021 as a Recommendation\footnote{\url{https://www.w3.org/TR/webaudio-1.0/}}.
 \texttt{AudioContext} interface has been fully supported by most major web browsers since at least 
 2015\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API\#browser_compatibility}},
 with the only exception being Safari which implemented support in 
-2021\footnote{\url{https://developer.apple.com/documentation/safari-release-notes/safari-14_1-release-notes\#WebKit-Framework}}.
+2021.
 
 Of course, audio has existed for a much longer time than that on the internet. As Boris Smus describes 
 in their brief history of audio on the web \cite{boris_smus}, initially that was through the Flash external 
 plugin for browsers, and then later through the HTML5 \texttt{<audio>} element which was instead natively 
 supported by the web browser itself. In fact, it's this \texttt{<audio>} element that allows music 
 streaming websites like Bandcamp to preview an artist's music through the web browser 
-(Fig. \ref{fig:wanderstop}).
+(fig. \ref{fig:wanderstop}).
 
 \begin{figure}[!htbp]
 	\centering
@@ -31,9 +32,7 @@ streaming websites like Bandcamp to preview an artist's music through the web br
 	\texttt{Input ... from `1092581320.mp3' Duration: 00:02:48.00, ..., bitrate: 236 kb/s}
 
 	\caption{Bandcamp allows artists to offer their listeners a compressed and lower bitrate MP3 preview of 
-	their tracks, played in the browser through the HTML5 \texttt{<audio>} element. The text above is the result 
-	of \texttt{ffprobe 1092581320.mp3}. The author has purchased this album on Bandcamp, buying access to higher
-	fidelity exports of the same songs, available for free if the artist chooses to as lower fidelity previews.}
+	their tracks, played in the browser through the HTML5 \texttt{<audio>} element}
 	\label{fig:wanderstop}
 \end{figure}
 
@@ -52,16 +51,16 @@ having to wait one second to hear the note they want to play would make the inst
 unusable.
 \end{comment}
 
-That is the kind of problem the WebAudio API attempts to solve, and why it has been possible for 
+That is the kind of problem the WebAudio API attempts to solve, and why it has been possible since then for 
 synthesizers and other real time instruments to be built for the web. For example Steven Goldberg's 
 emulation of the Juno-106 synthesizer\footnote{\url{https://github.com/stevengoldberg/juno106}} 
 built for the web in 2015, or Takamitsu Endo's collection of 
-synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}} built for the web starting 
+synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}\label{fn:ryukau}} built for the web starting 
 in the 2020's, both using the aforementioned \texttt{AudioContext} interface as the backbone of their 
-audio framework (e.g. Fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
+audio framework (for example, fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
 at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 
-\begin{figure}[!hbtp]
+\begin{figure}[!tbp]
 \begin{minted}{javascript}
 // Copyright Takamitsu Endo (ryukau@gmail.com)
 // SPDX-License-Identifier: Apache-2.0
@@ -97,25 +96,20 @@ export class Audio {
 	}
 }
 \end{minted}
-\caption{Heavily redacted version of the custom Audio class used by ryukau\textsuperscript{6} for 
+\caption{Heavily redacted version of the custom Audio class used by ryukau\textsuperscript{\ref{fn:ryukau}} for 
 their web synthesizer plugins, built on the WebAudio API and located at \texttt{common/wave.js}}
 \label{fig:ryukau}
 \end{figure}
 
+\subsection{Web-based DAWs}
+\noindent
 There are also examples of projects for the web that combine a synthesizer with an integrated 
 sequencer, in the same vein as what this project aims to do. One notable example is certainly André 
-Michelle's opendaw\footnote{\url{https://opendaw.studio}}, which combines a traditional DAW-style 
-sample and MIDI piano-roll sequencer with a collection of instruments and sounds. But while it 
-demonstrates that a comprehensive web-based music production environment is possible, its interface 
-still closely resembles that of conventional desktop DAWs, which I argue does not necessarily make 
-it any more accessible or approachable than its native counterparts. 
+Michelle's opendaw\footnote{\url{https://opendaw.studio}}, containing a sequencer, synthesizers, 
+samplers, and more; everything you would expect from a conventional desktop-based DAW! However, even 
+its interface strongly resembles a conventional desktop-based DAW, also requiring a desktop browser.
 
-Another example are web-based grooveboxes TODO TODO
-
-GROOVEBOX (pads, things like that)
-
-Thus, this project argues the need for a 
-web-based DAW-like application, that at the same time does not resemble the traditional fully-featured
-desktop-based DAW it shares the same name with.
-
-DS-10
+That is why, through this project, the author argues the need for a stripped-down DAW---consisting of 
+just a sequencer/synthesizer/sampler; hence the name picoDAW---that is accessible (i) because it is 
+built for the web, and (ii) has a simplified user interface, approachable not because it is the 
+conventional interface that every other DAW uses, but because it is approachable.

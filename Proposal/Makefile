@@ -1,4 +1,5 @@
-TEXFILES := $(wildcard *.tex)
+# TEXFILES := $(wildcard *.tex)
+TEXFILES := $(wildcard *) 
 
 main.pdf: $(TEXFILES) references.bib 
 	pdflatex -shell-escape main.tex
@@ -7,3 +8,5 @@ main.pdf: $(TEXFILES) references.bib
 	pdflatex -shell-escape main.tex
 	open main.pdf
 
+open:
+	open main.pdf
