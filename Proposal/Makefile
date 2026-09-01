@@ -10,3 +10,6 @@ main.pdf: $(TEXFILES) references.bib
 
 open:
 	open main.pdf
+
+clean:
+	rm main.pdf

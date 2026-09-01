@@ -14,7 +14,7 @@ Despite its relatively recent history, with the first publication of a working d
 extensive development over the course of a decade, eventually receiving an endorsement from the W3C 
 in 2021 as a Recommendation\footnote{\url{https://www.w3.org/TR/webaudio-1.0/}}. Notably, its primary 
 \texttt{AudioContext} interface has been fully supported by most major web browsers since at least 
-2015\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API\#browser_compatibility}},
+2015\textsuperscript{\ref{fn:web_audio}},
 with the only exception being Safari which implemented support in 
 2021.
 
@@ -37,7 +37,7 @@ streaming websites like Bandcamp to preview an artist's music through the web br
 \end{figure}
 
 But one thing Flash's plugin did for web audio that HTML5's \texttt{<audio>} element doesn't do, is 
-allow for interactive audio. For example, a synthesizer/sampler/sequencer like the one this project 
+allow for interactive audio. For example, a sequencer/synthesizer/sampler like the one this project 
 will aim to build, would require a predictable amount of latency between a person pressing a key on 
 their keyboard and the corresponding sound being played through their speakers, something that the 
 \texttt{<audio>} element just wasn't designed for.
@@ -57,9 +57,11 @@ emulation of the Juno-106 synthesizer\footnote{\url{https://github.com/stevengol
 built for the web in 2015, or Takamitsu Endo's collection of 
 synthesizers\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers}\label{fn:ryukau}} built for the web starting 
 in the 2020's, both using the aforementioned \texttt{AudioContext} interface as the backbone of their 
-audio framework (for example, fig. \ref{fig:ryukau}); and many more examples, like all the web synthesizers available 
-at playtronica\footnote{\url{https://synth.playtronica.com/}}.
+audio framework---like in Takamitsu Endo's 
+\texttt{common/wave.js}\footnote{\url{https://github.com/ryukau/UhhyouWebSynthesizers/blob/8cd4493a1d1a33b0e54e2c220d7dff66f0450739/common/wave.js\#L15}}---and 
+many other examples; like the web synthesizers available at playtronica\footnote{\url{https://synth.playtronica.com/}}.
 
+\begin{comment}
 \begin{figure}[!tbp]
 \begin{minted}{javascript}
 // Copyright Takamitsu Endo (ryukau@gmail.com)
@@ -100,16 +102,17 @@ export class Audio {
 their web synthesizer plugins, built on the WebAudio API and located at \texttt{common/wave.js}}
 \label{fig:ryukau}
 \end{figure}
+\end{comment}
 
 \subsection{Web-based DAWs}
 \noindent
 There are also examples of projects for the web that combine a synthesizer with an integrated 
 sequencer, in the same vein as what this project aims to do. One notable example is certainly André 
 Michelle's opendaw\footnote{\url{https://opendaw.studio}}, containing a sequencer, synthesizers, 
-samplers, and more; everything you would expect from a conventional desktop-based DAW! However, even 
-its interface strongly resembles a conventional desktop-based DAW, also requiring a desktop browser.
+samplers, and more; everything you would expect from a conventional desktop-based DAW. However, even 
+its interface strongly resembles a conventional desktop-based DAW; it also requires a desktop browser.
 
-That is why, through this project, the author argues the need for a stripped-down DAW---consisting of 
-just a sequencer/synthesizer/sampler; hence the name picoDAW---that is accessible (i) because it is 
-built for the web, and (ii) has a simplified user interface, approachable not because it is the 
-conventional interface that every other DAW uses, but because it is approachable.
+That is why through this project, the author argues the need for a stripped-down DAW---consisting of 
+just a sequencer/synthesizer/sampler; hence the name picoDAW---that is accessible because (i) 
+it is built for the web, (ii) has a simplified interface that is not like a desktop DAW, and 
+(iii) has a minimal feature set that can still provide some expression.
