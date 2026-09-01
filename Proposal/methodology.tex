@@ -1,20 +1,23 @@
 \begin{comment}
-which I argue does not necessarily make 
-it any more accessible or approachable than its native counterparts. 
-
-Another example are web-based grooveboxes TODO TODO
-
-GROOVEBOX (pads, things like that)
-
-Thus, this project argues the need for a 
-web-based DAW-like application, that at the same time does not resemble the traditional fully-featured
-desktop-based DAW it shares the same name with.
-
-DS-10
-
-So this gets to the core of this proposal; what design would meet the goal I have set out to achieve? 
-My proposal is the DS-10; a clone of it.
+Proposed Methodology
+Outline your approach:
+• Tools and platforms (e.g., MATLAB, Python)
+• Signal processing techniques (e.g., short-time Fourier transform (STFT), Wiener filtering,
+neural networks)
+• Data sources (e.g., TIMIT, DNS Challenge dataset)
 \end{comment}
 
 \noindent
-proposal
+Thus, implementing this project requires not just writing DSP code for e.g. 
+real-time filtering or waveform shaping, but also designing and building a 
+user interface to go with it. To ease development, this project will use the 
+iPlug2\footnote{\url{https://github.com/iplug2/iplug2}} library, a 
+cross-platform C++ audio plugin framework; one platform being the web 
+browser. This means both the DSP code and frontend UI code can be written in 
+C++, and then compiled into JavaScript through emscripten for running in the 
+browser.
+
+This leaves room to focus a good portion of development time on the backend, 
+researching and implementing the actual DSP and audio-processing algorithms 
+that will power this picoDAW. Prototyping will be in MATLAB, implementing will 
+be through C++, and testing will be through CMake.
