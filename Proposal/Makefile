@@ -1,7 +1,7 @@
-# TEXFILES := $(wildcard *.tex)
-TEXFILES := $(wildcard *) 
+TEXFILES := $(wildcard *.tex)
+IMAGES := $(wildcard images/*.png images/*.jpg)
 
-main.pdf: $(TEXFILES) references.bib 
+main.pdf: $(TEXFILES) $(IMAGES) references.bib 
 	pdflatex -shell-escape main.tex
 	bibtex main
 	pdflatex -shell-escape main.tex

@@ -14,10 +14,21 @@ user interface to go with it. To ease development, this project will use the
 iPlug2\footnote{\url{https://github.com/iplug2/iplug2}} library, a 
 cross-platform C++ audio plugin framework; one platform being the web 
 browser. This means both the DSP code and frontend UI code can be written in 
-C++, and then compiled into JavaScript through emscripten for running in the 
-browser.
+C++, and then compiled into JavaScript through emscripten\footnote{\url{https://emscripten.org/}} 
+for running in the browser.
 
-This leaves room to focus a good portion of development time on the backend, 
+This leaves room to focus a better portion of development time on the backend, 
 researching and implementing the actual DSP and audio-processing algorithms 
-that will power this picoDAW. Prototyping will be in MATLAB, implementing will 
-be through C++, and testing will be through CMake.
+that will power this picoDAW. Initial prototyping of ideas will be in MATLAB, 
+implementation will be through C++ compiled to WebAssembly, and testing will be 
+through CMake. DSP and audio effect related resources that could be of use include 
+the Digital Audio Effects book by Udo Zölzer\cite{dafx}, and The Art of VA (Virtual Analog)
+Filter Design by Vadim Zavalishin\cite{va_filter}.
+
+As mentioned, iPlug2 provides a library for building frontend interfaces using 
+C++. Specifically, one of the options is the nanovg\footnote{\url{https://github.com/memononen/nanovg}} 
+graphics library, itself a wrapper around OpenGL API calls; what ultimately draw graphics onto 
+the screen. The web browser, however, does not understand it specifically. Instead it 
+understands the WebGL API---intentionally designed to conform closely with OpenGL\footnote{\url{https://registry.khronos.org/webgl/specs/latest/1.0}}---and 
+so emscripten also works to translates nanovg's OpenGL calls written in C++ to equivalent 
+WebGL calls written in JavaScript, allowing UI built using OpenGL draw calls to work in the browser.
