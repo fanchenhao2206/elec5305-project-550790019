@@ -1,2 +1,3 @@
-# IPlugInstrument
-A basic MPE capable synthesier plug-in with IGraphics GUI
+# picoDAW
+
+goto HERE to try out
