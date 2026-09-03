@@ -10,6 +10,8 @@ goto [HERE](https://github.com/hourlilies/elec5305-project-550790019/blob/master
 
 build a sequencer/synthesizer/sampler modelled after the korg ds-10, deployed onto the web
 
+![](Proposal/images/draft.png)
+
 ## instructions
 
 uses the [iplug2](https://github.com/iplug2/iplug2) library; download it, and replace `Examples/IPlugInstrument` with the contents of this repository
