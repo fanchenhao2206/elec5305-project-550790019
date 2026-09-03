@@ -8,18 +8,51 @@ neural networks)
 \end{comment}
 
 \noindent
+That is why through this project, the author argues the need for a stripped-down DAW---consisting of 
+just a sequencer/synthesizer/sampler; hence the name picoDAW---that is accessible because (i) 
+it is built for the web, (ii) has a simplified interface that is not like a desktop DAW, and 
+(iii) has a minimal feature set that can still provide some expression.
+
+Of course, this kind of stripped-down DAW is certainly not a new product category. 
+Examples include AKAI's MPC\footnote{\url{https://www.akaipro.com/products/collections/mpc/}}
+or Elektron's Digitakt\footnote{\url{https://www.elektron.se/explore/digitakt-ii}}
+series of hardware music production workstations.
+The product this project will take primary inspiration though, is a software one called the 
+KORG DS-10\footnote{\url{https://archive.org/details/korg-ds-10-manual/korg_ds-10_manual/}}---released 
+in 2008 for the Nintendo DS, a touchscreen and handheld video game console---where 
+the hardware knobs and patches of an expensive groovebox have been translated into 
+software controls and buttons on the console's 3" touchscreen. 
+
+It is a good point now to mention that in the pursuit of a simpler interface than 
+traditional desktop-based DAWs, these workstations opt to use a simpler type of sequencer 
+called a step sequencer. Most notable is that instead of allowing arbitrary timing of key 
+presses to be sequenced---for example, exactly 4.2 seconds after the previous note---the 
+step sequencer enforces a strict rhythm; integer intervals of the project's base timestep. 
+For example, if it was 1 second---aka 60 beats per minute---then the idea is that keys 
+can be sequenced only on 1, 1/2, or 1/4 second intervals; relative to the base timestep 
+(so, 120bpm would mean 0.5, 0.25, and 0.125 second intervals). See fig. \ref{fig:ds10_seq} 
+for a photo of the DS-10's step sequencer.
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.8\columnwidth]{images/ds10-seq}
+
+	\caption{The KORG DS-10's step sequencer; photo taken from \url{https://www.youtube.com/watch?v=Usjy626gQYQ}}
+	\label{fig:ds10_seq}
+\end{figure}
+
 Thus, implementing this project requires not just writing DSP code for e.g. 
 real-time filtering or waveform shaping, but also designing and building a 
 user interface to go with it. To ease development, this project will use the 
 iPlug2\footnote{\url{https://github.com/iplug2/iplug2}} library, a 
 cross-platform C++ audio plugin framework; one platform being the web 
-browser. This means both the DSP code and frontend UI code can be written in 
+browser. This means both the backend DSP code and frontend UI code can be written in 
 C++, and then compiled into JavaScript through emscripten\footnote{\url{https://emscripten.org/}} 
 for running in the browser.
 
 This leaves room to focus a better portion of development time on the backend, 
 researching and implementing the actual DSP and audio-processing algorithms 
-that will power this picoDAW. Initial prototyping of ideas will be in MATLAB, 
+that will power the picoDAW. Initial prototyping of ideas will be in MATLAB, 
 implementation will be through C++ compiled to WebAssembly, and testing will be 
 through CMake. DSP and audio effect related resources that could be of use include 
 the Digital Audio Effects book by Udo Zölzer\cite{dafx}, and The Art of VA (Virtual Analog)
@@ -31,4 +64,4 @@ graphics library, itself a wrapper around OpenGL API calls; what ultimately draw
 the screen. The web browser, however, does not understand it specifically. Instead it 
 understands the WebGL API---intentionally designed to conform closely with OpenGL\footnote{\url{https://registry.khronos.org/webgl/specs/latest/1.0}}---and 
 so emscripten also works to translates nanovg's OpenGL calls written in C++ to equivalent 
-WebGL calls written in JavaScript, allowing UI built using OpenGL draw calls to work in the browser.
+WebGL calls written in JavaScript, allowing UI built using iPlug2 to work in the browser.
