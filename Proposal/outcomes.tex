@@ -63,8 +63,16 @@ the expected features will be a:
 	\label{fig:draft}
 \end{figure}
 \noindent
+See fig. \ref{fig:draft} for a draft mockup of picoDAW's UI.
+
 Stretch goals, in case development goes easier than expected, include: (i) Pattern sequencer, enabling 
 more expressive song creation; build multiple patterns, and then sequence them together to create a 
 song. (ii) Two oscillators per synthesizer---instead of just one---making it easier to create chords, 
 since the pitch of the second oscillator could be tuned to a specific note above or below the first 
-oscillator. (iii) Volume control in mixer for each instrument, and basic effects---reverb, delay, and EQ---with routing done through the mixer. See fig. \ref{fig:draft} for a draft of how the UI could work.
+oscillator. (iii) Volume control in mixer for each instrument, and basic effects---reverb, delay, and 
+EQ---with routing done through the mixer. (iv) One 
+LFO\footnote{\url{https://en.wikipedia.org/wiki/Low-frequency_oscillation}} per instrument; a triangle 
+oscillator---of low frequency, proportional to \texttt{1/base\_timestep}---whose output can modulate 
+the pitch of the instrument, providing basic FM synthesis. 
+
+
