@@ -1,10 +1,10 @@
 # picoDAW
 
-goto [HERE](https://hourlilies.github.io/elec5305-project-550790019/build-web-wasm/) to try out latest release
+goto [HERE](https://fanchenhao2206.github.io/elec5305-project-550790019/build-web-wasm/) to try out latest release
 
-goto [HERE](https://github.com/hourlilies/elec5305-project-550790019) to see repo and source code
+goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019) to see repo and source code
 
-goto [HERE](https://github.com/hourlilies/elec5305-project-550790019/blob/master/Proposal/main.pdf) to read project proposal
+goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019/blob/master/Proposal/main.pdf) to read project proposal
 
 ## aim
 
@@ -22,5 +22,5 @@ the resulting folder at `iplug2/Examples/IPlugInstrument/build-web-wasm` contain
 
 serve it via a http server of choice; a python3 `server.py` is provided in the same folder to host it locally
 
-the link to latest release provided [HERE](https://hourlilies.github.io/elec5305-project-550790019/build-web-wasm/) 
+the link to latest release provided [HERE](https://fanchenhao2206.github.io/elec5305-project-550790019/build-web-wasm/) 
 is deployed through github pages
