@@ -14,7 +14,7 @@ build a sequencer/synthesizer/sampler modelled after the korg ds-10, deployed on
 
 ## instructions
 
-uses the [iplug2](https://github.com/iplug2/iplug2) library; download it by running `git submodule update`
+uses the [iplug2](https://github.com/iplug2/iplug2) library; download it by running `git submodule update --init --recursive`
 
 then, `cd` into `picoDAW/scripts` and run `makedist-wasm.sh`
 
