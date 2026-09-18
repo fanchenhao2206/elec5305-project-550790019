@@ -1,26 +1,9 @@
-# picoDAW
+![Build WAM](https://github.com/iPlug2/iPlug2OOS/workflows/Build%20WAM/badge.svg)
 
-goto [HERE](https://fanchenhao2206.github.io/elec5305-project-550790019/build-web-wasm/) to try out latest release
+This repo contains an "out of source" iPlug2 template project, which is desirable when you need to keep all your project dependencies synchronised with version control and build it using CI/CD in the cloud. It set up for "containerized development" using [VSCode](https://code.visualstudio.com/docs/devcontainers/containers) and [github codespaces](https://github.com/features/codespaces).
 
-goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019) to see repo and source code
+Instead of using the common-mac.xcconfig and common-win.xcconfig in the iPlug2 folder, it uses copies of them at the top level of the iPlug2OOS repo. This means the iPlug2 submodule itself does not have to be modified.
 
-goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019/blob/master/Proposal/main.pdf) to read project proposal
+https://github.com/iPlug2/iPlug2/wiki/Out-of-source-builds
 
-## aim
-
-build a sequencer/synthesizer/sampler modelled after the korg ds-10, deployed onto the web
-
-![](Proposal/images/draft.png)
-
-## instructions
-
-uses the [iplug2](https://github.com/iplug2/iplug2) library; download it, and replace `Examples/IPlugInstrument` with the contents of this repository
-
-then, `cd` into `iplug2/Examples/IPlugInstrument/scripts` and run `makedist-wasm.sh`
-
-the resulting folder at `iplug2/Examples/IPlugInstrument/build-web-wasm` contains the web application
-
-serve it via a http server of choice; a python3 `server.py` is provided in the same folder to host it locally
-
-the link to latest release provided [HERE](https://fanchenhao2206.github.io/elec5305-project-550790019/build-web-wasm/) 
-is deployed through github pages
+Containerized development is documented [here](https://docs.google.com/document/d/e/2PACX-1vT6lYZ3vtYKWAty2g6DL994IO0_pfyGctDdKfPxF6MZwOgFWENfLuVtBW9J0-KzLsfPSKKN055UnAmj/pub)

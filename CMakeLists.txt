@@ -1,21 +1,13 @@
-cmake_minimum_required(VERSION 3.14)
-project(IPlugInstrument VERSION 1.0.0)
+cmake_minimum_required(VERSION 3.25)
+project(iPlug2OOS)
 
-if(NOT DEFINED IPLUG2_DIR)
-  set(IPLUG2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE PATH "iPlug2 root directory")
-endif()
-
+# iPlug2 framework location. Default to the in-tree submodule, but allow an
+# external canonical checkout via `-DIPLUG2_DIR=/path` or the IPLUG2_DIR
+# environment variable. iPlug2 Agent sets this to a shared per-machine
+# checkout so individual plugin projects don't each carry ~2 GB of deps.
+set(IPLUG2_DIR "${CMAKE_SOURCE_DIR}/iPlug2" CACHE PATH "Path to the iPlug2 framework root")
 include(${IPLUG2_DIR}/iPlug2.cmake)
+
 find_package(iPlug2 REQUIRED)
 
-iplug_add_plugin(${PROJECT_NAME}
-  SOURCES
-    IPlugInstrument.cpp
-    IPlugInstrument.h
-    IPlugInstrument_DSP.h
-    resources/resource.h
-  RESOURCES
-    resources/fonts/Roboto-Regular.ttf
-  LINK
-    iPlug2::Extras::Synth
-)
+add_subdirectory(TemplateProject)
