@@ -4,7 +4,7 @@ goto [HERE](https://fanchenhao2206.github.io/elec5305-project-550790019/picoDAW/
 
 goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019) to see repo and source code
 
-goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019/Proposal/main.pdf) to read project proposal
+goto [HERE](https://github.com/fanchenhao2206/elec5305-project-550790019/blob/master/Proposal/main.pdf) to read project proposal
 
 ## aim
 
