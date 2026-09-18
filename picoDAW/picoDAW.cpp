@@ -1,6 +1,8 @@
 #include "picoDAW.h"
 #include "IPlug_include_in_plug_src.h"
 #include "LFO.h"
+#include "IconsForkAwesome.h"
+#include "IconsFontaudio.h"
 
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
@@ -32,54 +34,59 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachPopupMenuControl();
 #endif
 
-//    pGraphics->EnableLiveEdit(true);
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
+    pGraphics->LoadFont("ForkAwesome", FORK_AWESOME_FN);
+    pGraphics->LoadFont("Fontaudio", FONTAUDIO_FN);
+
+    const IVStyle style {
+      true, // Show label
+      true, // Show value
+      {
+        DEFAULT_BGCOLOR, // Background
+        DEFAULT_FGCOLOR, // Foreground
+        DEFAULT_PRCOLOR, // Pressed
+        COLOR_BLACK, // Frame
+        DEFAULT_HLCOLOR, // Highlight
+        DEFAULT_SHCOLOR, // Shadow
+        COLOR_BLACK, // Extra 1
+        DEFAULT_X2COLOR, // Extra 2
+        DEFAULT_X3COLOR  // Extra 3
+      }, // Colors
+      IText(12.f, EAlign::Center) // Label text
+    };
+
     const IRECT b = pGraphics->GetBounds().GetPadded(-20.f);
+
+    const int nRows = 5;
+    const int nCols = 8;
+    int cellIdx = -1;
+
+    auto nextCell = [&](){
+      return b.GetPadded(-5.).GetGridCell(++cellIdx, nRows, nCols).GetPadded(-5.);
+    };
+
+    auto sameCell = [&](){
+      return b.GetPadded(-5.).GetGridCell(cellIdx, nRows, nCols).GetPadded(-5.);
+    };
+
+    auto AddLabel = [&](const char* label){
+      pGraphics->AttachControl(new ITextControl(nextCell().GetFromTop(20.f), label, style.labelText));
+    };
+//    pGraphics->EnableLiveEdit(true);
+
+    const IText forkAwesomeText {16.f, "ForkAwesome"};
+    const IText bigLabel {24, COLOR_WHITE, "Roboto-Regular", EAlign::Near, EVAlign::Top, 0};
+    const IText fontaudioText {32.f, "Fontaudio"};
+
     const IRECT lfoPanel = b.GetFromLeft(300.f).GetFromTop(200.f);
     IRECT keyboardBounds = b.GetFromBottom(300);
     IRECT wheelsBounds = keyboardBounds.ReduceFromLeft(100.f).GetPadded(-10.f);
     pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5)), kCtrlTagBender);
-    pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5, true), IMidiMsg::EControlChangeMsg::kModWheel));
-//    pGraphics->AttachControl(new IVMultiSliderControl<4>(b.GetGridCell(0, 2, 2).GetPadded(-30), "", DEFAULT_STYLE, kParamAttack, EDirection::Vertical, 0.f, 1.f));
-    const IRECT controls = b.GetGridCell(1, 2, 2);
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
-    const IRECT sliders = controls.GetGridCell(2, 2, 6).Union(controls.GetGridCell(3, 2, 6)).Union(controls.GetGridCell(4, 2, 6));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamAttack, "Attack"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamDecay, "Decay"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(2, 1, 4).GetMidHPadded(30.), kParamSustain, "Sustain"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(3, 1, 4).GetMidHPadded(30.), kParamRelease, "Release"));
-    pGraphics->AttachControl(new IVLEDMeterControl<2>(controls.GetFromRight(100).GetPadded(-30)), kCtrlTagMeter);
-    
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateHz, "Rate"), kNoTag, "LFO")->Hide(true);
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateTempo, "Rate"), kNoTag, "LFO")->DisablePrompt(false);
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 1, 2, 3).GetCentredInside(60), kParamLFODepth, "Depth"), kNoTag, "LFO");
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 2, 2, 3).GetCentredInside(60), kParamLFOShape, "Shape"), kNoTag, "LFO")->DisablePrompt(false);
-    pGraphics->AttachControl(new IVSlideSwitchControl(lfoPanel.GetGridCell(1, 0, 2, 3).GetFromTop(30).GetMidHPadded(20), kParamLFORateMode, "Sync", DEFAULT_STYLE.WithShowValue(false).WithShowLabel(false).WithWidgetFrac(0.5f).WithDrawShadows(false), false), kNoTag, "LFO");
-    pGraphics->AttachControl(new IVDisplayControl(lfoPanel.GetGridCell(1, 1, 2, 3).Union(lfoPanel.GetGridCell(1, 2, 2, 3)), "", DEFAULT_STYLE, EDirection::Horizontal, 0.f, 1.f, 0.f, 1024), kCtrlTagLFOVis, "LFO");
-    
-    pGraphics->AttachControl(new IVGroupControl("LFO", "LFO", 10.f, 20.f, 10.f, 10.f));
-    
-#ifndef AUv3_API
-    pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
-      "Show/Hide Keyboard", DEFAULT_STYLE.WithColor(kFG, COLOR_WHITE).WithLabelText({15.f, EVAlign::Middle})))->SetAnimationEndActionFunction(
-      [pGraphics](IControl* pCaller) {
-        static bool hide = false;
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(hide = !hide);
-        pGraphics->Resize(PLUG_WIDTH, hide ? PLUG_HEIGHT / 2 : PLUG_HEIGHT, pGraphics->GetDrawScale());
-    });
-#endif
-    
-//#ifdef OS_IOS
-//    if(!IsOOPAuv3AppExtension())
-//    {
-//      pGraphics->AttachControl(new IVButtonControl(b.GetFromTRHC(100, 100), [pGraphics](IControl* pCaller) {
-//                               dynamic_cast<IGraphicsIOS*>(pGraphics)->LaunchBluetoothMidiDialog(pCaller->GetRECT().L, pCaller->GetRECT().MH());
-//                               SplashClickActionFunc(pCaller);
-//                             }, "BTMIDI"));
-//    }
-//#endif
+
+    AddLabel("ITextToggleControl");
+    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 0, 3, 3), nullptr, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "misccontrols");
+    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 1, 3, 3), nullptr, ICON_FK_CIRCLE_O, ICON_FK_CHECK_CIRCLE, forkAwesomeText), kNoTag, "misccontrols");
+    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 2, 3, 3), nullptr, ICON_FK_PLUS_SQUARE, ICON_FK_MINUS_SQUARE, forkAwesomeText), kNoTag, "misccontrols");
     
     pGraphics->SetQwertyMidiKeyHandlerFunc([pGraphics](const IMidiMsg& msg) {
                                               pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(msg.NoteNumber(), msg.StatusMsg() == IMidiMsg::kNoteOn);

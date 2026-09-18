@@ -13,9 +13,13 @@ iplug_add_plugin(${PROJECT_NAME}
     picoDAW.cpp
     picoDAW.h
     picoDAW_DSP.h
+    IconsFontaudio.h
+    IconsForkAwesome.h
     resources/resource.h
   RESOURCES
     resources/fonts/Roboto-Regular.ttf
+    resources/fonts/forkawesome-webfont.ttf
+    resources/fonts/fontaudio.ttf
   LINK
     iPlug2::Extras::Synth
 )
