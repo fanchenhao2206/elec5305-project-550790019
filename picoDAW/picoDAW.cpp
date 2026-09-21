@@ -25,14 +25,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   };
   
   mLayoutFunc = [&](IGraphics* pGraphics) {
-    pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
-    pGraphics->AttachPanelBackground(COLOR_GRAY);
-    pGraphics->EnableMouseOver(true);
-    pGraphics->EnableMultiTouch(true);
-    
-#ifdef OS_WEB
-    pGraphics->AttachPopupMenuControl();
-#endif
+    pGraphics->AttachPanelBackground(COLOR_LIGHT_GRAY);
 
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
     pGraphics->LoadFont("ForkAwesome", FORK_AWESOME_FN);
@@ -51,46 +44,25 @@ picoDAW::picoDAW(const InstanceInfo& info)
         COLOR_BLACK, // Extra 1
         DEFAULT_X2COLOR, // Extra 2
         DEFAULT_X3COLOR  // Extra 3
-      }, // Colors
-      IText(12.f, EAlign::Center) // Label text
+      }, // Colours
+      IText(36.f, "Roboto-Regular"), // Label text
+      IText(36.f, "Roboto-Regular") // Value text
     };
 
-    const IRECT b = pGraphics->GetBounds().GetPadded(-20.f);
+    const IRECT b = pGraphics->GetBounds().GetPadded(0);
 
-    const int nRows = 5;
-    const int nCols = 8;
-    int cellIdx = -1;
+    pGraphics->AttachControl(
+      new ITextControl(
+        b.GetPadded(-5), // Producing a bounding box;
+        "picoDAW",       // Label
+        IText(           // Style
+          36.f, "Roboto-Regular"
+        ).WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)
+      )
+    );
 
-    auto nextCell = [&](){
-      return b.GetPadded(-5.).GetGridCell(++cellIdx, nRows, nCols).GetPadded(-5.);
-    };
-
-    auto sameCell = [&](){
-      return b.GetPadded(-5.).GetGridCell(cellIdx, nRows, nCols).GetPadded(-5.);
-    };
-
-    auto AddLabel = [&](const char* label){
-      pGraphics->AttachControl(new ITextControl(nextCell().GetFromTop(20.f), label, style.labelText));
-    };
-//    pGraphics->EnableLiveEdit(true);
-
-    const IText forkAwesomeText {16.f, "ForkAwesome"};
-    const IText bigLabel {24, COLOR_WHITE, "Roboto-Regular", EAlign::Near, EVAlign::Top, 0};
-    const IText fontaudioText {32.f, "Fontaudio"};
-
-    const IRECT lfoPanel = b.GetFromLeft(300.f).GetFromTop(200.f);
-    IRECT keyboardBounds = b.GetFromBottom(300);
-    IRECT wheelsBounds = keyboardBounds.ReduceFromLeft(100.f).GetPadded(-10.f);
+    IRECT keyboardBounds = b.GetPadded(-5).GetFromBottom(200);
     pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-
-    AddLabel("ITextToggleControl");
-    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 0, 3, 3), nullptr, ICON_FK_SQUARE_O, ICON_FK_CHECK_SQUARE, forkAwesomeText), kNoTag, "misccontrols");
-    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 1, 3, 3), nullptr, ICON_FK_CIRCLE_O, ICON_FK_CHECK_CIRCLE, forkAwesomeText), kNoTag, "misccontrols");
-    pGraphics->AttachControl(new ITextToggleControl(sameCell().SubRectVertical(4, 1).GetGridCell(1, 2, 3, 3), nullptr, ICON_FK_PLUS_SQUARE, ICON_FK_MINUS_SQUARE, forkAwesomeText), kNoTag, "misccontrols");
-    
-    pGraphics->SetQwertyMidiKeyHandlerFunc([pGraphics](const IMidiMsg& msg) {
-                                              pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(msg.NoteNumber(), msg.StatusMsg() == IMidiMsg::kNoteOn);
-                                           });
   };
 #endif
 }
