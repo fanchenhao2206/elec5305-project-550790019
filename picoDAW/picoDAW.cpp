@@ -51,8 +51,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
 
-    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
-      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
+    pGraphics->AttachControl(new ITextControl(
+      b.GetPadded(-5), "picoDAW", IText( // Bounding box; label; style
+        36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
 
     IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen; 640 x 160px box
       160).GetReducedFromLeft(160).GetReducedFromRight(160);
