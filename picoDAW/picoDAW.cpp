@@ -51,18 +51,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
 
-    pGraphics->AttachControl(
-      new ITextControl(
-        b.GetPadded(-5), // Producing a bounding box;
-        "picoDAW",       // Label
-        IText(           // Style
-          36.f, "Roboto-Regular"
-        ).WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)
-      )
-    );
+    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
+      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
 
-    IRECT keyboardBounds = b.GetPadded(-5).GetFromBottom(200);
+    IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen; 640 x 160px box
+      160).GetReducedFromLeft(160).GetReducedFromRight(160);
     pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
+
+    IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard; 640 x 480px box
+      160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
+    pGraphics->AttachControl(new IVMultiSliderControl(sequencerBounds, "sequencer"));
   };
 #endif
 }
