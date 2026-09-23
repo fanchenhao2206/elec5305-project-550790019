@@ -61,7 +61,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard; 640 x 480px box
       160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
-    pGraphics->AttachControl(new IVSequencerControl<16>(sequencerBounds, "sequencer", DEFAULT_STYLE, 12));
+    pGraphics->AttachControl(new IVMultiToggleControl<16>(sequencerBounds, "sequencer"));
   };
 #endif
 }
