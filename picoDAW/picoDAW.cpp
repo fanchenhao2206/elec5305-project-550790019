@@ -55,13 +55,29 @@ picoDAW::picoDAW(const InstanceInfo& info)
       b.GetPadded(-5), "picoDAW", IText( // Bounding box; label; style
         36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
 
+    // Making subrects of main window
     IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen; 640 x 160px box
       160).GetReducedFromLeft(160).GetReducedFromRight(160);
-    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-
     IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard; 640 x 480px box
       160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
-    pGraphics->AttachControl(new IVSequencerControl(sequencerBounds));
+
+    // Placing controls into those subrects
+    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds));
+
+    // Notice that these controls occupy the same space; a seperate
+    // keyboard/gate/velocity button cycles through which control 
+    // is currently visible, and hence interactable
+    int show_keyboard_gate_velocity = 0;
+    // int show_keyboard_gate_velocity = 1;
+    // int show_keyboard_gate_velocity = 2;
+    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds, 
+      kParamKeyboard, show_keyboard_gate_velocity == 0), kCtrlTagKeyboard);
+    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds, 
+      kParamGate, show_keyboard_gate_velocity == 1));
+    pGraphics->AttachControl(new IVSequencerControl<16,16>(keyboardBounds, 
+      kParamVelocity, show_keyboard_gate_velocity == 2));
+
+    // 2206: Button to switch between keyboard/gate/velocity
   };
 #endif
 }

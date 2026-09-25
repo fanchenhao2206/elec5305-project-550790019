@@ -18,6 +18,10 @@ enum EParams
   kParamLFORateTempo,
   kParamLFORateMode,
   kParamLFODepth,
+  kParamButton,
+  kParamKeyboard,
+  kParamGate,
+  kParamVelocity,
   kNumParams
 };
 

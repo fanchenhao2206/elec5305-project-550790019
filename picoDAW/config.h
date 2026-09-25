@@ -2,8 +2,8 @@
 #define PLUG_MFR "fanchenhao2206"
 #define PLUG_VERSION_HEX 0x00010000
 #define PLUG_VERSION_STR "1.0.0"
-#define PLUG_UNIQUE_ID 10
-#define PLUG_MFR_ID 2206
+#define PLUG_UNIQUE_ID 'DS10'
+#define PLUG_MFR_ID '2206'
 #define PLUG_URL_STR "https://iplug2.github.io"
 #define PLUG_EMAIL_STR "spam@me.com"
 #define PLUG_COPYRIGHT_STR "Copyright 2025 Acme Inc"
