@@ -144,6 +144,9 @@ void picoDAW::OnReset()
   mMeterSender.Reset(GetSampleRate());
 }
 
+// Received MIDI message from MIDI message maker, internal 
+// (keyboard player, sequencer editor, playback generator),
+// or external, like a normal USB MIDI controller
 void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
 {
   TRACE;
@@ -167,7 +170,13 @@ void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
   }
   
 handle:
+  // Route that message to the internal DSP's who need it
   mDSP.ProcessMidiMsg(msg);
+
+  // And send the message back to UI? I guess, only relevant 
+  // if e.g. an external MIDI controller communicated with 
+  // processor rather than UI (makes sense), so good for the 
+  // UI to know too; for now let's disable
   SendMidiMsg(msg);
 }
 
