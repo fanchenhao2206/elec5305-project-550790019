@@ -79,7 +79,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       160).GetReducedFromLeft(160).GetReducedFromRight(160);
     IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard
       160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
-    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 120).GetTranslated(-(320 + 80), 0);
+    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 80).GetTranslated(-(320 + 80), 0);
 
     //
     // Placing controls into those subrects
