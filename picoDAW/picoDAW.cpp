@@ -181,6 +181,22 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
   #if IPLUG_EDITOR
   if (auto pGraphics = GetUI())
   {
+    // 2206: the value tied to this paramIdx has changed; if the paramIdx
+    // was for the play button, for example, then its value changing means...
+    // the user pressed the play button! Well, let's first double check its value
+    // is true; GetParam(kParamPlayButton)->Bool() that is. And if it is, then 
+    // the user must have pressed it, so we leave it on, until the user either 
+    // presses it again---triggering its value to turn to false---or the song 
+    // finishes and we are the ones to turn it off; we'll do that somewhere.
+
+    // So, if the value is on, and previously was off; start playback!
+    // Ideally, still allow the rest of the UI to be interacted with, 
+    // and any other DSP modules to keep running. In other words, DO NOT 
+    // hang here for the song duration... Trigger the flag for starting playback,
+    // and exit. Notably, a mPlaybackDSP module will receive this flag change
+    // and it is what starts real playback. So we need a seperate mPlaybackDSP 
+    // module (probably); and the current mDSP is really mKeyboardDSP, or 
+    // mSequencerEditDSP (playing the test sounds as draw on sequencer map).
     if (paramIdx == kParamLFORateMode)
     {
       const auto sync = GetParam(kParamLFORateMode)->Bool();
