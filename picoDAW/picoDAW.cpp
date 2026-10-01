@@ -61,16 +61,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
     };
 
     //
+    // The root control; contains the global variables necessary to control UI
+    //
+    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
+
+    //
     // The main window; and the title control in top left
     //
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
     pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
       36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
-
-    //
-    // The root control; contains the global variables necessary to control UI
-    //
-    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
     //
     // Making subrects of main window
