@@ -177,7 +177,7 @@ handle:
   // if e.g. an external MIDI controller communicated with 
   // processor rather than UI (makes sense), so good for the 
   // UI to know too; for now let's disable
-  SendMidiMsg(msg);
+  // SendMidiMsg(msg);
 }
 
 void picoDAW::OnParamChange(int paramIdx)
