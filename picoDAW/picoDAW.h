@@ -7,7 +7,16 @@ const int kNumPresets = 1;
 
 enum EParams
 {
-  kParamGain = 0,
+  // NOTE: good
+  kParamRoot = 0,
+  kParamKeyboard,
+  kParamGateSequencer,
+  kParamMidiSequencer,
+  kParamVelocitySequencer,
+  kParamCycleButton,
+
+  // TODO: to remove 
+  kParamGain,
   kParamNoteGlideTime,
   kParamAttack,
   kParamDecay,
@@ -19,9 +28,7 @@ enum EParams
   kParamLFORateMode,
   kParamLFODepth,
   kParamButton,
-  kParamKeyboard,
-  kParamGate,
-  kParamVelocity,
+
   kNumParams
 };
 
@@ -32,12 +39,21 @@ enum EParams
 
 enum EControlTags
 {
-  kCtrlTagMeter = 0,
+  // NOTE: good
+  kCtrlTagRoot = 0,
+  kCtrlTagKeyboard,
+  kCtrlTagGateSequencer,
+  kCtrlTagMidiSequencer,
+  kCtrlTagVelocitySequencer,
+  kCtrlTagCycleButton,
+
+  // TODO: to remove 
+  kCtrlTagMeter,
   kCtrlTagLFOVis,
   kCtrlTagScope,
   kCtrlTagRTText,
-  kCtrlTagKeyboard,
   kCtrlTagBender,
+
   kNumCtrlTags
 };
 

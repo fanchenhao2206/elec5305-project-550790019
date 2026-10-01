@@ -4,6 +4,17 @@
 #include "IconsForkAwesome.h"
 #include "IconsFontaudio.h"
 
+#include <string>
+/** A root control that is invisible and does nothing; just holds data for drawing UI */
+class RootUIControl : public IControl {
+public:
+  int keyboardBoundsIdx = 0;
+  const int keyboardBoundsTotal = 2;
+  
+  RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
+  void Draw(IGraphics& g) override {}
+};
+
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
@@ -45,39 +56,70 @@ picoDAW::picoDAW(const InstanceInfo& info)
         DEFAULT_X2COLOR, // Extra 2
         DEFAULT_X3COLOR  // Extra 3
       }, // Colours
-      IText(36.f, "Roboto-Regular"), // Label text
-      IText(36.f, "Roboto-Regular") // Value text
+      IText(24.f, "Roboto-Regular"), // Label text
+      IText(16.f, "Roboto-Regular") // Value text
     };
 
+    //
+    // The main window; and the title control in top left
+    //
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
+    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
+      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
 
-    pGraphics->AttachControl(new ITextControl(
-      b.GetPadded(-5), "picoDAW", IText( // Bounding box; label; style
-        36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
+    //
+    // The root control; contains the global variables necessary to control UI
+    //
+    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
+    //
     // Making subrects of main window
-    IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen; 640 x 160px box
+    //
+    IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen
       160).GetReducedFromLeft(160).GetReducedFromRight(160);
-    IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard; 640 x 480px box
+    IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard
       160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
+    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 120).GetTranslated(-(320 + 80), 0);
 
+    //
     // Placing controls into those subrects
-    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds));
+    //
+    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds, kParamMidiSequencer));
 
-    // Notice that these controls occupy the same space; a seperate
-    // keyboard/gate/velocity button cycles through which control 
-    // is currently visible, and hence interactable
-    int show_keyboard_gate_velocity = 0;
-    // int show_keyboard_gate_velocity = 1;
-    // int show_keyboard_gate_velocity = 2;
-    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds, 
-      kParamKeyboard, show_keyboard_gate_velocity == 0), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds, 
-      kParamGate, show_keyboard_gate_velocity == 1));
-    pGraphics->AttachControl(new IVSequencerControl<16,16>(keyboardBounds, 
-      kParamVelocity, show_keyboard_gate_velocity == 2));
+    // Notice that these occupy the same subrect, so every control but one is manually hidden on 
+    // boot; a seperate button will then be pressed to cycle through which control is visible
+    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds, kParamKeyboard), kCtrlTagKeyboard);
+    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds, kParamGateSequencer));
 
-    // 2206: Button to switch between keyboard/gate/velocity
+    // Hide/Show controls so only the active one is displayed
+    int sync = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>()->keyboardBoundsIdx;
+    pGraphics->HideControl(kParamKeyboard, sync != 0);
+    pGraphics->HideControl(kParamGateSequencer, sync != 1);
+
+    // Button to cycle through what is displayed in keyboardBounds
+    pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
+      [&](IControl* pCaller) {
+        // Grab the root control
+        auto ui = pCaller->GetUI();
+        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
+
+        // Cycle through its currently active sub-control
+        root->keyboardBoundsIdx += 1; 
+        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
+                    
+        // Hide/Show controls so only the active one is displayed
+        int sync = root->keyboardBoundsIdx;
+        ui->HideControl(kParamKeyboard, sync != 0);
+        ui->HideControl(kParamGateSequencer, sync != 1);
+
+        // Then animation...
+        float x, y;
+        ui->GetMouseDownPoint(x, y);
+        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+
+        // ...Done
+      }, "TOGGLE", style), kCtrlTagCycleButton);
   };
 #endif
 }
