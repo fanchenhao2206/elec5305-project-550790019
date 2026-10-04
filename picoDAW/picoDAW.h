@@ -2,6 +2,7 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
+#include "IVSequencerControl.h"
 
 const int kNumPresets = 1;
 
