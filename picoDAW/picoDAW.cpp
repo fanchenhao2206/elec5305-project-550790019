@@ -60,31 +60,21 @@ picoDAW::picoDAW(const InstanceInfo& info)
       IText(16.f, "Roboto-Regular") // Value text
     };
 
-    //
-    // The root control; contains the global variables necessary to control UI
-    //
-    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
-
-    //
-    // The main window; and the title control in top left
-    //
-    const IRECT b = pGraphics->GetBounds().GetPadded(0);
-    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
-      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
-
-    //
     // Making subrects of main window
-    //
+    const IRECT b = pGraphics->GetBounds().GetPadded(0);
     IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen
       160).GetReducedFromLeft(160).GetReducedFromRight(160);
     IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard
       160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
     IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 80).GetTranslated(-(320 + 80), 0);
 
-    //
     // Placing controls into those subrects
-    //
+    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
+      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
     pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds, kParamMidiSequencer));
+
+    // The root control; its members are the global variables necessary to control UI
+    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
     // Notice that these occupy the same subrect, so every control but one is manually hidden on 
     // boot; a seperate button will then be pressed to cycle through which control is visible
