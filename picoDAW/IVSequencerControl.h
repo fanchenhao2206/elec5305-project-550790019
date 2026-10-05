@@ -180,15 +180,6 @@ public:
     SetDirty(true);
   }
 
-  void OnMouseUp(float x, float y, const IMouseMod& mod) override
-  {
-    mHoverCol = -1;
-    mHoverRow = -1;
-
-    // And re-draw control
-    SetDirty(true);
-  }
-
   /* .cpp files that extend me (e.g. IMidiSequencer) can override this */
   virtual void OnNewValue()
   {
