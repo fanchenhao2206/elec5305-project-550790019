@@ -10,6 +10,7 @@ class RootUIControl : public IControl {
 public:
   int keyboardBoundsIdx = 0;
   const int keyboardBoundsTotal = 2;
+
   
   RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
   void Draw(IGraphics& g) override {}
@@ -118,7 +119,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
         auto ui = pCaller->GetUI();
         auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
-        /* ... */
+        /* 2206: this is what you will do... */
+        // 
         
         // Then animation...
         float x, y;
@@ -136,7 +138,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         auto ui = pCaller->GetUI();
         auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
-        /* ... */
+        /* TODO: once mixer is ready... */
 
         // Then animation...
         float x, y;
@@ -153,6 +155,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
 #if IPLUG_DSP
 void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
+  // We are given a (hopefully) empty buffer "outputs" to fill in with samples,
+  // presumably played back through final audio output...
   mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
   mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
@@ -160,6 +164,21 @@ void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
 void picoDAW::OnIdle()
 {
+  // Send message from dlg, to the UI control specified by ctrlTag;
+  // dlg interfaces between UI and DSP, so it essentially transmits
+  // message received from any DSP's, to that specific UI control
+  //
+  // Specifically, these sender instances are a part of dlg (aka *this)
+  // and they each maintain a queue of message datas that will be relevant
+  // to specific UI controls; these senders know which specific UI controls
+  // (on initialisation), so will remember to include the relevant ctrlTag
+  // in the message datas it adds to the queue
+  //
+  // In that sense, these TransmitData are literal helper functions, emptying
+  // the queue and sending messages to the addresses specified within them;
+  // no thinking required; mMeterSender would be sending the levels produced
+  // by mDSP to the UI control given by kCtrlTagMeter; exactly what is done
+  // through mMeterSender.ProcessBlock, for example
   mMeterSender.TransmitData(*this);
   mLFOVisSender.TransmitData(*this);
 }

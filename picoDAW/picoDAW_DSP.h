@@ -64,6 +64,40 @@ public:
       double osc1Freq = 440. * pow(2., pitch + pitchBend + inputs[kModLFO][0]);
       
       // make sound output for each output channel
+      // ...
+      // THE MAKING SOUND...
+      // But what is the double pitch above, actually? Clearly it should be the
+      // most recent keyOn MIDI message? But how? Let's check out MidiSynth...
+      // ...
+      // mVoiceAllocator.AddEvent(MidiMessageToEvent(msg));
+      // That is, mSynth.ProcessBlock empties out the MidiQueue 
+      // of MIDI messages, converting each to a relevant SynthVoice 
+      // event, that results in the relevant voices from changing 
+      // its pitch when eventually mVoiceAllocator.ProcessEvents() 
+      // is called too
+      // ...
+      // And a key press gets converted to a NoteOn event, its pitch
+      // calculated from field within the event, and passed to StartVoice();
+      // It's like the SynthVoice is completely restarted on each key press;
+      // does that makes sense? And this is called within StartVoice()
+      // mVoiceGlides[voiceIdx]->at(kVoiceControlPitch).SetTarget(pitch, sampleOffset, mNoteGlideSamples, mBlockSize);
+      // ...
+      // Which... of course is what's used in mVoiceAllocator.ProcessVoices() the following line!
+      // Through pVoice->ProcessSamplesAccumulating(inputs, outputs, nInputs, nOutputs, startIndex, blockSize);
+      // which of course is just... THIS!! Voice::ProcessSamplesAccumulating!
+      // And notice, just above; mInputs[kVoiceControlPitch].endValue;
+      // That is,
+      // ...
+      // The double pitch above, is taken from the same mVoiceGlides object, that 
+      // is modified by StartVoice i.e. mVoiceAllocator that processes MIDI messages
+      // ...
+      // (i) MIDI message is appended to mSynth.mMidiQueue, which is then processed by mSynth.mVoiceAllocator,
+      // which was initialised by the picoDAWDSP constructor through AddVoice(), so the custom Voice : SynthVoice
+      // above has been configured via StartVoice() to generate output samples corresponding to pitch
+      // (ii) When ProcessVoices() is called, it calls this function that uses the information within Voice, 
+      // the aforementioned mVoiceGlides, or SynthVoice::mInputs, to know how to fill the ACTUAL outputs buffer;
+      // here you can see that
+
       for(auto i = startIdx; i < startIdx + nFrames; i++)
       {
         float noise = mTimbreBuffer.Get()[i] * Rand();
@@ -118,7 +152,8 @@ public:
   {
     for (auto i = 0; i < nVoices; i++)
     {
-      // add a voice to Zone 0.
+      // add a voice to Zone 0; specifically, a Voice that wraps around a fastSinOsc
+      // So, mSynth contains all the voices we care about; e.g. SinVoice, SawVoice, etc.
       mSynth.AddVoice(new Voice(), 0);
     }
 
@@ -137,6 +172,11 @@ public:
     
     mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames);
     mLFO.ProcessBlock(mModulations.GetList()[kModLFO], nFrames, qnPos, transportIsRunning, tempo);
+
+    // TODO: Clearly this fills in outputs with the final audio-ready output, 
+    // but what actually plays back that audio? answer, probably javascript
+    // tldr, midiSynth generates the outputs, it contains the algorithm for 
+    // generating e.g. sine waves wrt midi notes
     mSynth.ProcessBlock(mModulations.GetList(), outputs, 0, nOutputs, nFrames);
     
     for(int s=0; s < nFrames;s++)
