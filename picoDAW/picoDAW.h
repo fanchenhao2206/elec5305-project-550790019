@@ -15,6 +15,8 @@ enum EParams
   kParamMidiSequencer,
   kParamVelocitySequencer,
   kParamCycleButton,
+  kParamPlayButton,
+  kParamSoloButton,
 
   // TODO: to remove 
   kParamGain,
@@ -47,6 +49,8 @@ enum EControlTags
   kCtrlTagMidiSequencer,
   kCtrlTagVelocitySequencer,
   kCtrlTagCycleButton,
+  kCtrlTagPlayButton,
+  kCtrlTagSoloButton,
 
   // TODO: to remove 
   kCtrlTagMeter,

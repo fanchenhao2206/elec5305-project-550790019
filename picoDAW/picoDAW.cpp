@@ -48,7 +48,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       {
         DEFAULT_BGCOLOR, // Background
         DEFAULT_FGCOLOR, // Foreground
-        DEFAULT_PRCOLOR, // Pressed
+        COLOR_RED, // Pressed
         COLOR_BLACK, // Frame
         DEFAULT_HLCOLOR, // Highlight
         DEFAULT_SHCOLOR, // Shadow
@@ -62,15 +62,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Making subrects of main window
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
-    IRECT keyboardBounds = b.GetFromBottom( // 160px gap above bottom of screen
-      160).GetReducedFromLeft(160).GetReducedFromRight(160);
-    IRECT sequencerBounds = b.GetReducedFromBottom( // 20px gap above top of keyboard
-      160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
-    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 80).GetTranslated(-(320 + 80), 0);
+    IRECT keyboardBounds = b.GetFromBottom(160).GetReducedFromLeft(160).GetReducedFromRight(160);
+    IRECT sequencerBounds = b.GetReducedFromBottom(160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
+    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 160).GetTranslated(-(320 + 80), 2.5);
+    IRECT playButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5, 2.5);
+    IRECT soloButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5 - 160, 2.5);
 
     // Placing controls into those subrects
-    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(
-      36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
+    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
     pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds, kParamMidiSequencer));
 
     // The root control; its members are the global variables necessary to control UI
@@ -110,6 +109,56 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
         // ...Done
       }, "TOGGLE", style), kCtrlTagCycleButton);
+  
+    // Button to playback the whole pattern
+    pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
+      [&](IControl* pCaller) {
+        // Grab the root control
+        auto ui = pCaller->GetUI();
+        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
+
+        // Cycle through its currently active sub-control
+        root->keyboardBoundsIdx += 1; 
+        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
+                    
+        // Hide/Show controls so only the active one is displayed
+        int sync = root->keyboardBoundsIdx;
+        ui->HideControl(kParamKeyboard, sync != 0);
+        ui->HideControl(kParamGateSequencer, sync != 1);
+
+        // Then animation...
+        float x, y;
+        ui->GetMouseDownPoint(x, y);
+        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+
+        // ...Done
+      }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
+    
+    // Button to solo this single instrument
+    pGraphics->AttachControl(new IVToggleControl(soloButtonBounds, 
+      [&](IControl* pCaller) {
+        // Grab the root control
+        auto ui = pCaller->GetUI();
+        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
+
+        // Cycle through its currently active sub-control
+        root->keyboardBoundsIdx += 1; 
+        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
+                    
+        // Hide/Show controls so only the active one is displayed
+        int sync = root->keyboardBoundsIdx;
+        ui->HideControl(kParamKeyboard, sync != 0);
+        ui->HideControl(kParamGateSequencer, sync != 1);
+
+        // Then animation...
+        float x, y;
+        ui->GetMouseDownPoint(x, y);
+        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+
+        // ...Done
+      }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
   };
 #endif
 }
