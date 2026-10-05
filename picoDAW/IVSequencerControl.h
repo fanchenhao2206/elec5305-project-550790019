@@ -23,11 +23,10 @@ public:
     std::function<void()> updateFn = nullptr)
   : IControl(bounds, paramIdx), mUpdateFn(updateFn)
   {
-    mClickCol = mClickRow = 0;
-    mColIdx = mRowIdx = 0;
-    mIgnoreMouse = false;
+    mClickCol = mClickRow = -1;
+    mHoverCol = mHoverRow = -1;
   }
-  
+
   void Draw(IGraphics& g) override
   {
     g.FillRect(COLOR_WHITE, mRECT);
@@ -35,12 +34,17 @@ public:
 
     // sketch:
     char str[64];
-    sprintf(str, "col: %d, row: %d", mColIdx, mRowIdx);
+    sprintf(str, "col: %d, row: %d", mHoverCol, mHoverRow);
     g.DrawText(DEFAULT_TEXT, str, mRECT);
 
     // Draw grid: nRow by nCol cells
     float rowSpacing = mRECT.H() / NROW;
     float colSpacing = mRECT.W() / NCOL;
+
+    // Fill in hover over cell
+    g.FillRect(COLOR_GRAY, IRECT::MakeXYWH(
+      mRECT.L + (mHoverCol * colSpacing), mRECT.T + (mHoverRow * rowSpacing),
+      colSpacing, rowSpacing));
 
     // Fill in selected cells
     assert(mCells.size() == NCOL);
@@ -89,8 +93,6 @@ public:
 
     float colIdx = (int)(relX / colSpacing);
     float rowIdx = (int)(relY / rowSpacing);
-    mColIdx = colIdx;
-    mRowIdx = rowIdx;
 
     // So, turn it on! Or, off it is already on
     if (mCells[colIdx] == rowIdx) {
@@ -125,8 +127,6 @@ public:
 
     float colIdx = (int)(relX / colSpacing);
     float rowIdx = (int)(relY / rowSpacing);
-    mColIdx = colIdx;
-    mRowIdx = rowIdx;
 
     // So, turn it on! Or, off, depending on mClickCol/Row
     if (mCells[mClickCol] > -1) {
@@ -139,6 +139,42 @@ public:
         mCells[colIdx] = -1;
       }
     }
+
+    mHoverCol = colIdx;
+    mHoverRow = rowIdx;
+
+    // And re-draw control
+    SetDirty(true);
+  }
+
+  void OnMouseOver(float x, float y, const IMouseMod& mod) override
+  {
+    // Mouse needs to be in-bounds to edit the sequencer
+    if (!mRECT.Contains(x, y)) return;
+
+    // (x,y) are given as absolute coordinates; now that we know it 
+    // is a point within mRECT, let's find its relative coordinates
+    float relX = x - mRECT.L;
+    float relY = y - mRECT.T;
+
+    // Then, it's easy to find which grid this point belongs in
+    float rowSpacing = mRECT.H() / NROW;
+    float colSpacing = mRECT.W() / NCOL;
+
+    float colIdx = (int)(relX / colSpacing);
+    float rowIdx = (int)(relY / rowSpacing);
+
+    mHoverCol = colIdx;
+    mHoverRow = rowIdx;
+
+    // And re-draw control
+    SetDirty(true);
+  }
+
+  void OnMouseOut() override
+  {
+    mHoverCol = -1;
+    mHoverRow = -1;
 
     // And re-draw control
     SetDirty(true);
@@ -156,7 +192,7 @@ protected:
 private:
   std::array<int, NCOL> mCells;
   int mClickCol, mClickRow;
-  int mColIdx, mRowIdx;
+  int mHoverCol, mHoverRow;
 };
 
 END_IGRAPHICS_NAMESPACE

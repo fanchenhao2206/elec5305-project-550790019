@@ -36,6 +36,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   };
   
   mLayoutFunc = [&](IGraphics* pGraphics) {
+    pGraphics->EnableMouseOver(true);
     pGraphics->AttachPanelBackground(COLOR_LIGHT_GRAY);
 
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
@@ -117,15 +118,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
         auto ui = pCaller->GetUI();
         auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
-        // Cycle through its currently active sub-control
-        root->keyboardBoundsIdx += 1; 
-        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
-                    
-        // Hide/Show controls so only the active one is displayed
-        int sync = root->keyboardBoundsIdx;
-        ui->HideControl(kParamKeyboard, sync != 0);
-        ui->HideControl(kParamGateSequencer, sync != 1);
-
+        /* ... */
+        
         // Then animation...
         float x, y;
         ui->GetMouseDownPoint(x, y);
@@ -142,14 +136,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         auto ui = pCaller->GetUI();
         auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
-        // Cycle through its currently active sub-control
-        root->keyboardBoundsIdx += 1; 
-        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
-                    
-        // Hide/Show controls so only the active one is displayed
-        int sync = root->keyboardBoundsIdx;
-        ui->HideControl(kParamKeyboard, sync != 0);
-        ui->HideControl(kParamGateSequencer, sync != 1);
+        /* ... */
 
         // Then animation...
         float x, y;
