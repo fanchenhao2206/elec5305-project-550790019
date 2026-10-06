@@ -10,14 +10,6 @@ enum EParams
 {
   // NOTE: good
   kParamRoot = 0,
-  kParamTitle,
-  kParamKeyboard,
-  kParamGateSequencer,
-  kParamMidiSequencer,
-  kParamVelocitySequencer,
-  kParamCycleButton,
-  kParamPlayButton,
-  kParamSoloButton,
 
   // TODO: to remove 
   kParamGain,

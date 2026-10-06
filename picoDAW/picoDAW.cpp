@@ -73,24 +73,26 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Placing controls into those subrects
     pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)), kCtrlTagTitle);
-    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds, kParamMidiSequencer));
+    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds), kCtrlTagMidiSequencer);
 
     // The root control; its members are the global variables necessary to control UI
     pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
     // Notice that these occupy the same subrect, so every control but one is manually hidden on 
     // boot; a seperate button will then be pressed to cycle through which control is visible
-    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds, kParamKeyboard), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds, kParamGateSequencer));
+    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
+    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds), kCtrlTagGateSequencer);
 
     // Hide/Show controls so only the active one is displayed
     int sync = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>()->keyboardBoundsIdx;
-    pGraphics->HideControl(kParamKeyboard, sync != 0);
-    pGraphics->HideControl(kParamGateSequencer, sync != 1);
+    // pGraphics->HideControl(kParamKeyboard, sync != 0);
+    pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
+    // pGraphics->HideControl(kParamGateSequencer, sync != 1);
+    pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);    
 
     // Button to cycle through what is displayed in keyboardBounds
     pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
-      [&](IControl* pCaller) {
+      [pGraphics](IControl* pCaller) {
         // Grab the root control
         // auto ui = pCaller->GetUI();
         auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
@@ -101,8 +103,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
                     
         // Hide/Show controls so only the active one is displayed
         int sync = root->keyboardBoundsIdx;
-        pGraphics->HideControl(kParamKeyboard, sync != 0);
-        pGraphics->HideControl(kParamGateSequencer, sync != 1);
+        // pGraphics->HideControl(kParamKeyboard, sync != 0);
+        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
+        // pGraphics->HideControl(kParamGateSequencer, sync != 1);
+        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
 
         // Then animation...
         float x, y;
@@ -113,15 +117,17 @@ picoDAW::picoDAW(const InstanceInfo& info)
   
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
-      [&](IControl* pCaller) {
+      [pGraphics](IControl* pCaller) {
         if (pCaller->GetValue() > 0.5) {
           // Is currently on, so was previously off; start playback
           // Alert the mPlaybackTimer; sends MIDI messages to instrument DSP(s) on each second
           //
+          // 2206: let's do this
           // mPlaybackTimer.Start();
         } else {
           // Is currently off, so was previously on; stop playback
           //
+          // 2206: let's do this
           // mPlaybackTimer.Stop();
         }
         
@@ -134,7 +140,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     
     // Button to solo this single instrument
     pGraphics->AttachControl(new IVToggleControl(soloButtonBounds, 
-      [&](IControl* pCaller) {
+      [pGraphics](IControl* pCaller) {
         /* TODO: once mixer is ready... */
 
         // Then animation...
@@ -145,7 +151,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
 
     pGraphics->SetQwertyMidiKeyHandlerFunc(
-      [&](const IMidiMsg& msg) {
+      [pGraphics](const IMidiMsg& msg) {
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(
           msg.NoteNumber(), msg.StatusMsg() == IMidiMsg::kNoteOn);
       });
