@@ -3,6 +3,7 @@
 #include "LFO.h"
 #include "IconsForkAwesome.h"
 #include "IconsFontaudio.h"
+#include "IPlugTimer.h"
 
 #include <string>
 /** A root control that is invisible and does nothing; just holds data for drawing UI */
@@ -91,8 +92,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
       [&](IControl* pCaller) {
         // Grab the root control
-        auto ui = pCaller->GetUI();
-        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
+        // auto ui = pCaller->GetUI();
+        auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
         // Cycle through its currently active sub-control
         root->keyboardBoundsIdx += 1; 
@@ -100,12 +101,12 @@ picoDAW::picoDAW(const InstanceInfo& info)
                     
         // Hide/Show controls so only the active one is displayed
         int sync = root->keyboardBoundsIdx;
-        ui->HideControl(kParamKeyboard, sync != 0);
-        ui->HideControl(kParamGateSequencer, sync != 1);
+        pGraphics->HideControl(kParamKeyboard, sync != 0);
+        pGraphics->HideControl(kParamGateSequencer, sync != 1);
 
         // Then animation...
         float x, y;
-        ui->GetMouseDownPoint(x, y);
+        pGraphics->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
       }, "TOGGLE", style), kCtrlTagCycleButton);
@@ -113,28 +114,20 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
       [&](IControl* pCaller) {
-        // Grab the root control
-        auto ui = pCaller->GetUI();
-        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
-
-        /* 2206: this is what you will do... */
-        // This lambda function is called whenever IVToggleControl::SetDirty(true)
-        // is called; which for the button, is literally only when the button is pressed
-        // So, a reasonable question to have, is what is the state of the button now?
-        // Is it on now? Meaning it was previously off; if so, then start playback
-        // Is it off now? Meaning it was previously on; if so, then stop playback
-        auto title = ui->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
         if (pCaller->GetValue() > 0.5) {
           // Is currently on, so was previously off; start playback
-          title->SetStr("PLAYING...");
+          // Alert the mPlaybackTimer; sends MIDI messages to instrument DSP(s) on each second
+          //
+          // mPlaybackTimer.Start();
         } else {
           // Is currently off, so was previously on; stop playback
-          title->SetStr("STOPPING...");
+          //
+          // mPlaybackTimer.Stop();
         }
         
         // Then animation...
         float x, y;
-        ui->GetMouseDownPoint(x, y);
+        pGraphics->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
@@ -142,18 +135,20 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Button to solo this single instrument
     pGraphics->AttachControl(new IVToggleControl(soloButtonBounds, 
       [&](IControl* pCaller) {
-        // Grab the root control
-        auto ui = pCaller->GetUI();
-        auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
-
         /* TODO: once mixer is ready... */
 
         // Then animation...
         float x, y;
-        ui->GetMouseDownPoint(x, y);
+        pGraphics->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
       }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
+
+    pGraphics->SetQwertyMidiKeyHandlerFunc(
+      [&](const IMidiMsg& msg) {
+        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(
+          msg.NoteNumber(), msg.StatusMsg() == IMidiMsg::kNoteOn);
+      });
   };
 #endif
 }
@@ -163,9 +158,14 @@ void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
   // We are given a (hopefully) empty buffer "outputs" to fill in with samples,
   // presumably played back through final audio output...
-  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
+
+  // Fill in outputs with samples to play back; of course, if no MIDI KeyOn messages in queue,
+  // probably nothing here right? (Not entirely true, because of the Release in ADSR envelope)
+  // Point being, MIDI messages have been delivered to this DSP, and now we processes those 
+  // messages; process to produce a block of samples, hence ProcessBlock()
+  mInstrumentDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
-  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
+  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mInstrumentDSP.mLFO.GetLastOutput())}});
 }
 
 void picoDAW::OnIdle()
@@ -183,7 +183,7 @@ void picoDAW::OnIdle()
   // In that sense, these TransmitData are literal helper functions, emptying
   // the queue and sending messages to the addresses specified within them;
   // no thinking required; mMeterSender would be sending the levels produced
-  // by mDSP to the UI control given by kCtrlTagMeter; exactly what is done
+  // by mInstrumentDSP to the UI control given by kCtrlTagMeter; exactly what is done
   // through mMeterSender.ProcessBlock, for example
   mMeterSender.TransmitData(*this);
   mLFOVisSender.TransmitData(*this);
@@ -191,7 +191,7 @@ void picoDAW::OnIdle()
 
 void picoDAW::OnReset()
 {
-  mDSP.Reset(GetSampleRate(), GetBlockSize());
+  mInstrumentDSP.Reset(GetSampleRate(), GetBlockSize());
   mMeterSender.Reset(GetSampleRate());
 }
 
@@ -222,7 +222,7 @@ void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
   
 handle:
   // Route that message to the internal DSP's who need it
-  mDSP.ProcessMidiMsg(msg);
+  mInstrumentDSP.ProcessMidiMsg(msg);
 
   // And send the message back to UI? I guess, only relevant 
   // if e.g. an external MIDI controller communicated with 
@@ -233,7 +233,7 @@ handle:
 
 void picoDAW::OnParamChange(int paramIdx)
 {
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+  mInstrumentDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
@@ -255,7 +255,7 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
     // hang here for the song duration... Trigger the flag for starting playback,
     // and exit. Notably, a mPlaybackDSP module will receive this flag change
     // and it is what starts real playback. So we need a seperate mPlaybackDSP 
-    // module (probably); and the current mDSP is really mKeyboardDSP, or 
+    // module (probably); and the current mInstrumentDSP is really mKeyboardDSP, or 
     // mSequencerEditDSP (playing the test sounds as draw on sequencer map).
     if (paramIdx == kParamLFORateMode)
     {
@@ -272,7 +272,7 @@ bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData
   if(ctrlTag == kCtrlTagBender && msgTag == IWheelControl::kMessageTagSetPitchBendRange)
   {
     const int bendRange = *static_cast<const int*>(pData);
-    mDSP.mSynth.SetPitchBendRange(bendRange);
+    mInstrumentDSP.mSynth.SetPitchBendRange(bendRange);
   }
   
   return false;

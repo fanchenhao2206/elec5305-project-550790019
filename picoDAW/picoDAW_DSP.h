@@ -152,6 +152,16 @@ public:
   {
     for (auto i = 0; i < nVoices; i++)
     {
+      // 2206: actually add different voices; like, be able to send MIDI messages
+      // to specifically voice 3 (corresponding to synth3), etc. etc. etc.
+      // Right now, each Voice() is just a boring sine wave oscillator
+      // ...
+      // The voice to send MIDI message to, is specified in the MIDI message!!
+      // while (mInputQueue.ElementsAvailable()) begin
+      //   VoiceInputEvent event = mInputQueue.Pop();
+      //   VoiceAllocator::VoiceBitsArray voices = VoicesMatchingAddress(event.mAddress);
+      // end
+      // ...
       // add a voice to Zone 0; specifically, a Voice that wraps around a fastSinOsc
       // So, mSynth contains all the voices we care about; e.g. SinVoice, SawVoice, etc.
       mSynth.AddVoice(new Voice(), 0);
@@ -169,11 +179,14 @@ public:
     {
       memset(outputs[i], 0, nFrames * sizeof(T));
     }
+
+    // 2206: now add signals into outputs; e.g. outputs[0][s] += sig1[s] + sig2[s];
+    // where sig1 is the output from the synth1, and sig2 for synth2; making a mix
     
     mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames);
     mLFO.ProcessBlock(mModulations.GetList()[kModLFO], nFrames, qnPos, transportIsRunning, tempo);
 
-    // TODO: Clearly this fills in outputs with the final audio-ready output, 
+    // 2206: Clearly this fills in outputs with the final audio-ready output, 
     // but what actually plays back that audio? answer, probably javascript
     // tldr, midiSynth generates the outputs, it contains the algorithm for 
     // generating e.g. sine waves wrt midi notes
