@@ -10,6 +10,7 @@ enum EParams
 {
   // NOTE: good
   kParamRoot = 0,
+  kParamTitle,
   kParamKeyboard,
   kParamGateSequencer,
   kParamMidiSequencer,
@@ -44,6 +45,7 @@ enum EControlTags
 {
   // NOTE: good
   kCtrlTagRoot = 0,
+  kCtrlTagTitle,
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
   kCtrlTagMidiSequencer,

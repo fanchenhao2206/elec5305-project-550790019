@@ -71,7 +71,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT soloButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5 - 160, 2.5);
 
     // Placing controls into those subrects
-    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)));
+    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)), kCtrlTagTitle);
     pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds, kParamMidiSequencer));
 
     // The root control; its members are the global variables necessary to control UI
@@ -108,8 +108,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
         ui->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-
-        // ...Done
       }, "TOGGLE", style), kCtrlTagCycleButton);
   
     // Button to playback the whole pattern
@@ -120,15 +118,25 @@ picoDAW::picoDAW(const InstanceInfo& info)
         auto root = ui->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
         /* 2206: this is what you will do... */
-        // 
+        // This lambda function is called whenever IVToggleControl::SetDirty(true)
+        // is called; which for the button, is literally only when the button is pressed
+        // So, a reasonable question to have, is what is the state of the button now?
+        // Is it on now? Meaning it was previously off; if so, then start playback
+        // Is it off now? Meaning it was previously on; if so, then stop playback
+        auto title = ui->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
+        if (pCaller->GetValue() > 0.5) {
+          // Is currently on, so was previously off; start playback
+          title->SetStr("PLAYING...");
+        } else {
+          // Is currently off, so was previously on; stop playback
+          title->SetStr("STOPPING...");
+        }
         
         // Then animation...
         float x, y;
         ui->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-
-        // ...Done
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
     
     // Button to solo this single instrument
@@ -145,8 +153,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
         ui->GetMouseDownPoint(x, y);
         pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
         pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-
-        // ...Done
       }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
   };
 #endif
