@@ -85,16 +85,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Hide/Show controls so only the active one is displayed
     int sync = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>()->keyboardBoundsIdx;
-    // pGraphics->HideControl(kParamKeyboard, sync != 0);
     pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-    // pGraphics->HideControl(kParamGateSequencer, sync != 1);
     pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);    
 
     // Button to cycle through what is displayed in keyboardBounds
     pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
       [pGraphics](IControl* pCaller) {
         // Grab the root control
-        // auto ui = pCaller->GetUI();
         auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
 
         // Cycle through its currently active sub-control
@@ -103,9 +100,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
                     
         // Hide/Show controls so only the active one is displayed
         int sync = root->keyboardBoundsIdx;
-        // pGraphics->HideControl(kParamKeyboard, sync != 0);
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-        // pGraphics->HideControl(kParamGateSequencer, sync != 1);
         pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
 
         // Then animation...
@@ -130,26 +125,15 @@ picoDAW::picoDAW(const InstanceInfo& info)
           // 2206: let's do this
           // mPlaybackTimer.Stop();
         }
-        
-        // Then animation...
-        float x, y;
-        pGraphics->GetMouseDownPoint(x, y);
-        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
     
     // Button to solo this single instrument
     pGraphics->AttachControl(new IVToggleControl(soloButtonBounds, 
       [pGraphics](IControl* pCaller) {
         /* TODO: once mixer is ready... */
-
-        // Then animation...
-        float x, y;
-        pGraphics->GetMouseDownPoint(x, y);
-        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
       }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
 
+    // Allow playing synth by QWERTY keyboard; polyphonic unlike the monoponic of MIDI sequencer
     pGraphics->SetQwertyMidiKeyHandlerFunc(
       [pGraphics](const IMidiMsg& msg) {
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(
