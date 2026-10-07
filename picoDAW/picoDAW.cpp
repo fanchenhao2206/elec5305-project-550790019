@@ -130,8 +130,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
               auto &stepIdx = root->mPlaybackStep;
               auto &prevNote = root->mPrevNote;
 
-              auto step = midiSeq->mSteps[stepIdx];
-              int currNote = (step < 0) ? -1 : 48 + step;
+              // Cell is given as a row index from top to bottom; matching graphics
+              int cell = midiSeq->mCells[stepIdx];
+
+              // But we want a row index from bottom to top; matching piano roll sequencers
+              int step = (midiSeq->mNRows - 1) - cell;
+
+              // 2206: assumes we are in C3 octave (C3 === 48); also, velocity sequencer
+              int currNote = (cell < 0) ? -1 : 48 + step;
               int currVelocity = 80;
 
               if (currNote < 0) {
@@ -146,7 +152,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
                 root->GetDelegate()->SendMidiMsgFromUI(msg);
                 msg.MakeNoteOnMsg(currNote, currVelocity, 0);
                 root->GetDelegate()->SendMidiMsgFromUI(msg);
-              } /* else {} // Something to play this step, but it's the same as last step */
+              } /* else {} */ // Something to play this step, but it's the same as last step
 
               prevNote = currNote;
               stepIdx += 1;
