@@ -10,24 +10,23 @@
 #pragma once
 
 #include "IControl.h"
-#include <array>
+#include <vector>
 
 BEGIN_IPLUG_NAMESPACE
 BEGIN_IGRAPHICS_NAMESPACE
 
-template <int NROW, int NCOL>
 class IVSequencerControl : public IControl
 {
 public:
-  IVSequencerControl(const IRECT& bounds, int paramIdx = kNoParameter, 
+  IVSequencerControl(const IRECT& bounds, int nRows, int nCols,
     std::function<void()> updateFn = nullptr)
-  : IControl(bounds, paramIdx), mUpdateFn(updateFn)
+  : IControl(bounds, kNoParameter), mUpdateFn(updateFn)
   {
     mClickCol = mClickRow = -1;
     mHoverCol = mHoverRow = -1;
-    mNSteps = NCOL;
-    mNRows = NROW;
-    for (auto &cell : mCells) cell = -1;
+    mNCols = nCols; // Each column represents a step; e.g. 16 columns for a 16-step sequencer
+    mNRows = nRows; // Each row represents the value for the corresponding step; e.g. play E4 on this step
+    mCells = std::vector<int>(nCols, -1);
   }
 
   void Draw(IGraphics& g) override
@@ -41,8 +40,8 @@ public:
     g.DrawText(DEFAULT_TEXT, str, mRECT);
 
     // Draw grid: nRow by nCol cells
-    float rowSpacing = mRECT.H() / NROW;
-    float colSpacing = mRECT.W() / NCOL;
+    float rowSpacing = mRECT.H() / mNRows;
+    float colSpacing = mRECT.W() / mNCols;
 
     // Fill in hover over cell
     g.FillRect(COLOR_GRAY, IRECT::MakeXYWH(
@@ -50,8 +49,8 @@ public:
       colSpacing, rowSpacing));
 
     // Fill in selected cells
-    assert(mCells.size() == NCOL);
-    for (int i = 0; i < NCOL; i++) {
+    assert(mCells.size() == mNCols);
+    for (int i = 0; i < mNCols; i++) {
       int cell = mCells[i];
       if (cell < 0) continue;
 
@@ -62,7 +61,7 @@ public:
     }
 
     // Draw dividing lines
-    for (int i = 1; i <= NROW-1; i++) {
+    for (int i = 1; i <= mNRows-1; i++) {
       // Draw nRow-1 horizontal lines
       float y = mRECT.T + (i * rowSpacing);
 
@@ -70,7 +69,7 @@ public:
       float thickness = (i % 4 == 0) ? 4.f : 1.f; 
       g.DrawLine(COLOR_BLACK, mRECT.L, y, mRECT.R, y, 0, thickness);
     }
-    for (int i = 1; i <= NCOL-1; i++) {
+    for (int i = 1; i <= mNCols-1; i++) {
       // Draw nCol-1 vertical lines
       float x = mRECT.L + (i * colSpacing);
 
@@ -91,8 +90,8 @@ public:
     float relY = y - mRECT.T;
 
     // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / NROW;
-    float colSpacing = mRECT.W() / NCOL;
+    float rowSpacing = mRECT.H() / mNRows;
+    float colSpacing = mRECT.W() / mNCols;
 
     float colIdx = (int)(relX / colSpacing);
     float rowIdx = (int)(relY / rowSpacing);
@@ -125,8 +124,8 @@ public:
     float relY = y - mRECT.T;
 
     // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / NROW;
-    float colSpacing = mRECT.W() / NCOL;
+    float rowSpacing = mRECT.H() / mNRows;
+    float colSpacing = mRECT.W() / mNCols;
 
     float colIdx = (int)(relX / colSpacing);
     float rowIdx = (int)(relY / rowSpacing);
@@ -161,8 +160,8 @@ public:
     float relY = y - mRECT.T;
 
     // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / NROW;
-    float colSpacing = mRECT.W() / NCOL;
+    float rowSpacing = mRECT.H() / mNRows;
+    float colSpacing = mRECT.W() / mNCols;
 
     float colIdx = (int)(relX / colSpacing);
     float rowIdx = (int)(relY / rowSpacing);
@@ -196,8 +195,8 @@ private:
   int mClickCol, mClickRow;
   int mHoverCol, mHoverRow;
 public:
-  std::array<int, NCOL> mCells;
-  int mNSteps, mNRows;
+  std::vector<int> mCells;
+  int mNCols, mNRows;
 };
 
 END_IGRAPHICS_NAMESPACE

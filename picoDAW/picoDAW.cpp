@@ -79,18 +79,18 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Placing controls into those subrects
     pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)), kCtrlTagTitle);
-    pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds), kCtrlTagMidiSequencer);
+    pGraphics->AttachControl(new IVSequencerControl(sequencerBounds, 12, 16), kCtrlTagMidiSequencer);
 
     // Notice that these occupy the same subrect, so every control but one is manually hidden on 
     // boot; a seperate button will then be pressed to cycle through which control is visible
     pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds), kCtrlTagGateSequencer);
+    pGraphics->AttachControl(new IVSequencerControl(keyboardBounds, 2, 16), kCtrlTagGateSequencer);
 
     // References to those controls that can easily pass into the lambda functions below
     auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
     auto title = pGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
-    auto midiSeq = pGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl<12,16>>();
-    auto gateSeq = pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl<5,16>>();
+    auto midiSeq = pGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
+    auto gateSeq = pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
 
     // Hide/Show controls so only the active one is displayed
@@ -152,11 +152,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
                 root->GetDelegate()->SendMidiMsgFromUI(msg);
                 msg.MakeNoteOnMsg(currNote, currVelocity, 0);
                 root->GetDelegate()->SendMidiMsgFromUI(msg);
-              } /* else {} */ // Something to play this step, but it's the same as last step
+              } else {
+                // Something to play this step, but it's the same as last step
+                // 2206: Should this be played legato with previous step? Or retrigger envelope...
+                // The gate sequencer should be used to decide that!! Along with e.g. 50% of step
+                msg.MakeNoteOffMsg(prevNote, 0);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+                msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+              }
 
               prevNote = currNote;
               stepIdx += 1;
-              stepIdx %= midiSeq->mNSteps; // to cycle around
+              stepIdx %= midiSeq->mNCols; // to cycle around
             }, 125); // 2206: use current tempo, not hardcoded 120bpm
         } else {
           // Is currently off, so was previously on; stop playback
