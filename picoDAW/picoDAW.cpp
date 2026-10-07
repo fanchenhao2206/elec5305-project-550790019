@@ -3,6 +3,7 @@
 #include "LFO.h"
 #include "IconsForkAwesome.h"
 #include "IconsFontaudio.h"
+#include "IPlugMidi.h"
 
 #include <string>
 /** A root control that is invisible and does nothing; just holds data for drawing UI */
@@ -13,6 +14,7 @@ public:
 
   Timer *mPlaybackTimer = nullptr; // Notice pointer; this will be allocated on heap!!
   int mPlaybackStep = 0;
+  int mPrevNote = -1;
 
   RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
   void Draw(IGraphics& g) override {}
@@ -119,27 +121,46 @@ picoDAW::picoDAW(const InstanceInfo& info)
   
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
-      [pGraphics, root, title, midiSeq](IControl* pCaller) {
+      [pGraphics, root, midiSeq](IControl* pCaller) {
         if (pCaller->GetValue() > 0.5) {
-          // Is currently on, so was previously off; start playback wrt current tempo
+          // Is currently on, so was previously off; start playback wrt. current tempo
           root->mPlaybackTimer = Timer::Create(
-            [root, title, midiSeq](Timer &t) {
-              // Run this func every timer tick, configured by intervalMS
-              auto &step = root->mPlaybackStep;
-              title->SetStr(std::to_string(step).c_str());
-              if (!step) {
-                // Overwrite with BEEEEEEP!! instead...
-                title->SetStr("BEEEEEEEP!!");
-              }
-              step++;
-              step %= midiSeq->mNSteps; // to cycle around
-            }, 500); // 2206: use current tempo, not hardcoded 60bpm
+            [root, midiSeq](Timer &t) {
+              IMidiMsg msg;
+              auto &stepIdx = root->mPlaybackStep;
+              auto &prevNote = root->mPrevNote;
+
+              auto step = midiSeq->mSteps[stepIdx];
+              int currNote = (step < 0) ? -1 : 48 + step;
+              int currVelocity = 80;
+
+              if (currNote < 0) {
+                // Nothing to play this step, so turn off prev and that's it
+                if (prevNote >= 0) {
+                  msg.MakeNoteOffMsg(prevNote, 0);
+                  root->GetDelegate()->SendMidiMsgFromUI(msg);
+                }
+              } else if (currNote != prevNote) {
+                // Something to play this step, and it's different than last step
+                msg.MakeNoteOffMsg(prevNote, 0);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+                msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+              } /* else {} // Something to play this step, but it's the same as last step */
+
+              prevNote = currNote;
+              stepIdx += 1;
+              stepIdx %= midiSeq->mNSteps; // to cycle around
+            }, 125); // 2206: use current tempo, not hardcoded 120bpm
         } else {
           // Is currently off, so was previously on; stop playback
+          IMidiMsg msg;
+          msg.MakeNoteOffMsg(root->mPrevNote, 0);
+          root->GetDelegate()->SendMidiMsgFromUI(msg);
+          root->mPrevNote = -1;
           delete root->mPlaybackTimer;
           root->mPlaybackTimer = nullptr;
           root->mPlaybackStep = 0;
-          title->SetStr("picoDAW");
         }
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
     
@@ -229,12 +250,9 @@ void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
 handle:
   // Route that message to the internal DSP's who need it
   mInstrumentDSP.ProcessMidiMsg(msg);
-
-  // And send the message back to UI? I guess, only relevant 
-  // if e.g. an external MIDI controller communicated with 
-  // processor rather than UI (makes sense), so good for the 
-  // UI to know too; for now let's disable
-  // SendMidiMsg(msg);
+  // mInstrumentASP.ProcessMidiMsg(msg); // Send to all instruments, who will ignore the message 
+  // mInstrumentBSP.ProcessMidiMsg(msg); // if not intended for them? Specified by channel which
+  // mInstrumentCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
 }
 
 void picoDAW::OnParamChange(int paramIdx)
