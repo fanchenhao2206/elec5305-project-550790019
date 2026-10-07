@@ -121,24 +121,26 @@ picoDAW::picoDAW(const InstanceInfo& info)
   
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
-      [pGraphics, root, midiSeq](IControl* pCaller) {
+      [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
         if (pCaller->GetValue() > 0.5) {
           // Is currently on, so was previously off; start playback wrt. current tempo
           root->mPlaybackTimer = Timer::Create(
-            [root, midiSeq](Timer &t) {
+            [root, midiSeq, gateSeq](Timer &t) {
               IMidiMsg msg;
               auto &stepIdx = root->mPlaybackStep;
               auto &prevNote = root->mPrevNote;
 
               // Cell is given as a row index from top to bottom; matching graphics
-              int cell = midiSeq->mCells[stepIdx];
+              int midiCell = midiSeq->mCells[stepIdx];
+              int gateCell = gateSeq->mCells[stepIdx];
 
               // But we want a row index from bottom to top; matching piano roll sequencers
-              int step = (midiSeq->mNRows - 1) - cell;
+              int midiStep = (midiSeq->mNRows - 1) - midiCell;
 
               // 2206: assumes we are in C3 octave (C3 === 48); also, velocity sequencer
-              int currNote = (cell < 0) ? -1 : 48 + step;
+              int currNote = (midiCell < 0) ? -1 : 48 + midiStep;
               int currVelocity = 80;
+              int currGate = (gateCell < 0) ? 0 : gateCell; // Legato if somehow not specified
 
               if (currNote < 0) {
                 // Nothing to play this step, so turn off prev and that's it
@@ -146,16 +148,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
                   msg.MakeNoteOffMsg(prevNote, 0);
                   root->GetDelegate()->SendMidiMsgFromUI(msg);
                 }
-              } else if (currNote != prevNote) {
+              } else if (currNote == prevNote) {
+                // Something to play this step, but it's the same note as the previous step
+                // Should this be played legato with previous step? Or retrigger envelope...
+                // The gate sequencer should be used to decide that!!
+                if (currGate || stepIdx == 0) {
+                  // Retrigger envelope; at start of pattern too!!
+                  msg.MakeNoteOffMsg(prevNote, 0);
+                  root->GetDelegate()->SendMidiMsgFromUI(msg);
+                  msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+                  root->GetDelegate()->SendMidiMsgFromUI(msg);
+                }
+              } else /* if (currNote != prevNote) */ {
                 // Something to play this step, and it's different than last step
-                msg.MakeNoteOffMsg(prevNote, 0);
-                root->GetDelegate()->SendMidiMsgFromUI(msg);
-                msg.MakeNoteOnMsg(currNote, currVelocity, 0);
-                root->GetDelegate()->SendMidiMsgFromUI(msg);
-              } else {
-                // Something to play this step, but it's the same as last step
-                // 2206: Should this be played legato with previous step? Or retrigger envelope...
-                // The gate sequencer should be used to decide that!! Along with e.g. 50% of step
                 msg.MakeNoteOffMsg(prevNote, 0);
                 root->GetDelegate()->SendMidiMsgFromUI(msg);
                 msg.MakeNoteOnMsg(currNote, currVelocity, 0);

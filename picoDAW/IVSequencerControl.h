@@ -27,6 +27,14 @@ public:
     mCells(nCols, -1)
   {}
 
+  // 2206: It looks like I can't get away with using the same MIDISequencer
+  // also for GateSequencer and VelocitySequencer as well... Specifically, 
+  // because you are not allowed to "turn off" notes in Gate/Velocity sequencer
+  // Notes in those sequencers, are turned off when a note in the corresponding 
+  // step in MIDISequencer is turned off; only then!! Further more, the default 
+  // note in those sequencers are turned on when the corresponding step in 
+  // MIDISequencer is turned on.
+
   void Draw(IGraphics& g) override
   {
     g.FillRect(COLOR_WHITE, mRECT);
