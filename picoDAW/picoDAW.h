@@ -3,6 +3,7 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
 #include "IVSequencerControl.h"
+#include "IPlugTimer.h"
 
 const int kNumPresets = 1;
 

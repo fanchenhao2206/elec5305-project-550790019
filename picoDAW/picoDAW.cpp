@@ -3,7 +3,6 @@
 #include "LFO.h"
 #include "IconsForkAwesome.h"
 #include "IconsFontaudio.h"
-#include "IPlugTimer.h"
 
 #include <string>
 /** A root control that is invisible and does nothing; just holds data for drawing UI */
@@ -12,6 +11,8 @@ public:
   int keyboardBoundsIdx = 0;
   const int keyboardBoundsTotal = 2;
 
+  Timer *mTimer = nullptr; // Notice pointer; this will be allocated on heap!!
+  bool mTick = false;
   
   RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
   void Draw(IGraphics& g) override {}
@@ -31,13 +32,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
   GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
-    
+  
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
-  mMakeGraphicsFunc = [&]() {
+  mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
   };
   
-  mLayoutFunc = [&](IGraphics* pGraphics) {
+  mLayoutFunc = [](IGraphics* pGraphics) {
     pGraphics->EnableMouseOver(true);
     pGraphics->AttachPanelBackground(COLOR_LIGHT_GRAY);
 
@@ -113,17 +114,21 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
       [pGraphics](IControl* pCaller) {
+        auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
+        auto title = pGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
         if (pCaller->GetValue() > 0.5) {
-          // Is currently on, so was previously off; start playback
-          // Alert the mPlaybackTimer; sends MIDI messages to instrument DSP(s) on each second
-          //
-          // 2206: let's do this
-          // mPlaybackTimer.Start();
+          // Is currently on, so was previously off; start playback wrt current tempo
+          root->mTimer = Timer::Create(
+            [root, title](Timer &t) {
+              // Run this func every timer tick, configured by intervalMS
+              auto &tick = root->mTick;
+              tick = !tick;
+              title->SetStr(tick ? "true" : "false");
+            }, 1000);
         } else {
           // Is currently off, so was previously on; stop playback
-          //
-          // 2206: let's do this
-          // mPlaybackTimer.Stop();
+          delete root->mTimer;
+          title->SetStr("picoDAW");
         }
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
     
