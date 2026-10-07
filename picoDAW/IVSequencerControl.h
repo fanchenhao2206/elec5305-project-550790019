@@ -25,6 +25,7 @@ public:
   {
     mClickCol = mClickRow = -1;
     mHoverCol = mHoverRow = -1;
+    mNSteps = NCOL;
   }
 
   void Draw(IGraphics& g) override
@@ -47,9 +48,9 @@ public:
       colSpacing, rowSpacing));
 
     // Fill in selected cells
-    assert(mCells.size() == NCOL);
+    assert(mSteps.size() == NCOL);
     for (int i = 0; i < NCOL; i++) {
-      int cell = mCells[i];
+      int cell = mSteps[i];
       if (cell < 0) continue;
 
       // Fill in the cell at column i, and row given by cell
@@ -95,12 +96,12 @@ public:
     float rowIdx = (int)(relY / rowSpacing);
 
     // So, turn it on! Or, off it is already on
-    if (mCells[colIdx] == rowIdx) {
+    if (mSteps[colIdx] == rowIdx) {
       // We clicked on (row,col), but that is already on; so turn off
-      mCells[colIdx] = -1;
+      mSteps[colIdx] = -1;
     } else {
       // We clicked on (row,col), which is not already on, so turn it on
-      mCells[colIdx] = rowIdx;
+      mSteps[colIdx] = rowIdx;
     }
 
     // And re-draw control
@@ -129,14 +130,14 @@ public:
     float rowIdx = (int)(relY / rowSpacing);
 
     // So, turn it on! Or, off, depending on mClickCol/Row
-    if (mCells[mClickCol] > -1) {
+    if (mSteps[mClickCol] > -1) {
       // User turned ON the cell they clicked, so lets turn ON this cell too
-      mCells[colIdx] = rowIdx;
+      mSteps[colIdx] = rowIdx;
     } else {
       // User turned OFF the cell they clicked, so lets turn OFF this cell too
-      if (mCells[colIdx] == rowIdx) {
+      if (mSteps[colIdx] == rowIdx) {
         // As long as it was previously on...
-        mCells[colIdx] = -1;
+        mSteps[colIdx] = -1;
       }
     }
 
@@ -190,9 +191,11 @@ public:
 protected:
   std::function<void()> mUpdateFn;
 private:
-  std::array<int, NCOL> mCells;
   int mClickCol, mClickRow;
   int mHoverCol, mHoverRow;
+public:
+  std::array<int, NCOL> mSteps;
+  int mNSteps;
 };
 
 END_IGRAPHICS_NAMESPACE

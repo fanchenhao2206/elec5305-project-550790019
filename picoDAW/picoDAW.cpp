@@ -11,9 +11,9 @@ public:
   int keyboardBoundsIdx = 0;
   const int keyboardBoundsTotal = 2;
 
-  Timer *mTimer = nullptr; // Notice pointer; this will be allocated on heap!!
-  bool mTick = false;
-  
+  Timer *mPlaybackTimer = nullptr; // Notice pointer; this will be allocated on heap!!
+  int mPlaybackStep = 0;
+
   RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
   void Draw(IGraphics& g) override {}
 };
@@ -72,29 +72,35 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT playButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5, 2.5);
     IRECT soloButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5 - 160, 2.5);
 
+    // The root control; its members are the global variables necessary to control UI
+    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
+
     // Placing controls into those subrects
     pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)), kCtrlTagTitle);
     pGraphics->AttachControl(new IVSequencerControl<12,16>(sequencerBounds), kCtrlTagMidiSequencer);
-
-    // The root control; its members are the global variables necessary to control UI
-    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
     // Notice that these occupy the same subrect, so every control but one is manually hidden on 
     // boot; a seperate button will then be pressed to cycle through which control is visible
     pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
     pGraphics->AttachControl(new IVSequencerControl<5,16>(keyboardBounds), kCtrlTagGateSequencer);
 
+    // References to those controls that can easily pass into the lambda functions below
+    auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
+    auto title = pGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
+    auto midiSeq = pGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl<12,16>>();
+    auto gateSeq = pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl<5,16>>();
+    auto keyboard = pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
+
     // Hide/Show controls so only the active one is displayed
-    int sync = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>()->keyboardBoundsIdx;
-    pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-    pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);    
+    {
+      int sync = root->keyboardBoundsIdx;
+      keyboard->Hide(sync != 0);
+      gateSeq->Hide(sync != 1);
+    }
 
     // Button to cycle through what is displayed in keyboardBounds
     pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
-      [pGraphics](IControl* pCaller) {
-        // Grab the root control
-        auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
-
+      [pGraphics, root](IControl* pCaller) {
         // Cycle through its currently active sub-control
         root->keyboardBoundsIdx += 1; 
         root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
@@ -113,21 +119,26 @@ picoDAW::picoDAW(const InstanceInfo& info)
   
     // Button to playback the whole pattern
     pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
-      [pGraphics](IControl* pCaller) {
-        auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
-        auto title = pGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
+      [pGraphics, root, title, midiSeq](IControl* pCaller) {
         if (pCaller->GetValue() > 0.5) {
           // Is currently on, so was previously off; start playback wrt current tempo
-          root->mTimer = Timer::Create(
-            [root, title](Timer &t) {
+          root->mPlaybackTimer = Timer::Create(
+            [root, title, midiSeq](Timer &t) {
               // Run this func every timer tick, configured by intervalMS
-              auto &tick = root->mTick;
-              tick = !tick;
-              title->SetStr(tick ? "true" : "false");
-            }, 1000);
+              auto &step = root->mPlaybackStep;
+              title->SetStr(std::to_string(step).c_str());
+              if (!step) {
+                // Overwrite with BEEEEEEP!! instead...
+                title->SetStr("BEEEEEEEP!!");
+              }
+              step++;
+              step %= midiSeq->mNSteps; // to cycle around
+            }, 500); // 2206: use current tempo, not hardcoded 60bpm
         } else {
           // Is currently off, so was previously on; stop playback
-          delete root->mTimer;
+          delete root->mPlaybackTimer;
+          root->mPlaybackTimer = nullptr;
+          root->mPlaybackStep = 0;
           title->SetStr("picoDAW");
         }
       }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
