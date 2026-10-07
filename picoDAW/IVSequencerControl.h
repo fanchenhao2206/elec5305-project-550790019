@@ -20,14 +20,12 @@ class IVSequencerControl : public IControl
 public:
   IVSequencerControl(const IRECT& bounds, int nRows, int nCols,
     std::function<void()> updateFn = nullptr)
-  : IControl(bounds, kNoParameter), mUpdateFn(updateFn)
-  {
-    mClickCol = mClickRow = -1;
-    mHoverCol = mHoverRow = -1;
-    mNCols = nCols; // Each column represents a step; e.g. 16 columns for a 16-step sequencer
-    mNRows = nRows; // Each row represents the value for the corresponding step; e.g. play E4 on this step
-    mCells = std::vector<int>(nCols, -1);
-  }
+  : IControl(bounds, kNoParameter), mUpdateFn(updateFn),
+    mClickCol(-1), mClickRow(-1), mHoverCol(-1), mHoverRow(-1),
+    mNCols(nCols), // Each column represents a step; e.g. 16 columns for a 16-step sequencer
+    mNRows(nRows), // Each row represents the value for the corresponding step; e.g. play E4 on this step
+    mCells(nCols, -1)
+  {}
 
   void Draw(IGraphics& g) override
   {
