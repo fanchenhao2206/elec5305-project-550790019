@@ -71,16 +71,15 @@ public:
 
     // And lastly, unhide the updated controls that are relevant to the current screen
     home->Hide(false);
+    play->Hide(false);
     title->Hide(false);
     if (mScreen == kScreenSyn1Seq || mScreen == kScreenSyn2Seq || mScreen == kScreenSyn3Seq || mScreen == kScreenSyn4Seq ||
         mScreen == kScreenSamp1Seq || mScreen == kScreenSamp2Seq) {
       int sync = mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
-      title->Hide(false);
       midiSeq->Hide(false);
       cycle->Hide(false);
-      play->Hide(false);
       solo->Hide(false);
     } else if (mScreen == kScreenSyn1Edit || mScreen == kScreenSyn2Edit || mScreen == kScreenSyn3Edit || mScreen == kScreenSyn4Edit) {
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
@@ -92,7 +91,7 @@ public:
     } else if (mScreen == kScreenSamp1Edit || mScreen == kScreenSamp2Edit) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
-    } else {
+    } else /* if (mScreen == kScreenHome) */ {
       // navigation->Hide(false); // 2206: the "home" screen that shows buttons navigate screens
                                   // takes up the sequencerBounds
       // mixer->Hide(false);      // 2206: the mixer menu that shows knobs and mute/solo buttons
