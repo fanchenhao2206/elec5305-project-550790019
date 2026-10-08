@@ -38,15 +38,15 @@ enum EControlTags
 {
   // NOTE: good
   kCtrlTagRoot = 0,
-  kCtrlTagHome,
+  kCtrlTagHomeButton,
   kCtrlTagTitle,
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
   kCtrlTagMidiSequencer,
   kCtrlTagVelocitySequencer,
   kCtrlTagCycleButton,
-  kCtrlTagPlayButton,
-  kCtrlTagSoloButton,
+  kCtrlTagPlayToggle,
+  kCtrlTagSoloToggle,
 
   // TODO: to remove 
   kCtrlTagMeter,
@@ -56,6 +56,29 @@ enum EControlTags
   kCtrlTagBender,
 
   kNumCtrlTags
+};
+
+enum EScreens
+{
+  kScreenHome = 0,
+
+  kScreenSyn1Seq,
+  kScreenSyn2Seq,
+  kScreenSyn3Seq,
+  kScreenSyn4Seq,
+
+  kScreenSyn1Edit,
+  kScreenSyn2Edit,
+  kScreenSyn3Edit,
+  kScreenSyn4Edit,
+
+  kScreenSamp1Seq,
+  kScreenSamp2Seq,
+
+  kScreenSamp1Edit,
+  kScreenSamp2Edit,
+
+  kNumScreens
 };
 
 using namespace iplug;

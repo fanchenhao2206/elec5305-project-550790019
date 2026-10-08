@@ -6,19 +6,96 @@
 #include "IPlugMidi.h"
 
 #include <string>
-/** A root control that is invisible and does nothing; just holds data for drawing UI */
+
+#if IPLUG_EDITOR
+// A root control that is invisible; holds data and funcs for drawing UI
 class RootUIControl : public IControl {
 public:
-  int keyboardBoundsIdx = 0;
-  const int keyboardBoundsTotal = 2;
+  RootUIControl(IGraphics *pGraphics)
+  : IControl(IRECT()),
+    mGraphics(pGraphics), mScreen(kScreenSyn1Seq),
+    mKeyboardBoundsIdx(0), mKeyboardBoundsTotal(2),
+    mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1)
+  {
+    mIgnoreMouse = true; // Member of parent IControl
+  }
 
-  Timer *mPlaybackTimer = nullptr; // Notice pointer; this will be allocated on heap!!
-  int mPlaybackStepIdx = 0;
-  int mPrevNote = -1;
-
-  RootUIControl() : IControl(IRECT()) { mIgnoreMouse = true; }
   void Draw(IGraphics& g) override {}
+
+  void Update()
+  {
+    // Hide all controls
+    for (auto ctrlTag : mGraphics->GetControlTags()) {
+      ctrlTag.second->Hide(true);
+    }
+
+    // And then update the controls behind the curtain
+    auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
+    auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
+    auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
+    auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
+    auto cycle = mGraphics->GetControlWithTag(kCtrlTagCycleButton)->As<IVButtonControl>();
+    auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
+    auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
+    auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
+
+    // 2206: Instead of worrying about adding extra methods to these controls, 
+    // just write out the full code for those methods here; for now at least... (we hate oop!!)
+    // keyboard->Update(mScreen);
+    // midiSeq->Update(mScreen);
+    // gateSeq->Update(mScreen);
+    // title->Update(mScreen);
+    /* title->Update(mScreen); */ {
+      std::string str = "";
+      switch (mScreen) {
+        case kScreenHome:
+          str = "HOME";
+          break;
+        case kScreenSyn1Seq:
+          str = "SYN1 SEQ";
+          break;
+        case kScreenSyn1Edit:
+          str = "SYN1 EDIT";
+          break;
+        default:
+          str = "UNIMPLEMENTED";
+          break;
+      }
+      title->SetStr(str.c_str());
+    }
+
+    // And lastly, unhide the updated controls that are relevant to the current screen
+    home->Hide(false);
+    title->Hide(false);
+    if (mScreen == kScreenSyn1Seq) {
+      int sync = mKeyboardBoundsIdx;
+      keyboard->Hide(sync != 0);
+      gateSeq->Hide(sync != 1);
+      title->Hide(false);
+      midiSeq->Hide(false);
+      cycle->Hide(false);
+      play->Hide(false);
+      solo->Hide(false);
+    } else {
+      // navigation->Hide(false); // 2206: the "home" screen that shows buttons navigate screens
+                                  // takes up the sequencerBounds
+      // mixer->Hide(false);      // 2206: the mixer menu that shows knobs and mute/solo buttons
+                                  // takes up the keyboardBounds
+    }
+  }
+
+  int mKeyboardBoundsIdx;
+  const int mKeyboardBoundsTotal;
+
+  Timer *mPlaybackTimer;
+  IGraphics *mGraphics;
+
+  int mPlaybackStepIdx;
+  int mPrevNote;
+
+  EScreens mScreen;
 };
+#endif
 
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
@@ -76,162 +153,129 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT soloButtonBounds = playButtonBounds.GetTranslated(-160, 0);
     IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
 
-    // And then placing controls into those subrects
-    pGraphics->AttachControl(new IVSequencerControl(sequencerBounds, 12, 16), kCtrlTagMidiSequencer);
+    // And then placing controls into those subrects; Notice that some occupy the same
+    // subrect, the root control upon Update() will choose which one comes out on top 
+    auto root = new RootUIControl(pGraphics); 
+    auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
+    auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
+    auto keyboard = new IVKeyboardControl(keyboardBounds);
+    auto title = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
+    auto homeButton = new IVButtonControl(homeBounds, [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenHome;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "picoDAW", style);
+    auto cycleButton = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
+      // Cycle through its currently active sub-control
+      root->mKeyboardBoundsIdx += 1; 
+      root->mKeyboardBoundsIdx %= root->mKeyboardBoundsTotal;
+                  
+      // Hide/Show controls so only the active one is displayed
+      int sync = root->mKeyboardBoundsIdx;
+      pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
+      pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
 
-    // Root control, invisible to user, its members are the global variables necessary to control UI
-    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
-
-    // Notice that these occupy the same subrect, so every control but one is manually hidden on 
-    // boot; a seperate button will then be pressed to cycle through which control is visible
-    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IVSequencerControl(keyboardBounds, 2, 16), kCtrlTagGateSequencer);
-
-    // References to those controls that can easily pass into the lambda functions below
-    auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
-    auto midiSeq = pGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
-    auto gateSeq = pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
-    auto keyboard = pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
-
-    // Hide/Show controls so only the active one is displayed
-    {
-      int sync = root->keyboardBoundsIdx;
-      keyboard->Hide(sync != 0);
-      gateSeq->Hide(sync != 1);
-    }
-
-    // 2206: text control that displays name of current screen
-    pGraphics->AttachControl(new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular")), kCtrlTagTitle);
-
-    // 2206: button to return to home screen
-    pGraphics->AttachControl(new IVButtonControl(homeBounds, 
-      [pGraphics, root](IControl* pCaller) {
-        // Cycle through its currently active sub-control
-        root->keyboardBoundsIdx += 1; 
-        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
-                    
-        // Hide/Show controls so only the active one is displayed
-        int sync = root->keyboardBoundsIdx;
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
-
-        // Then animation...
-        float x, y;
-        pGraphics->GetMouseDownPoint(x, y);
-        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-      }, "picoDAW", style), kCtrlTagHome);
-
-    // Button to cycle through what is displayed in keyboardBounds
-    pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
-      [pGraphics, root](IControl* pCaller) {
-        // Cycle through its currently active sub-control
-        root->keyboardBoundsIdx += 1; 
-        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
-                    
-        // Hide/Show controls so only the active one is displayed
-        int sync = root->keyboardBoundsIdx;
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
-
-        // Then animation...
-        float x, y;
-        pGraphics->GetMouseDownPoint(x, y);
-        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-      }, "TOGGLE", style), kCtrlTagCycleButton);
-  
-    // Button to playback the whole pattern
-    pGraphics->AttachControl(new IVToggleControl(playButtonBounds, 
-      [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
-        if (pCaller->GetValue() > 0.5) {
-          // Is currently on, so was previously off; start playback wrt. current tempo
-          root->mPlaybackTimer = Timer::Create(
-            [root, midiSeq, gateSeq](Timer &t) {
-              IMidiMsg msg;
-              int &stepIdx = root->mPlaybackStepIdx;
-              int &prevNote = root->mPrevNote;
-              const int nSteps = midiSeq->mNCols;
-
-              // Recall that cells are given as a row index from top to bottom; matching graphics
-              int midiCell = midiSeq->mCells[stepIdx];
-
-              // But we want a row index from bottom to top; matching piano roll sequencers
-              int midiStep = (midiSeq->mNRows - 1) - midiCell;
-
-              // 2206: assumes we are in C3 octave (C3 === 48); also, velocity sequencer
-              int currNote = (midiCell < 0) ? -1 : 48 + midiStep;
-              int currVelocity = 80;
-
-              // For knowing whether to hold this note in legato with the previous identical note
-              int gateCell = gateSeq->mCells[stepIdx];
-              int currGate = (gateCell < 0) ? 0 : gateCell;
-
-              // If at start of pattern, then assume (non-existent) prev gate is not legato; retrig!!
-              int prevGate = (stepIdx == 0) ? 1 : gateSeq->mCells[stepIdx - 1];
-
-              if (currNote < 0) {
-                // Nothing to play this step, so turn off prev and that's it
-                if (prevNote >= 0) {
-                  msg.MakeNoteOffMsg(prevNote, 0);
-                  root->GetDelegate()->SendMidiMsgFromUI(msg);
-                }
-              } else if (currNote == prevNote) {
-                // Something to play this step, but it's the same note as the previous step
-                // Should this be played legato with previous step? Or retrigger envelope...
-                // The gate sequencer should be used to decide that!!
-                if (currGate == 1 || stepIdx == 0 || (prevGate == 1 && currGate == 0)) {
-                  // Retrigger envelope if requested on current step, or if at start of pattern,
-                  // or, if the current step is at the start of a (possible) chain of legato notes;
-                  // the case if the previous note was NOT legato, and the current note IS legato 
-                  // 
-                  // However, what if the next note, is instead not legato? Well, in that case, 
-                  // technically the current legato note still starts a chain of legato notes, 
-                  // but of course its length is just one... In this case though, lets retrigger the
-                  // current legato note anyways!! It just means that marking a note as legato is 
-                  // meaningless, if it's by its lonesome; only two or more legato identical notes 
-                  // in a row produces the legato effect, which is what we should expect of it!!
-                  msg.MakeNoteOffMsg(prevNote, 0);
-                  root->GetDelegate()->SendMidiMsgFromUI(msg);
-                  msg.MakeNoteOnMsg(currNote, currVelocity, 0);
-                  root->GetDelegate()->SendMidiMsgFromUI(msg);
-                } /* else {} */ // Play legato with previous identical note
-              } else /* if (currNote != prevNote) */ {
-                // Something to play this step, and it's different than last step
-                msg.MakeNoteOffMsg(prevNote, 0);
-                root->GetDelegate()->SendMidiMsgFromUI(msg);
-                msg.MakeNoteOnMsg(currNote, currVelocity, 0);
-                root->GetDelegate()->SendMidiMsgFromUI(msg);
-              }
-
-              prevNote = currNote;
-              stepIdx += 1;
-              stepIdx %= nSteps; // to cycle around
-            }, 125); // 2206: use current tempo, not hardcoded 120bpm
-        } else {
-          // Is currently off, so was previously on; stop playback
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "TOGGLE", style);
+    auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
+      if (pCaller->GetValue() > 0.5) {
+        // Is currently on, so was previously off; start playback wrt. current tempo
+        root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
           IMidiMsg msg;
-          msg.MakeNoteOffMsg(root->mPrevNote, 0);
-          root->GetDelegate()->SendMidiMsgFromUI(msg);
-          root->mPrevNote = -1;
-          delete root->mPlaybackTimer;
-          root->mPlaybackTimer = nullptr;
-          root->mPlaybackStepIdx = 0;
-        }
-      }, "", style, "PLAY", "PLAY"), kCtrlTagPlayButton);
-    
-    // Button to solo this single instrument
-    pGraphics->AttachControl(new IVToggleControl(soloButtonBounds, 
-      [pGraphics](IControl* pCaller) {
-        /* TODO: once mixer is ready... */
-      }, "", style, "SOLO", "SOLO"), kCtrlTagSoloButton);
+          int &stepIdx = root->mPlaybackStepIdx;
+          int &prevNote = root->mPrevNote;
+          const int nSteps = midiSeq->mNCols;
 
-    // Allow playing synth by QWERTY keyboard; polyphonic unlike the monoponic of MIDI sequencer
-    pGraphics->SetQwertyMidiKeyHandlerFunc(
-      [pGraphics](const IMidiMsg& msg) {
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>()->SetNoteFromMidi(
-          msg.NoteNumber(), msg.StatusMsg() == IMidiMsg::kNoteOn);
-      });
+          // Recall that cells are given as a row index from top to bottom; matching graphics
+          int midiCell = midiSeq->mCells[stepIdx];
+
+          // But we want a row index from bottom to top; matching piano roll sequencers
+          int midiStep = (midiSeq->mNRows - 1) - midiCell;
+
+          // 2206: assumes we are in C3 octave (C3 === 48); also, velocity sequencer
+          int currNote = (midiCell < 0) ? -1 : 48 + midiStep;
+          int currVelocity = 80;
+
+          // For knowing whether to hold this note in legato with the previous identical note
+          int gateCell = gateSeq->mCells[stepIdx];
+          int currGate = (gateCell < 0) ? 0 : gateCell;
+
+          // If at start of pattern, then assume (non-existent) prev gate is not legato; retrig!!
+          int prevGate = (stepIdx == 0) ? 1 : gateSeq->mCells[stepIdx - 1];
+
+          if (currNote < 0) {
+            // Nothing to play this step, so turn off prev and that's it
+            if (prevNote >= 0) {
+              msg.MakeNoteOffMsg(prevNote, 0);
+              root->GetDelegate()->SendMidiMsgFromUI(msg);
+            }
+          } else if (currNote == prevNote) {
+            // Something to play this step, but it's the same note as the previous step
+            // Should this be played legato with previous step? Or retrigger envelope...
+            // The gate sequencer should be used to decide that!!
+            if (currGate == 1 || stepIdx == 0 || (prevGate == 1 && currGate == 0)) {
+              // Retrigger envelope if requested on current step, or if at start of pattern,
+              // or, if the current step is at the start of a (possible) chain of legato notes;
+              // the case if the previous note was NOT legato, and the current note IS legato 
+              // 
+              // However, what if the next note, is instead not legato? Well, in that case, 
+              // technically the current legato note still starts a chain of legato notes, 
+              // but of course its length is just one... In this case though, lets retrigger the
+              // current legato note anyways!! It just means that marking a note as legato is 
+              // meaningless, if it's by its lonesome; only two or more legato identical notes 
+              // in a row produces the legato effect, which is what we should expect of it!!
+              msg.MakeNoteOffMsg(prevNote, 0);
+              root->GetDelegate()->SendMidiMsgFromUI(msg);
+              msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+              root->GetDelegate()->SendMidiMsgFromUI(msg);
+            } /* else {} */ // Play legato with previous identical note
+          } else /* if (currNote != prevNote) */ {
+            // Something to play this step, and it's different than last step
+            msg.MakeNoteOffMsg(prevNote, 0);
+            root->GetDelegate()->SendMidiMsgFromUI(msg);
+            msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+            root->GetDelegate()->SendMidiMsgFromUI(msg);
+          }
+
+          prevNote = currNote;
+          stepIdx += 1;
+          stepIdx %= nSteps; // to cycle around
+        }, 125); // 2206: use current tempo, not hardcoded 120bpm
+      } else {
+        // Is currently off, so was previously on; stop playback
+        IMidiMsg msg;
+        msg.MakeNoteOffMsg(root->mPrevNote, 0);
+        root->GetDelegate()->SendMidiMsgFromUI(msg);
+        root->mPrevNote = -1;
+        delete root->mPlaybackTimer;
+        root->mPlaybackTimer = nullptr;
+        root->mPlaybackStepIdx = 0;
+      }
+    }, "", style, "PLAY", "PLAY");
+    auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
+      /* 2206: once mixer is ready... */
+    }, "", style, "SOLO", "SOLO");
+
+    pGraphics->AttachControl(root, kCtrlTagRoot);
+    pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
+    pGraphics->AttachControl(title, kCtrlTagTitle);
+    pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
+    pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
+    pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
+    pGraphics->AttachControl(cycleButton, kCtrlTagCycleButton);
+    pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
+    pGraphics->AttachControl(soloToggle, kCtrlTagSoloToggle);
+
+    // Load home page and return to event loop...
+    root->Update();
   };
 #endif
 }
