@@ -159,43 +159,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
                 // Should this be played legato with previous step? Or retrigger envelope...
                 // The gate sequencer should be used to decide that!!
                 if (currGate == 1 || stepIdx == 0 || (prevGate == 1 && currGate == 0)) {
-                  // Retrigger envelope if requested by user on this step through currGate := 1,
-                  // or if we are at the start of pattern marked by stepIdx == 0
-
-                  // Or, if the current step is at the start of a (possible) chain of legato notes, 
-                  // marked by the fact that the previous was NOT legato, and the current note 
-                  // IS legato, so the current note starts a (possible) chain of legato notes...
-                  //
-                  // However, what if the immediate next note, is not legato? Well, then this
-                  // current legato note technically starts a chain of legato notes, but a chain 
-                  // of just one legato note, so what should we do? Well, we just retrigger it 
-                  // anyways!! It just means that marking a note as legato is meaningless, if 
-                  // it's by its lonesome; only two or more legato identical notes in a row 
-                  // produces the legato effect, obviously right? So,
-                  //   a midi pattern of [f# f# f# f# f# f# f# f#] and 
-                  //   a gate pattern of [0  1  0  1  0  1  0  1 ] where "0" means legato 
-                  //                                               and "1" the non-legato
-                  // will result in the envelope retriggering for every step
-                  //                     [R  R  R  R  R  R  R  R ] where "R" means retrigger
-                  //                                               and "-" means not retrigger
-                  // While
-                  //   a midi pattern of [f# f# f# f# f# f# f# f#] and 
-                  //   a gate pattern of [0  0  0  1  1  1  0  0 ] where "0" means legato 
-                  //                                               and "1" the non-legato
-                  // will result in the envelope retriggering for all steps with gate marked "1"
-                  // and all "0" steps that are the start of a sequence of possible "0"s, aka
-                  //                     [R  -  -  R  R  R  R  - ] where "R" means retrigger
-                  //                                               and "-" means not retrigger
-                  // And
-                  //   a midi pattern of [f# f# f# f# f# f# f# f#] and 
-                  //   a gate pattern of [0  0  0  1  1  1  0  1 ] where "0" means legato 
-                  //                                               and "1" the non-legato
-                  // will result in the envelope retriggering for all steps with gate marked "1"
-                  // and all "0" steps that are the start of a sequence of possible "0"s, aka
-                  //                     [R  -  -  R  R  R  R  R ] where "R" means retrigger
-                  //                                               and "-" means not retrigger
-                  // where the "0" at the second-last step of the pattern is a meaningless legato;
-                  // it is by its lonesome
+                  // Retrigger envelope if requested on current step, or if at start of pattern,
+                  // or, if the current step is at the start of a (possible) chain of legato notes;
+                  // the case if the previous note was NOT legato, and the current note IS legato 
+                  // 
+                  // However, what if the next note, is actually not legato? Well, technically the 
+                  // current legato note still starts a chain of legato notes, where the length of 
+                  // the chain is just one; but we'll still retrigger it anyways!! It just means 
+                  // that marking a note as legato is meaningless, if it's by its lonesome; only 
+                  // two or more legato identical notes in a row produces the legato effect, as
+                  // expected!!
                   msg.MakeNoteOffMsg(prevNote, 0);
                   root->GetDelegate()->SendMidiMsgFromUI(msg);
                   msg.MakeNoteOnMsg(currNote, currVelocity, 0);
