@@ -72,7 +72,8 @@ public:
     // And lastly, unhide the updated controls that are relevant to the current screen
     home->Hide(false);
     title->Hide(false);
-    if (mScreen == kScreenSyn1Seq || ) {
+    if (mScreen == kScreenSyn1Seq || mScreen == kScreenSyn2Seq || mScreen == kScreenSyn3Seq || mScreen == kScreenSyn4Seq ||
+        mScreen == kScreenSamp1Seq || mScreen == kScreenSamp2Seq) {
       int sync = mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
@@ -81,14 +82,14 @@ public:
       cycle->Hide(false);
       play->Hide(false);
       solo->Hide(false);
-    } else if (mScreen == kScreenSyn1Edit) {
+    } else if (mScreen == kScreenSyn1Edit || mScreen == kScreenSyn2Edit || mScreen == kScreenSyn3Edit || mScreen == kScreenSyn4Edit) {
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
       // buttons; that would be ok, this will just be a long Update() function (that's ok)
       //
       // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
                                   // takes up the sequencerBounds
-    } else if (mScreen == kScreenSamp1Edit) {
+    } else if (mScreen == kScreenSamp1Edit || mScreen == kScreenSamp2Edit) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else {
