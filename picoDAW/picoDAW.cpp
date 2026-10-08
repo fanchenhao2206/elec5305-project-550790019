@@ -40,7 +40,12 @@ public:
     auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
     // 2206: Instead of worrying about adding extra methods to these controls, 
-    // just write out the full code for those methods here; for now at least... (we hate oop!!)
+    // just write out the full code for those methods here; for now at least...
+    // (Maybe we will need oop... Or maybe not!! Hopefully not... Yeah, don't think we will need!!)
+    //
+    // synth->Update(mScreen);
+    // sampler->Update(mScreen);
+    // 
     // keyboard->Update(mScreen);
     // midiSeq->Update(mScreen);
     // gateSeq->Update(mScreen);
@@ -67,7 +72,7 @@ public:
     // And lastly, unhide the updated controls that are relevant to the current screen
     home->Hide(false);
     title->Hide(false);
-    if (mScreen == kScreenSyn1Seq) {
+    if (mScreen == kScreenSyn1Seq || ) {
       int sync = mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
@@ -76,6 +81,16 @@ public:
       cycle->Hide(false);
       play->Hide(false);
       solo->Hide(false);
+    } else if (mScreen == kScreenSyn1Edit) {
+      // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
+      // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
+      // buttons; that would be ok, this will just be a long Update() function (that's ok)
+      //
+      // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
+                                  // takes up the sequencerBounds
+    } else if (mScreen == kScreenSamp1Edit) {
+      // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
+                                  // takes up the sequencerBounds
     } else {
       // navigation->Hide(false); // 2206: the "home" screen that shows buttons navigate screens
                                   // takes up the sequencerBounds
