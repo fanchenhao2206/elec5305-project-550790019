@@ -163,12 +163,12 @@ picoDAW::picoDAW(const InstanceInfo& info)
                   // or, if the current step is at the start of a (possible) chain of legato notes;
                   // the case if the previous note was NOT legato, and the current note IS legato 
                   // 
-                  // However, what if the next note, is actually not legato? Well, technically the 
-                  // current legato note still starts a chain of legato notes, where the length of 
-                  // the chain is just one; but we'll still retrigger it anyways!! It just means 
-                  // that marking a note as legato is meaningless, if it's by its lonesome; only 
-                  // two or more legato identical notes in a row produces the legato effect, as
-                  // expected!!
+                  // However, what if the next note, is instead not legato? Well, in that case, 
+                  // technically the current legato note still starts a chain of legato notes, 
+                  // but of course its length is just one... In this case though, lets retrigger the
+                  // current legato note anyways!! It just means that marking a note as legato is 
+                  // meaningless, if it's by its lonesome; only two or more legato identical notes 
+                  // in a row produces the legato effect, which is what we should expect of it!!
                   msg.MakeNoteOffMsg(prevNote, 0);
                   root->GetDelegate()->SendMidiMsgFromUI(msg);
                   msg.MakeNoteOnMsg(currNote, currVelocity, 0);
