@@ -38,6 +38,7 @@ enum EControlTags
 {
   // NOTE: good
   kCtrlTagRoot = 0,
+  kCtrlTagHome,
   kCtrlTagTitle,
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,

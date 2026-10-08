@@ -66,20 +66,21 @@ picoDAW::picoDAW(const InstanceInfo& info)
       IText(16.f, "Roboto-Regular") // Value text
     };
 
-    // Making subrects of main window
+    // Making subrects of main window...
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
+    IRECT homeBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(2.5, 2.5);
     IRECT keyboardBounds = b.GetFromBottom(160).GetReducedFromLeft(160).GetReducedFromRight(160);
     IRECT sequencerBounds = b.GetReducedFromBottom(160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
     IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 160).GetTranslated(-(320 + 80), 2.5);
-    IRECT playButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5, 2.5);
-    IRECT soloButtonBounds = IRECT(160 + 640, 0, 960, 60).GetTranslated(-2.5 - 160, 2.5);
+    IRECT playButtonBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(800 -2.5, 2.5);
+    IRECT soloButtonBounds = playButtonBounds.GetTranslated(-160, 0);
+    IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
 
-    // The root control; its members are the global variables necessary to control UI
-    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
-
-    // Placing controls into those subrects
-    pGraphics->AttachControl(new ITextControl(b.GetPadded(-5), "picoDAW", IText(36.f, "Roboto-Regular").WithAlign(EAlign::Near).WithVAlign(EVAlign::Top)), kCtrlTagTitle);
+    // And then placing controls into those subrects
     pGraphics->AttachControl(new IVSequencerControl(sequencerBounds, 12, 16), kCtrlTagMidiSequencer);
+
+    // Root control, invisible to user, its members are the global variables necessary to control UI
+    pGraphics->AttachControl(new RootUIControl(), kCtrlTagRoot);
 
     // Notice that these occupy the same subrect, so every control but one is manually hidden on 
     // boot; a seperate button will then be pressed to cycle through which control is visible
@@ -88,7 +89,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // References to those controls that can easily pass into the lambda functions below
     auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>(); 
-    auto title = pGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
     auto midiSeq = pGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = pGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
@@ -99,6 +99,28 @@ picoDAW::picoDAW(const InstanceInfo& info)
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
     }
+
+    // 2206: text control that displays name of current screen
+    pGraphics->AttachControl(new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular")), kCtrlTagTitle);
+
+    // 2206: button to return to home screen
+    pGraphics->AttachControl(new IVButtonControl(homeBounds, 
+      [pGraphics, root](IControl* pCaller) {
+        // Cycle through its currently active sub-control
+        root->keyboardBoundsIdx += 1; 
+        root->keyboardBoundsIdx %= root->keyboardBoundsTotal;
+                    
+        // Hide/Show controls so only the active one is displayed
+        int sync = root->keyboardBoundsIdx;
+        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
+        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
+
+        // Then animation...
+        float x, y;
+        pGraphics->GetMouseDownPoint(x, y);
+        pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+        pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+      }, "picoDAW", style), kCtrlTagHome);
 
     // Button to cycle through what is displayed in keyboardBounds
     pGraphics->AttachControl(new IVButtonControl(cycleButtonBounds, 
