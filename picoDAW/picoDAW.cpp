@@ -55,26 +55,67 @@ public:
     // 2206: Instead of worrying about adding extra methods to these controls, 
     // just write out the full code for those methods here; for now at least...
     // (Maybe we will need oop... Or maybe not!! Hopefully not... Yeah, don't think we will need!!)
-    //
+
     // synth->Update(mScreen);
     // sampler->Update(mScreen);
-    // 
-    // keyboard->Update(mScreen);
-    // midiSeq->Update(mScreen);
-    // gateSeq->Update(mScreen);
-    // title->Update(mScreen);
+
+    /* keyboard->Update(mScreen); */ {
+      // 2206: How to update keyboard? What is keyboard?
+    }
+    /* midiSeq->Update(mScreen); */ {
+      // 2206: How to update midiSeq? What is midiSeq?
+    }
+    /* gateSeq->Update(mScreen); */ {
+      // 2206: How to update gateSeq? What is gateSeq?
+    }
+
     /* title->Update(mScreen); */ {
       std::string str = "";
       switch (mScreen) {
         case kScreenNavigation:
           str = "HOME";
           break;
+
         case kScreenSyn1Seq:
-          str = "SYN1 SEQ";
+          str = "SYN1 SEQUENCER";
           break;
+        case kScreenSyn2Seq:
+          str = "SYN2 SEQUENCER";
+          break;
+        case kScreenSyn3Seq:
+          str = "SYN3 SEQUENCER";
+          break;
+        case kScreenSyn4Seq:
+          str = "SYN4 SEQUENCER";
+          break;
+
         case kScreenSyn1Edit:
-          str = "SYN1 EDIT";
+          str = "SYN1 SETTINGS";
           break;
+        case kScreenSyn2Edit:
+          str = "SYN2 SETTINGS";
+          break;
+        case kScreenSyn3Edit:
+          str = "SYN3 SETTINGS";
+          break;
+        case kScreenSyn4Edit:
+          str = "SYN4 SETTINGS";
+          break;
+
+        case kScreenSamp1Seq:
+          str = "SAMP1 SEQUENCER";
+          break;
+        case kScreenSamp2Seq:
+          str = "SAMP2 SEQUENCER";
+          break;
+
+        case kScreenSamp1Edit:
+          str = "SAMP1 SETTINGS";
+          break;
+        case kScreenSamp2Edit:
+          str = "SAMP2 SETTINGS";
+          break;
+
         default:
           str = "UNIMPLEMENTED";
           break;
@@ -206,13 +247,61 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // 2206: Navigation controls...
     auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
 
-    auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0), SplashClickActionFunc, "SYN1 SEQ", style);
-    auto navigationSyn2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1), SplashClickActionFunc, "SYN2 SEQ", style);
-    auto navigationSyn3Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2), SplashClickActionFunc, "SYN3 SEQ", style);
-    auto navigationSyn4Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3), SplashClickActionFunc, "SYN4 SEQ", style);
+    auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSyn1Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SYN1 SEQ", style);
+    auto navigationSyn2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSyn2Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SYN2 SEQ", style);
+    auto navigationSyn3Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSyn3Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SYN3 SEQ", style);
+    auto navigationSyn4Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSyn4Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SYN4 SEQ", style);
 
-    auto navigationSamp1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4), SplashClickActionFunc, "SAMP1 SEQ", style.WithColor(kFG, COLOR_BLUE));
-    auto navigationSamp2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5), SplashClickActionFunc, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
+    auto navigationSamp1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSamp1Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SAMP1 SEQ", style.WithColor(kFG, COLOR_BLUE));
+    auto navigationSamp2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5), [pGraphics, root](IControl* pCaller) {
+      root->mScreen = kScreenSamp2Seq;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
 
     auto mixer = new ITextControl(keyboardBounds, "MIXER", style.labelText, COLOR_GRAY);
 
