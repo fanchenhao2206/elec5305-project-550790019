@@ -40,6 +40,7 @@ enum EControlTags
   kCtrlTagRoot = 0,
   kCtrlTagHomeButton,
   kCtrlTagTitle,
+
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
   kCtrlTagMidiSequencer,
@@ -49,6 +50,23 @@ enum EControlTags
   kCtrlTagSoloToggle,
 
   kCtrlTagNavigation,
+
+  kCtrlTagNavigationSyn1Seq,
+  kCtrlTagNavigationSyn2Seq,
+  kCtrlTagNavigationSyn3Seq,
+  kCtrlTagNavigationSyn4Seq,
+
+  kCtrlTagNavigationSamp1Seq,
+  kCtrlTagNavigationSamp2Seq,
+
+  kCtrlTagNavigationSyn1Edit,
+  kCtrlTagNavigationSyn2Edit,
+  kCtrlTagNavigationSyn3Edit,
+  kCtrlTagNavigationSyn4Edit,
+  
+  kCtrlTagNavigationSamp1Edit,
+  kCtrlTagNavigationSamp2Edit,
+
   kCtrlTagMixer,
 
   // TODO: to remove 

@@ -26,14 +26,23 @@ public:
   {
     // Hide all controls
     for (auto ctrlTag : mGraphics->GetControlTags()) {
-      ctrlTag.second->Hide(true);
+      ctrlTag.second->Hide(true); // Manually unhide later...
+      ctrlTag.second->SetDisabled(false); // Manually disable later...
     }
 
     // And then update the controls behind the curtain
     auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
     auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
 
-    auto navigation = mGraphics->GetControlWithTag(kCtrlTagNavigation)->As<ITextControl>();
+    auto navigation = mGraphics->GetControlWithTag(kCtrlTagNavigation);
+
+    auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
+    auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
+    auto navigationSyn3Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq);
+    auto navigationSyn4Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Seq);
+    auto navigationSamp1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Seq);
+    auto navigationSamp2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Seq);
+
     auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
@@ -76,6 +85,7 @@ public:
     // And lastly, unhide the updated controls that are relevant to the current screen
     home->Hide(false);
     play->Hide(false);
+    solo->Hide(false);
     title->Hide(false);
     if (mScreen == kScreenSyn1Seq || mScreen == kScreenSyn2Seq || mScreen == kScreenSyn3Seq || mScreen == kScreenSyn4Seq ||
         mScreen == kScreenSamp1Seq || mScreen == kScreenSamp2Seq) {
@@ -84,7 +94,6 @@ public:
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
       cycle->Hide(false);
-      solo->Hide(false);
     } else if (mScreen == kScreenSyn1Edit || mScreen == kScreenSyn2Edit || mScreen == kScreenSyn3Edit || mScreen == kScreenSyn4Edit) {
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
@@ -96,8 +105,14 @@ public:
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else /* if (mScreen == kScreenNavigation) */ {
-      navigation->Hide(false); // 2206: the "home" screen that shows buttons to navigate screens
-                                  // takes up the sequencerBounds
+      navigation->Hide(false);
+      navigationSyn1Seq->Hide(false);
+      navigationSyn2Seq->Hide(false);
+      navigationSyn3Seq->Hide(false);
+      navigationSyn4Seq->Hide(false);
+      navigationSamp1Seq->Hide(false);
+      navigationSamp2Seq->Hide(false);
+      solo->SetDisabled(true);
       mixer->Hide(false);      // 2206: the mixer menu that shows knobs and mute/solo buttons
                                   // takes up the keyboardBounds
     }
@@ -189,7 +204,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "picoDAW", style);
 
     // 2206: Navigation controls...
-    auto navigation = new ITextControl(sequencerBounds, "NAVIGATION", style.labelText, COLOR_GRAY);
+    auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
+
+    auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0), SplashClickActionFunc, "SYN1 SEQ", style);
+    auto navigationSyn2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1), SplashClickActionFunc, "SYN2 SEQ", style);
+    auto navigationSyn3Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2), SplashClickActionFunc, "SYN3 SEQ", style);
+    auto navigationSyn4Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3), SplashClickActionFunc, "SYN4 SEQ", style);
+
+    auto navigationSamp1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4), SplashClickActionFunc, "SAMP1 SEQ", style.WithColor(kFG, COLOR_BLUE));
+    auto navigationSamp2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5), SplashClickActionFunc, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
+
     auto mixer = new ITextControl(keyboardBounds, "MIXER", style.labelText, COLOR_GRAY);
 
     // Sequencer controls...
@@ -289,7 +313,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
     auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
       /* 2206: once mixer is ready... */
-    }, "", style, "SOLO", "SOLO");
+    }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
     // 2206: Sampler controls...
@@ -299,6 +323,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
 
     pGraphics->AttachControl(navigation, kCtrlTagNavigation);
+
+    pGraphics->AttachControl(navigationSyn1Seq, kCtrlTagNavigationSyn1Seq);
+    pGraphics->AttachControl(navigationSyn2Seq, kCtrlTagNavigationSyn2Seq);
+    pGraphics->AttachControl(navigationSyn3Seq, kCtrlTagNavigationSyn3Seq);
+    pGraphics->AttachControl(navigationSyn4Seq, kCtrlTagNavigationSyn4Seq);
+    pGraphics->AttachControl(navigationSamp1Seq, kCtrlTagNavigationSamp1Seq);
+    pGraphics->AttachControl(navigationSamp2Seq, kCtrlTagNavigationSamp2Seq);
+
     pGraphics->AttachControl(mixer, kCtrlTagMixer);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
