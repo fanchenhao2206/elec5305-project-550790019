@@ -169,11 +169,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
 
     // And then placing controls into those subrects; Notice that some occupy the same
-    // subrect, the root control upon Update() will choose which one comes out on top 
-    auto root = new RootUIControl(pGraphics); 
-    auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
-    auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
-    auto keyboard = new IVKeyboardControl(keyboardBounds);
+    // subrect, the root control upon Update() will choose which one comes out on top
+
+    // Common controls...
+    auto root = new RootUIControl(pGraphics);
     auto title = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
     auto homeButton = new IVButtonControl(homeBounds, [pGraphics, root](IControl* pCaller) {
       root->mScreen = kScreenHome;
@@ -184,6 +183,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "picoDAW", style);
+
+    // 2206: Navigation controls...
+
+    // Sequencer controls...
+    auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
+    auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
+    auto keyboard = new IVKeyboardControl(keyboardBounds);
     auto cycleButton = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
       // Cycle through its currently active sub-control
       root->mKeyboardBoundsIdx += 1; 
@@ -274,7 +280,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         root->mPlaybackTimer = nullptr;
         root->mPlaybackStepIdx = 0;
       }
-    }, "", style, "PLAY", "PLAY");
+    }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
     auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
       /* 2206: once mixer is ready... */
     }, "", style, "SOLO", "SOLO");
