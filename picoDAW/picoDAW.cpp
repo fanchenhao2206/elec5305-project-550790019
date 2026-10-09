@@ -33,16 +33,15 @@ public:
     // And then update the controls behind the curtain
     auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
     auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
+    auto step = mGraphics->GetControlWithTag(kCtrlTagStep)->As<ITextControl>();
 
     auto navigation = mGraphics->GetControlWithTag(kCtrlTagNavigation);
-
     auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
     auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
     auto navigationSyn3Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq);
     auto navigationSyn4Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Seq);
     auto navigationSamp1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Seq);
     auto navigationSamp2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Seq);
-
     auto navigationSyn1Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Edit);
     auto navigationSyn2Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Edit);
     auto navigationSyn3Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Edit);
@@ -135,6 +134,7 @@ public:
     play->Hide(false);
     solo->Hide(false);
     title->Hide(false);
+    step->Hide(false);
     if (mScreen == kScreenSyn1Seq || mScreen == kScreenSyn2Seq || mScreen == kScreenSyn3Seq || mScreen == kScreenSyn4Seq ||
         mScreen == kScreenSamp1Seq || mScreen == kScreenSamp2Seq) {
       int sync = mKeyboardBoundsIdx;
@@ -235,9 +235,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Making subrects of main window...
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
     IRECT homeBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(2.5, 2.5);
-    IRECT keyboardBounds = b.GetFromBottom(160).GetReducedFromLeft(160).GetReducedFromRight(160);
-    IRECT sequencerBounds = b.GetReducedFromBottom(160 + 20).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 - 20);
-    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 160).GetTranslated(-(320 + 80), 2.5);
+    IRECT keyboardBounds = b.GetFromBottom(120).GetReducedFromLeft(160).GetReducedFromRight(160);
+    IRECT sequencerBounds = b.GetReducedFromBottom(120 + 5).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 + 7.5);
+    IRECT stepBounds = sequencerBounds.GetFromTop(20).GetTranslated(0, -20 - 5);
+    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 120).GetTranslated(-(320 + 80), 2.5);
     IRECT playButtonBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(800 -2.5, 2.5);
     IRECT soloButtonBounds = playButtonBounds.GetTranslated(-160, 0);
     IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
@@ -257,6 +258,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "picoDAW", style);
+    auto step = new ITextControl(stepBounds, "INSERT CURRENT STEP IN PATTERN HERE", style.labelText, COLOR_GRAY);
 
     // Navigation controls...
     auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
@@ -479,6 +481,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(root, kCtrlTagRoot);
     pGraphics->AttachControl(title, kCtrlTagTitle);
     pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
+    pGraphics->AttachControl(step, kCtrlTagStep);
 
     pGraphics->AttachControl(navigation, kCtrlTagNavigation);
 

@@ -40,6 +40,7 @@ enum EControlTags
   kCtrlTagRoot = 0,
   kCtrlTagHomeButton,
   kCtrlTagTitle,
+  kCtrlTagStep,
 
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
