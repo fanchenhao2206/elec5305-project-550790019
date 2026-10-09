@@ -13,7 +13,7 @@ class RootUIControl : public IControl {
 public:
   RootUIControl(IGraphics *pGraphics)
   : IControl(IRECT()),
-    mGraphics(pGraphics), mScreen(kScreenSyn1Seq),
+    mGraphics(pGraphics), mScreen(kScreenNavigation),
     mKeyboardBoundsIdx(0), mKeyboardBoundsTotal(2),
     mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1)
   {
@@ -30,12 +30,16 @@ public:
     }
 
     // And then update the controls behind the curtain
+    auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
+    auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
+
+    auto navigation = mGraphics->GetControlWithTag(kCtrlTagNavigation)->As<ITextControl>();
+    auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
+
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
-    auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
     auto cycle = mGraphics->GetControlWithTag(kCtrlTagCycleButton)->As<IVButtonControl>();
-    auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
     auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
@@ -53,7 +57,7 @@ public:
     /* title->Update(mScreen); */ {
       std::string str = "";
       switch (mScreen) {
-        case kScreenHome:
+        case kScreenNavigation:
           str = "HOME";
           break;
         case kScreenSyn1Seq:
@@ -91,10 +95,10 @@ public:
     } else if (mScreen == kScreenSamp1Edit || mScreen == kScreenSamp2Edit) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
-    } else /* if (mScreen == kScreenHome) */ {
-      // navigation->Hide(false); // 2206: the "home" screen that shows buttons navigate screens
+    } else /* if (mScreen == kScreenNavigation) */ {
+      navigation->Hide(false); // 2206: the "home" screen that shows buttons to navigate screens
                                   // takes up the sequencerBounds
-      // mixer->Hide(false);      // 2206: the mixer menu that shows knobs and mute/solo buttons
+      mixer->Hide(false);      // 2206: the mixer menu that shows knobs and mute/solo buttons
                                   // takes up the keyboardBounds
     }
   }
@@ -175,7 +179,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto root = new RootUIControl(pGraphics);
     auto title = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
     auto homeButton = new IVButtonControl(homeBounds, [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenHome;
+      root->mScreen = kScreenNavigation;
       root->Update();
       // Then animation...
       float x, y;
@@ -185,6 +189,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "picoDAW", style);
 
     // 2206: Navigation controls...
+    auto navigation = new ITextControl(sequencerBounds, "NAVIGATION", style.labelText, COLOR_GRAY);
+    auto mixer = new ITextControl(keyboardBounds, "MIXER", style.labelText, COLOR_GRAY);
 
     // Sequencer controls...
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
@@ -285,12 +291,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
       /* 2206: once mixer is ready... */
     }, "", style, "SOLO", "SOLO");
 
+    // 2206: Synth controls...
+    // 2206: Sampler controls...
+
     pGraphics->AttachControl(root, kCtrlTagRoot);
-    pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(title, kCtrlTagTitle);
+    pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
+
+    pGraphics->AttachControl(navigation, kCtrlTagNavigation);
+    pGraphics->AttachControl(mixer, kCtrlTagMixer);
+
+    pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
-    pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
     pGraphics->AttachControl(cycleButton, kCtrlTagCycleButton);
     pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
     pGraphics->AttachControl(soloToggle, kCtrlTagSoloToggle);

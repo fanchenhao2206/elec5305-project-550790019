@@ -48,6 +48,9 @@ enum EControlTags
   kCtrlTagPlayToggle,
   kCtrlTagSoloToggle,
 
+  kCtrlTagNavigation,
+  kCtrlTagMixer,
+
   // TODO: to remove 
   kCtrlTagMeter,
   kCtrlTagLFOVis,
@@ -60,7 +63,7 @@ enum EControlTags
 
 enum EScreens
 {
-  kScreenHome = 0,
+  kScreenNavigation = 0,
 
   kScreenSyn1Seq,
   kScreenSyn2Seq,
