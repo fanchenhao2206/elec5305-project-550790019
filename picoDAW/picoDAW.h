@@ -51,24 +51,22 @@ enum EControlTags
   kCtrlTagSoloToggle,
 
   kCtrlTagNavigation,
-
   kCtrlTagNavigationSyn1Seq,
   kCtrlTagNavigationSyn2Seq,
   kCtrlTagNavigationSyn3Seq,
   kCtrlTagNavigationSyn4Seq,
-
   kCtrlTagNavigationSamp1Seq,
   kCtrlTagNavigationSamp2Seq,
-
   kCtrlTagNavigationSyn1Edit,
   kCtrlTagNavigationSyn2Edit,
   kCtrlTagNavigationSyn3Edit,
   kCtrlTagNavigationSyn4Edit,
-  
   kCtrlTagNavigationSamp1Edit,
   kCtrlTagNavigationSamp2Edit,
 
   kCtrlTagMixer,
+
+  kCtrlTagKnobToggle,
 
   // TODO: to remove 
   kCtrlTagMeter,

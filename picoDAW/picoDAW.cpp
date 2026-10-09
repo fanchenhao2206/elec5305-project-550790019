@@ -51,6 +51,8 @@ public:
 
     auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
 
+    auto knob = mGraphics->GetControlWithTag(kCtrlTagKnobToggle)->As<IVToggleControl>();
+
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
@@ -149,6 +151,7 @@ public:
       //
       // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
                                   // takes up the sequencerBounds
+      knob->Hide(false);
     } else if (mScreen == kScreenSamp1Edit || mScreen == kScreenSamp2Edit) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
@@ -238,7 +241,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT keyboardBounds = b.GetFromBottom(120).GetReducedFromLeft(160).GetReducedFromRight(160);
     IRECT sequencerBounds = b.GetReducedFromBottom(120 + 5).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 + 7.5);
     IRECT stepBounds = sequencerBounds.GetFromTop(20).GetTranslated(0, -20 - 5);
-    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(120, 120).GetTranslated(-(320 + 80), 2.5);
+    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 120).GetTranslated(-(320 + 80), 2.5);
     IRECT playButtonBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(800 -2.5, 2.5);
     IRECT soloButtonBounds = playButtonBounds.GetTranslated(-160, 0);
     IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
@@ -262,7 +265,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Navigation controls...
     auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
-
     auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
       root->mScreen = kScreenSyn1Seq;
       root->Update();
@@ -317,7 +319,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
-
     auto navigationSyn1Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
       root->mScreen = kScreenSyn1Edit;
       root->Update();
@@ -476,6 +477,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
+    auto knob = new IVToggleControl(sequencerBounds, SplashAnimationFunc, "", style, "SINE", "SAW");
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
@@ -500,6 +502,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(navigationSamp2Edit, kCtrlTagNavigationSamp2Edit);
 
     pGraphics->AttachControl(mixer, kCtrlTagMixer);
+
+    pGraphics->AttachControl(knob, kCtrlTagKnobToggle);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
