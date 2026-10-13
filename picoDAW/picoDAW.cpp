@@ -477,7 +477,15 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
-    auto knob = new IVToggleControl(sequencerBounds, SplashAnimationFunc, "", style, "SINE", "SAW");
+    auto knob = new IVToggleControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
+      // root->mScreen = kScreenSamp2Edit;
+      root->Update();
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "", style, "SINE", "SAW");
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);

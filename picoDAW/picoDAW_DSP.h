@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MidiSynth.h"
+#include "IPlugConstants.h"
 #include "Oscillator.h"
 #include "ADSREnvelope.h"
 #include "Smoothers.h"
@@ -16,7 +17,6 @@ enum EModulations
   kNumModulations,
 };
 
-template<typename T>
 class picoDAWDSP
 {
 public:
@@ -50,7 +50,7 @@ public:
       mAMPEnv.Release();
     }
 
-    void ProcessSamplesAccumulating(T** inputs, T** outputs, int nInputs, int nOutputs, int startIdx, int nFrames) override
+    void ProcessSamplesAccumulating(sample** inputs, sample** outputs, int nInputs, int nOutputs, int startIdx, int nFrames) override
     {
       // inputs to the synthesizer can just fetch a value every block, like this:
 //      double gate = mInputs[kVoiceControlGate].endValue;
@@ -127,8 +127,8 @@ public:
     }
 
   public:
-    FastSinOscillator<T> mOSC;
-    ADSREnvelope<T> mAMPEnv;
+    FastSinOscillator<sample> mOSC;
+    ADSREnvelope<sample> mAMPEnv;
 
   private:
     WDL_TypedBuf<float> mTimbreBuffer;
@@ -172,12 +172,12 @@ public:
     // mSynth.SetNoteGlideTime(0.5); // portamento
   }
 
-  void ProcessBlock(T** inputs, T** outputs, int nOutputs, int nFrames, double qnPos = 0., bool transportIsRunning = false, double tempo = 120.)
+  void ProcessBlock(sample** inputs, sample** outputs, int nOutputs, int nFrames, double qnPos = 0., bool transportIsRunning = false, double tempo = 120.)
   {
     // clear outputs
     for(auto i = 0; i < nOutputs; i++)
     {
-      memset(outputs[i], 0, nFrames * sizeof(T));
+      memset(outputs[i], 0, nFrames * sizeof(sample));
     }
 
     // 2206: now add signals into outputs; e.g. outputs[0][s] += sig1[s] + sig2[s];
@@ -194,7 +194,7 @@ public:
     
     for(int s=0; s < nFrames;s++)
     {
-      T smoothedGain = mModulations.GetList()[kModGainSmoother][s];
+      sample smoothedGain = mModulations.GetList()[kModGainSmoother][s];
       outputs[0][s] *= smoothedGain;
       outputs[1][s] *= smoothedGain;
     }
@@ -228,10 +228,10 @@ public:
         mSynth.SetNoteGlideTime(value / 1000.);
         break;
       case kParamGain:
-        mParamsToSmooth[kModGainSmoother] = (T) value / 100.;
+        mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
         break;
       case kParamSustain:
-        mParamsToSmooth[kModSustainSmoother] = (T) value / 100.;
+        mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
         break;
       case kParamAttack:
       case kParamDecay:
@@ -265,9 +265,9 @@ public:
   
 public:
   MidiSynth mSynth { VoiceAllocator::kPolyModePoly, MidiSynth::kDefaultBlockSize };
-  WDL_TypedBuf<T> mModulationsData; // Sample data for global modulations (e.g. smoothed sustain)
-  WDL_PtrList<T> mModulations; // Ptrlist for global modulations
-  LogParamSmooth<T, kNumModulations> mParamSmoother;
+  WDL_TypedBuf<sample> mModulationsData; // Sample data for global modulations (e.g. smoothed sustain)
+  WDL_PtrList<sample> mModulations; // Ptrlist for global modulations
+  LogParamSmooth<sample, kNumModulations> mParamSmoother;
   sample mParamsToSmooth[kNumModulations];
-  LFO<T> mLFO;
+  LFO<sample> mLFO;
 };
