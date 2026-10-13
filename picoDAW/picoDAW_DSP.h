@@ -89,7 +89,7 @@ public:
       {
         EEnvStage stage = static_cast<EEnvStage>(EEnvStage::kAttack + (paramIdx - kParamAttack));
         mSynth.ForEachVoice([stage, value](SynthVoice& voice) {
-          dynamic_cast<SineVoice&>(voice).mAMPEnv.SetStageTime(stage, value);
+          voice.mAMPEnv.SetStageTime(stage, value);
         });
         break;
       }

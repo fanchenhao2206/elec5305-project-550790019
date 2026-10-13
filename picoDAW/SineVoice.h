@@ -10,11 +10,7 @@ using namespace iplug;
 class SineVoice : public SynthVoice
 {
 public:
-  SineVoice()
-  : mAMPEnv("gain", [&](){ mOSC.Reset(); }) // capture ok on RT thread?
-  {
-//      DBGMSG("new Voice: %i control inputs.\n", static_cast<int>(mInputs.size()));
-  }
+  SineVoice() {}
 
   bool GetBusy() const override
   {
@@ -76,10 +72,6 @@ public:
   {
     //TODO:
   }
-
-public:
-  FastSinOscillator<sample> mOSC;
-  ADSREnvelope<sample> mAMPEnv;
 
 private:
   WDL_TypedBuf<float> mTimbreBuffer;
