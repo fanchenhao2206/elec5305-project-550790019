@@ -18,7 +18,7 @@ public:
     mSynth.AddVoice(new SineVoice(), 0);
     mSynth.AddVoice(new SineVoice(), 0);
     mSynth.AddVoice(new SineVoice(), 0);
-    // mSynth.AddVoice(new SamplerVoice(), 0); // TODO: sampler
+    // mSynth.AddVoice(new SamplerVoice(), 0); // 2206: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
 

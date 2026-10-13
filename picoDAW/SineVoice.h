@@ -12,7 +12,7 @@ class SineVoice : public SynthVoice
 public:
   SineVoice()
   {
-    // Make sure mOSC is a fastSinOsc
+    // Default is sine oscillator; 2206: clicking KNOB changes what mOSC points to
     mOSC = new FastSinOscillator<sample>();
   }
 

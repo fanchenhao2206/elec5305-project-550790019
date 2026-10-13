@@ -402,7 +402,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         // Is currently on, so was previously off; start playback wrt. current tempo
         root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
           IMidiMsg msg;
-          int channelIdx = 0; // TODO: send to other channel if required
+          int channelIdx = 0; // 2206: send to other channel if required
           int &stepIdx = root->mPlaybackStepIdx;
           int &prevNote = root->mPrevNote;
           const int nSteps = midiSeq->mNCols;
@@ -465,7 +465,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       } else {
         // Is currently off, so was previously on; stop playback
         IMidiMsg msg;
-        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // TODO: stop playback of other channels too
+        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // 2206: stop playback of other channels too
         root->GetDelegate()->SendMidiMsgFromUI(msg);
         root->mPrevNote = -1;
         delete root->mPlaybackTimer;
