@@ -2,174 +2,24 @@
 
 #include "MidiSynth.h"
 #include "IPlugConstants.h"
-#include "Oscillator.h"
-#include "ADSREnvelope.h"
 #include "Smoothers.h"
 #include "LFO.h"
+#include "SineVoice.h"
+#include "picoDAW_DSPConstants.h"
 
 using namespace iplug;
-
-enum EModulations
-{
-  kModGainSmoother = 0,
-  kModSustainSmoother,
-  kModLFO,
-  kNumModulations,
-};
 
 class picoDAWDSP
 {
 public:
-#pragma mark - Voice
-  class Voice : public SynthVoice
+  picoDAWDSP()
   {
-  public:
-    Voice()
-    : mAMPEnv("gain", [&](){ mOSC.Reset(); }) // capture ok on RT thread?
-    {
-//      DBGMSG("new Voice: %i control inputs.\n", static_cast<int>(mInputs.size()));
-    }
-
-    bool GetBusy() const override
-    {
-      return mAMPEnv.GetBusy();
-    }
-
-    void Trigger(double level, bool isRetrigger) override
-    {
-      mOSC.Reset();
-      
-      if(isRetrigger)
-        mAMPEnv.Retrigger(level);
-      else
-        mAMPEnv.Start(level);
-    }
-    
-    void Release() override
-    {
-      mAMPEnv.Release();
-    }
-
-    void ProcessSamplesAccumulating(sample** inputs, sample** outputs, int nInputs, int nOutputs, int startIdx, int nFrames) override
-    {
-      // inputs to the synthesizer can just fetch a value every block, like this:
-//      double gate = mInputs[kVoiceControlGate].endValue;
-      double pitch = mInputs[kVoiceControlPitch].endValue;
-      double pitchBend = mInputs[kVoiceControlPitchBend].endValue;
-
-      // or write the entire control ramp to a buffer, like this, to get sample-accurate ramps:
-      mInputs[kVoiceControlTimbre].Write(mTimbreBuffer.Get(), startIdx, nFrames);
-      
-      // convert from "1v/oct" pitch space to frequency in Hertz
-      double osc1Freq = 440. * pow(2., pitch + pitchBend + inputs[kModLFO][0]);
-      
-      // make sound output for each output channel
-      // ...
-      // THE MAKING SOUND...
-      // But what is the double pitch above, actually? Clearly it should be the
-      // most recent keyOn MIDI message? But how? Let's check out MidiSynth...
-      // ...
-      // mVoiceAllocator.AddEvent(MidiMessageToEvent(msg));
-      // That is, mSynth.ProcessBlock empties out the MidiQueue 
-      // of MIDI messages, converting each to a relevant SynthVoice 
-      // event, that results in the relevant voices from changing 
-      // its pitch when eventually mVoiceAllocator.ProcessEvents() 
-      // is called too
-      // ...
-      // And a key press gets converted to a NoteOn event, its pitch
-      // calculated from field within the event, and passed to StartVoice();
-      // It's like the SynthVoice is completely restarted on each key press;
-      // does that makes sense? And this is called within StartVoice()
-      // mVoiceGlides[voiceIdx]->at(kVoiceControlPitch).SetTarget(pitch, sampleOffset, mNoteGlideSamples, mBlockSize);
-      // ...
-      // Which... of course is what's used in mVoiceAllocator.ProcessVoices() the following line!
-      // Through pVoice->ProcessSamplesAccumulating(inputs, outputs, nInputs, nOutputs, startIndex, blockSize);
-      // which of course is just... THIS!! Voice::ProcessSamplesAccumulating!
-      // And notice, just above; mInputs[kVoiceControlPitch].endValue;
-      // That is,
-      // ...
-      // The double pitch above, is taken from the same mVoiceGlides object, that 
-      // is modified by StartVoice i.e. mVoiceAllocator that processes MIDI messages
-      // ...
-      // (i) MIDI message is appended to mSynth.mMidiQueue, which is then processed by mSynth.mVoiceAllocator,
-      // which was initialised by the picoDAWDSP constructor through AddVoice(), so the custom Voice : SynthVoice
-      // above has been configured via StartVoice() to generate output samples corresponding to pitch
-      // (ii) When ProcessVoices() is called, it calls this function that uses the information within Voice, 
-      // the aforementioned mVoiceGlides, or SynthVoice::mInputs, to know how to fill the ACTUAL outputs buffer;
-      // here you can see that
-
-      for(auto i = startIdx; i < startIdx + nFrames; i++)
-      {
-        float noise = mTimbreBuffer.Get()[i] * Rand();
-        // an MPE synth can use pressure here in addition to gain
-        outputs[0][i] += (mOSC.Process(osc1Freq) + noise) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain;
-        outputs[1][i] = outputs[0][i];
-      }
-    }
-
-    void SetSampleRateAndBlockSize(double sampleRate, int blockSize) override
-    {
-      mOSC.SetSampleRate(sampleRate);
-      mAMPEnv.SetSampleRate(sampleRate);
-      
-      mTimbreBuffer.Resize(blockSize);
-    }
-
-    void SetProgramNumber(int pgm) override
-    {
-      //TODO:
-    }
-
-    // this is called by the VoiceAllocator to set generic control values.
-    void SetControl(int controlNumber, float value) override
-    {
-      //TODO:
-    }
-
-  public:
-    FastSinOscillator<sample> mOSC;
-    ADSREnvelope<sample> mAMPEnv;
-
-  private:
-    WDL_TypedBuf<float> mTimbreBuffer;
-
-    // noise generator for test
-    uint32_t mRandSeed = 0;
-    
-    // return single-precision floating point number on [-1, 1]
-    float Rand()
-    {
-      mRandSeed = mRandSeed * 0x0019660D + 0x3C6EF35F;
-      uint32_t temp = ((mRandSeed >> 9) & 0x007FFFFF) | 0x3F800000;
-      return (*reinterpret_cast<float*>(&temp))*2.f - 3.f;
-    }
-
-  };
-
-public:
-#pragma mark -
-  picoDAWDSP(int nVoices)
-  {
-    for (auto i = 0; i < nVoices; i++)
-    {
-      // 2206: actually add different voices; like, be able to send MIDI messages
-      // to specifically voice 3 (corresponding to synth3), etc. etc. etc.
-      // Right now, each Voice() is just a boring sine wave oscillator
-      // ...
-      // The voice to send MIDI message to, is specified in the MIDI message!!
-      // while (mInputQueue.ElementsAvailable()) begin
-      //   VoiceInputEvent event = mInputQueue.Pop();
-      //   VoiceAllocator::VoiceBitsArray voices = VoicesMatchingAddress(event.mAddress);
-      // end
-      // ...
-      // add a voice to Zone 0; specifically, a Voice that wraps around a fastSinOsc
-      // So, mSynth contains all the voices we care about; e.g. SinVoice, SawVoice, etc.
-      mSynth.AddVoice(new Voice(), 0);
-    }
-
-    // some MidiSynth API examples:
-    // mSynth.SetKeyToPitchFn([](int k){return (k - 69.)/24.;}); // quarter-tone scale
-    // mSynth.SetNoteGlideTime(0.5); // portamento
+    mSynth.AddVoice(new SineVoice(), 0); // Default sine
+    mSynth.AddVoice(new SineVoice(), 0);
+    mSynth.AddVoice(new SineVoice(), 0);
+    mSynth.AddVoice(new SineVoice(), 0);
+    // mSynth.AddVoice(new SamplerVoice(), 0); // TODO: sampler
+    // mSynth.AddVoice(new SamplerVoice(), 0);
   }
 
   void ProcessBlock(sample** inputs, sample** outputs, int nOutputs, int nFrames, double qnPos = 0., bool transportIsRunning = false, double tempo = 120.)
@@ -239,7 +89,7 @@ public:
       {
         EEnvStage stage = static_cast<EEnvStage>(EEnvStage::kAttack + (paramIdx - kParamAttack));
         mSynth.ForEachVoice([stage, value](SynthVoice& voice) {
-          dynamic_cast<picoDAWDSP::Voice&>(voice).mAMPEnv.SetStageTime(stage, value);
+          dynamic_cast<SineVoice&>(voice).mAMPEnv.SetStageTime(stage, value);
         });
         break;
       }

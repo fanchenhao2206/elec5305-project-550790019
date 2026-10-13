@@ -120,7 +120,7 @@ public:
   bool OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData) override;
 
 private:
-  picoDAWDSP mInstrumentDSP {16};
+  picoDAWDSP mInstrumentDSP;
   IPeakAvgSender<2> mMeterSender;
   ISender<1> mLFOVisSender;
 #endif
