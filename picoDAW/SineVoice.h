@@ -10,7 +10,11 @@ using namespace iplug;
 class SineVoice : public SynthVoice
 {
 public:
-  SineVoice() {}
+  SineVoice()
+  {
+    // Make sure mOSC is a fastSinOsc
+    mOSC = new FastSinOscillator<sample>();
+  }
 
   bool GetBusy() const override
   {
@@ -19,7 +23,7 @@ public:
 
   void Trigger(double level, bool isRetrigger) override
   {
-    mOSC.Reset();
+    mOSC->Reset();
     
     if(isRetrigger)
       mAMPEnv.Retrigger(level);
@@ -49,14 +53,14 @@ public:
     {
       float noise = mTimbreBuffer.Get()[i] * Rand();
       // an MPE synth can use pressure here in addition to gain
-      outputs[0][i] += (mOSC.Process(osc1Freq) + noise) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain;
+      outputs[0][i] += (mOSC->Process(osc1Freq) + noise) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain;
       outputs[1][i] = outputs[0][i];
     }
   }
 
   void SetSampleRateAndBlockSize(double sampleRate, int blockSize) override
   {
-    mOSC.SetSampleRate(sampleRate);
+    mOSC->SetSampleRate(sampleRate);
     mAMPEnv.SetSampleRate(sampleRate);
     
     mTimbreBuffer.Resize(blockSize);
