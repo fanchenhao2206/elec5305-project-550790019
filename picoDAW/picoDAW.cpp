@@ -402,6 +402,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         // Is currently on, so was previously off; start playback wrt. current tempo
         root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
           IMidiMsg msg;
+          int channelIdx = 0; // TODO: send to other channel if required
           int &stepIdx = root->mPlaybackStepIdx;
           int &prevNote = root->mPrevNote;
           const int nSteps = midiSeq->mNCols;
@@ -426,7 +427,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
           if (currNote < 0) {
             // Nothing to play this step, so turn off prev and that's it
             if (prevNote >= 0) {
-              msg.MakeNoteOffMsg(prevNote, 0);
+              msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
               root->GetDelegate()->SendMidiMsgFromUI(msg);
             }
           } else if (currNote == prevNote) {
@@ -444,16 +445,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
               // current legato note anyways!! It just means that marking a note as legato is 
               // meaningless, if it's by its lonesome; only two or more legato identical notes 
               // in a row produces the legato effect, which is what we should expect of it!!
-              msg.MakeNoteOffMsg(prevNote, 0);
+              msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
               root->GetDelegate()->SendMidiMsgFromUI(msg);
-              msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+              msg.MakeNoteOnMsg(currNote, currVelocity, 0, channelIdx);
               root->GetDelegate()->SendMidiMsgFromUI(msg);
             } /* else {} */ // Play legato with previous identical note
           } else /* if (currNote != prevNote) */ {
             // Something to play this step, and it's different than last step
-            msg.MakeNoteOffMsg(prevNote, 0);
+            msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
             root->GetDelegate()->SendMidiMsgFromUI(msg);
-            msg.MakeNoteOnMsg(currNote, currVelocity, 0);
+            msg.MakeNoteOnMsg(currNote, currVelocity, 0, channelIdx);
             root->GetDelegate()->SendMidiMsgFromUI(msg);
           }
 
@@ -464,7 +465,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       } else {
         // Is currently off, so was previously on; stop playback
         IMidiMsg msg;
-        msg.MakeNoteOffMsg(root->mPrevNote, 0);
+        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // TODO: stop playback of other channels too
         root->GetDelegate()->SendMidiMsgFromUI(msg);
         root->mPrevNote = -1;
         delete root->mPlaybackTimer;
