@@ -15,9 +15,9 @@ public:
   picoDAWDSP()
   {
     mSynth.AddVoice(new picoDAWVoice(), 0);
-    mSynth.AddVoice(new picoDAWVoice(), 0);
-    mSynth.AddVoice(new picoDAWVoice(), 0);
-    mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
     // mSynth.AddVoice(new SamplerVoice(), 0); // 2206: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
@@ -114,7 +114,7 @@ public:
   }
   
 public:
-  MidiSynth mSynth { VoiceAllocator::kPolyModePoly, MidiSynth::kDefaultBlockSize };
+  MidiSynth mSynth { VoiceAllocator::kPolyModeMono, MidiSynth::kDefaultBlockSize };
   WDL_TypedBuf<sample> mModulationsData; // Sample data for global modulations (e.g. smoothed sustain)
   WDL_PtrList<sample> mModulations; // Ptrlist for global modulations
   LogParamSmooth<sample, kNumModulations> mParamSmoother;

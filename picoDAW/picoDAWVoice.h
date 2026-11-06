@@ -10,15 +10,29 @@ using namespace iplug;
 class picoDAWVoice : public SynthVoice
 {
 public:
-  // Each SYNTH owns a UNIQUE copy of a PICODAWVOICE.
   picoDAWVoice()
   {
-    // Default is sine oscillator; 2206: clicking KNOB changes 
-    // which PRE-ALLOCATED IOscillator<T> instance mOSC points to...
-    mSineOSC = new FastSinOscillator<sample>();
-    mSawOSC = new SawOscillator<sample>();
+    mNSynthCores = 3;
+    mSynthCoreIndex = 0;
 
-    mOSC = mSineOSC;
+    mSineCore = new SinOscillator<sample>();
+    mTriangleCore = new TriangleOscillator<sample>();
+    mSawCore = new SawOscillator<sample>();
+
+    mOSC = mSineCore;
+  }
+
+  void CycleSynthCore() override
+  {
+    mSynthCoreIndex += 1;
+    mSynthCoreIndex %= mNSynthCores;
+    if (mSynthCoreIndex == 0) {
+      mOSC = mSineCore;
+    } else if (mSynthCoreIndex == 1) {
+      mOSC = mTriangleCore;
+    } else if (mSynthCoreIndex == 2) {
+      mOSC = mSawCore;
+    }
   }
 
   bool GetBusy() const override
@@ -65,7 +79,10 @@ public:
 
   void SetSampleRateAndBlockSize(double sampleRate, int blockSize) override
   {
-    mOSC->SetSampleRate(sampleRate);
+    // mOSC->SetSampleRate(sampleRate);
+    mSineCore->SetSampleRate(sampleRate);
+    mTriangleCore->SetSampleRate(sampleRate);
+    mSawCore->SetSampleRate(sampleRate);
     mAMPEnv.SetSampleRate(sampleRate);
     
     mTimbreBuffer.Resize(blockSize);
@@ -83,8 +100,13 @@ public:
   }
 
 private:
-  IOscillator<sample> *mSineOSC;
-  IOscillator<sample> *mSawOSC;
+  int mSynthCoreIndex = 0;
+  int mNSynthCores = 2;
+
+  IOscillator<sample> *mSineCore;
+  IOscillator<sample> *mSawCore;
+  IOscillator<sample> *mTriangleCore;
+
   WDL_TypedBuf<float> mTimbreBuffer;
 
   // noise generator for test

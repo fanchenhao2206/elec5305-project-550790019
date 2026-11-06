@@ -304,11 +304,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
       //////////////////////////////////////////////////////////
 
       // Which screen are we on? Well, we'll have to be either 
-      // kScreenSyn1Edit/kScreenSyn2Edit/
-      // kScreenSyn3Edit/kScreenSyn4Edit/
-      root->mScreen;
+      // kScreenSyn1Edit/kScreenSyn2Edit/kScreenSyn3Edit/kScreenSyn4Edit/
+      int synEditIndex = root->mScreen - kScreenSyn1Edit; // [0..3]
+      
+      // Send arbitrary message to DSP...
+      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagKnobToggle, sizeof(int), &root->mScreen);
 
-      // Then animation...#3
+      // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
@@ -364,9 +366,9 @@ void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   // probably nothing here right? (Not entirely true, because of the Release in ADSR envelope)
   // Point being, MIDI messages have been delivered to this DSP, and now we processes those 
   // messages; process to produce a block of samples, hence ProcessBlock()
-  mInstrumentDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
+  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
-  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mInstrumentDSP.mLFO.GetLastOutput())}});
+  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
 }
 
 void picoDAW::OnIdle()
@@ -384,7 +386,7 @@ void picoDAW::OnIdle()
   // In that sense, these TransmitData are literal helper functions, emptying
   // the queue and sending messages to the addresses specified within them;
   // no thinking required; mMeterSender would be sending the levels produced
-  // by mInstrumentDSP to the UI control given by kCtrlTagMeter; exactly what is done
+  // by mDSP to the UI control given by kCtrlTagMeter; exactly what is done
   // through mMeterSender.ProcessBlock, for example
   mMeterSender.TransmitData(*this);
   mLFOVisSender.TransmitData(*this);
@@ -392,7 +394,7 @@ void picoDAW::OnIdle()
 
 void picoDAW::OnReset()
 {
-  mInstrumentDSP.Reset(GetSampleRate(), GetBlockSize());
+  mDSP.Reset(GetSampleRate(), GetBlockSize());
   mMeterSender.Reset(GetSampleRate());
 }
 
@@ -423,7 +425,7 @@ void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
   
 handle:
   // Route that message to the internal DSP's who need it
-  mInstrumentDSP.ProcessMidiMsg(msg);
+  mDSP.ProcessMidiMsg(msg);
   // mInstrumentASP.ProcessMidiMsg(msg); // Send to all instruments, who will ignore the message 
   // mInstrumentBSP.ProcessMidiMsg(msg); // if not intended for them? Specified by channel which
   // mInstrumentCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
@@ -431,7 +433,7 @@ handle:
 
 void picoDAW::OnParamChange(int paramIdx)
 {
-  mInstrumentDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
@@ -453,7 +455,7 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
     // hang here for the song duration... Trigger the flag for starting playback,
     // and exit. Notably, a mPlaybackDSP module will receive this flag change
     // and it is what starts real playback. So we need a seperate mPlaybackDSP 
-    // module (probably); and the current mInstrumentDSP is really mKeyboardDSP, or 
+    // module (probably); and the current mDSP is really mKeyboardDSP, or 
     // mSequencerEditDSP (playing the test sounds as draw on sequencer map).
     if (paramIdx == kParamLFORateMode)
     {
@@ -465,12 +467,13 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
   #endif
 }
 
+// This is called when IPlugWasmDSP::OnArbitraryMessage is called...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
-  if(ctrlTag == kCtrlTagBender && msgTag == IWheelControl::kMessageTagSetPitchBendRange)
-  {
-    const int bendRange = *static_cast<const int*>(pData);
-    mInstrumentDSP.mSynth.SetPitchBendRange(bendRange);
+  if (ctrlTag == kCtrlTagKnobToggle && msgTag == 1) {
+    const int screen = *static_cast<const int*>(pData);
+    int synEditIndex = screen - kScreenSyn1Edit;
+    mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIndex]->CycleSynthCore();
   }
   
   return false;
