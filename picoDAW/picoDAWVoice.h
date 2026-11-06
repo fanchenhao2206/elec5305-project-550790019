@@ -7,19 +7,18 @@
 
 using namespace iplug;
 
-class SineVoice : public SynthVoice
+class picoDAWVoice : public SynthVoice
 {
 public:
-  // Each SYNTH owns a UNIQUE copy of each SINEVOICE; 
-  // then, on clicking KNOB, do NOT delete this copy, 
-  // it's owned by the SYNTH... IE, this SINEVOICE has 
-  // barely any capability to change itself...
-  SineVoice()
+  // Each SYNTH owns a UNIQUE copy of a PICODAWVOICE.
+  picoDAWVoice()
   {
     // Default is sine oscillator; 2206: clicking KNOB changes 
-    // which PRE-ALLOCATED SynthVoice instance mOSC points to...
-    // mOSC = new FastSinOscillator<sample>();
-    mOSC = new SawOscillator<sample>();
+    // which PRE-ALLOCATED IOscillator<T> instance mOSC points to...
+    mSineOSC = new FastSinOscillator<sample>();
+    mSawOSC = new SawOscillator<sample>();
+
+    mOSC = mSineOSC;
   }
 
   bool GetBusy() const override
@@ -84,6 +83,8 @@ public:
   }
 
 private:
+  IOscillator<sample> *mSineOSC;
+  IOscillator<sample> *mSawOSC;
   WDL_TypedBuf<float> mTimbreBuffer;
 
   // noise generator for test

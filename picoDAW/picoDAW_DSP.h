@@ -4,8 +4,7 @@
 #include "IPlugConstants.h"
 #include "Smoothers.h"
 #include "LFO.h"
-#include "SineVoice.h"
-// #include "SawVoice.h"
+#include "picoDAWVoice.h"
 #include "picoDAW_DSPConstants.h"
 
 using namespace iplug;
@@ -15,10 +14,10 @@ class picoDAWDSP
 public:
   picoDAWDSP()
   {
-    mSynth.AddVoice(new SineVoice(), 0);
-    mSynth.AddVoice(new SineVoice(), 0);
-    mSynth.AddVoice(new SineVoice(), 0);
-    mSynth.AddVoice(new SineVoice(), 0);
+    mSynth.AddVoice(new picoDAWVoice(), 0);
+    mSynth.AddVoice(new picoDAWVoice(), 0);
+    mSynth.AddVoice(new picoDAWVoice(), 0);
+    mSynth.AddVoice(new picoDAWVoice(), 0);
     // mSynth.AddVoice(new SamplerVoice(), 0); // 2206: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
