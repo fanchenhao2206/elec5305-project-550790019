@@ -87,13 +87,13 @@ enum EScreens
   kScreenSyn3Seq,
   kScreenSyn4Seq,
 
+  kScreenSamp1Seq,
+  kScreenSamp2Seq,
+
   kScreenSyn1Edit,
   kScreenSyn2Edit,
   kScreenSyn3Edit,
   kScreenSyn4Edit,
-
-  kScreenSamp1Seq,
-  kScreenSamp2Seq,
 
   kScreenSamp1Edit,
   kScreenSamp2Edit,
