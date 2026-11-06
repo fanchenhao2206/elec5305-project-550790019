@@ -10,10 +10,16 @@ using namespace iplug;
 class SineVoice : public SynthVoice
 {
 public:
+  // Each SYNTH owns a UNIQUE copy of each SINEVOICE; 
+  // then, on clicking KNOB, do NOT delete this copy, 
+  // it's owned by the SYNTH... IE, this SINEVOICE has 
+  // barely any capability to change itself...
   SineVoice()
   {
-    // Default is sine oscillator; 2206: clicking KNOB changes what mOSC points to
-    mOSC = new FastSinOscillator<sample>();
+    // Default is sine oscillator; 2206: clicking KNOB changes 
+    // which PRE-ALLOCATED SynthVoice instance mOSC points to...
+    // mOSC = new FastSinOscillator<sample>();
+    mOSC = new SawOscillator<sample>();
   }
 
   bool GetBusy() const override

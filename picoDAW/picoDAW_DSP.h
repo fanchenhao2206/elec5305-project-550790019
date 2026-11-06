@@ -5,6 +5,7 @@
 #include "Smoothers.h"
 #include "LFO.h"
 #include "SineVoice.h"
+// #include "SawVoice.h"
 #include "picoDAW_DSPConstants.h"
 
 using namespace iplug;
@@ -14,7 +15,7 @@ class picoDAWDSP
 public:
   picoDAWDSP()
   {
-    mSynth.AddVoice(new SineVoice(), 0); // Default sine
+    mSynth.AddVoice(new SineVoice(), 0);
     mSynth.AddVoice(new SineVoice(), 0);
     mSynth.AddVoice(new SineVoice(), 0);
     mSynth.AddVoice(new SineVoice(), 0);

@@ -481,7 +481,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto knob = new IVToggleControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
       // root->mScreen = kScreenSamp2Edit;
       root->Update();
-      // Then animation...
+
+      //////////////////////////////////////////////////////////
+      // 2206: HERE WE ARE, LET'S GET THIS SINE/SAW WORKING!! //
+      //////////////////////////////////////////////////////////
+
+      // Set 
+
+      // Then animation...#3
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
