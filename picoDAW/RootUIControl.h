@@ -78,7 +78,7 @@ public:
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
-    auto cycle = mGraphics->GetControlWithTag(kCtrlTagCycleButton)->As<IVButtonControl>();
+    auto cycleKeyboard = mGraphics->GetControlWithTag(kCtrlTagCycleKeyboardButton)->As<IVButtonControl>();
     auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
@@ -165,7 +165,7 @@ public:
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
-      cycle->Hide(false);
+      cycleKeyboard->Hide(false);
     } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 

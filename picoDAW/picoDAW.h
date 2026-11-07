@@ -46,7 +46,7 @@ enum EControlTags
   kCtrlTagGateSequencer,
   kCtrlTagMidiSequencer,
   kCtrlTagVelocitySequencer,
-  kCtrlTagCycleButton,
+  kCtrlTagCycleKeyboardButton,
   kCtrlTagPlayToggle,
   kCtrlTagSoloToggle,
 

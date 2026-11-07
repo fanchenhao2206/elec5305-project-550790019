@@ -201,7 +201,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
     auto keyboard = new IVKeyboardControl(keyboardBounds);
-    auto cycleSeq = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
+    auto cycleKeyboard = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
       // Cycle through the sequencer's currently active sub-control
       KeyboardBoundsData &kbData = root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1];
       kbData.mKeyboardBoundsIdx += 1; 
@@ -342,7 +342,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
-    pGraphics->AttachControl(cycleSeq, kCtrlTagCycleButton);
+    pGraphics->AttachControl(cycleKeyboard, kCtrlTagCycleKeyboardButton);
     pGraphics->AttachControl(play, kCtrlTagPlayToggle);
     pGraphics->AttachControl(solo, kCtrlTagSoloToggle);
 
