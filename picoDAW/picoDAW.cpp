@@ -11,6 +11,7 @@
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
+  // TODO: to remove
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
   GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
@@ -85,7 +86,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Navigation controls...
     auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
     auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn1Seq;
+      root->mScreen = kScreenSequencerSyn1;
       root->Update();
       // Then animation...
       float x, y;
@@ -94,7 +95,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN1 SEQ", style);
     auto navigationSyn2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn2Seq;
+      root->mScreen = kScreenSequencerSyn2;
       root->Update();
       // Then animation...
       float x, y;
@@ -103,7 +104,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN2 SEQ", style);
     auto navigationSyn3Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn3Seq;
+      root->mScreen = kScreenSequencerSyn3;
       root->Update();
       // Then animation...
       float x, y;
@@ -112,7 +113,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN3 SEQ", style);
     auto navigationSyn4Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn4Seq;
+      root->mScreen = kScreenSequencerSyn4;
       root->Update();
       // Then animation...
       float x, y;
@@ -121,7 +122,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN4 SEQ", style);
     auto navigationSamp1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSamp1Seq;
+      root->mScreen = kScreenSequencerSamp1;
       root->Update();
       // Then animation...
       float x, y;
@@ -130,7 +131,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP1 SEQ", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSamp2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSamp2Seq;
+      root->mScreen = kScreenSequencerSamp2;
       root->Update();
       // Then animation...
       float x, y;
@@ -139,7 +140,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSyn1Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn1Edit;
+      root->mScreen = kScreenEditorSyn1;
       root->Update();
       // Then animation...
       float x, y;
@@ -148,7 +149,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN1 EDIT", style);
     auto navigationSyn2Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn2Edit;
+      root->mScreen = kScreenEditorSyn2;
       root->Update();
       // Then animation...
       float x, y;
@@ -157,7 +158,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN2 EDIT", style);
     auto navigationSyn3Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn3Edit;
+      root->mScreen = kScreenEditorSyn3;
       root->Update();
       // Then animation...
       float x, y;
@@ -166,7 +167,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN3 EDIT", style);
     auto navigationSyn4Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSyn4Edit;
+      root->mScreen = kScreenEditorSyn4;
       root->Update();
       // Then animation...
       float x, y;
@@ -175,7 +176,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN4 EDIT", style);
     auto navigationSamp1Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSamp1Edit;
+      root->mScreen = kScreenEditorSamp1;
       root->Update();
       // Then animation...
       float x, y;
@@ -184,7 +185,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP1 EDIT", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSamp2Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSamp2Edit;
+      root->mScreen = kScreenEditorSamp2;
       root->Update();
       // Then animation...
       float x, y;
@@ -202,11 +203,12 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto keyboard = new IVKeyboardControl(keyboardBounds);
     auto cycleButton = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
       // Cycle through its currently active sub-control
-      root->mKeyboardBoundsIdx += 1; 
-      root->mKeyboardBoundsIdx %= root->mKeyboardBoundsTotal;
+      KeyboardBoundsData &kbData = root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1];
+      kbData.mKeyboardBoundsIdx += 1; 
+      kbData.mKeyboardBoundsIdx %= kbData.mKeyboardBoundsTotal;
                   
       // Hide/Show controls so only the active one is displayed
-      int sync = root->mKeyboardBoundsIdx;
+      int sync = kbData.mKeyboardBoundsIdx;
       pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
       pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
 
@@ -232,8 +234,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
           // But we want a row index from bottom to top; matching piano roll sequencers
           int midiStep = (midiSeq->mNRows - 1) - midiCell;
 
-          // 2206: assumes we are in C3 octave (C3 === 48); also, velocity sequencer
-          int currNote = (midiCell < 0) ? -1 : 48 + midiStep;
+          // 2206: assumes we are in C4 octave (C4 === 60); also, velocity sequencer
+          int currNote = (midiCell < 0) ? -1 : 60 + midiStep;
           int currVelocity = 80;
 
           // For knowing whether to hold this note in legato with the previous identical note
@@ -297,25 +299,23 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
-    auto knob = new IVToggleControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
+    auto knobSwitch = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
 
       //////////////////////////////////////////////////////////
       // 2206: HERE WE ARE, LET'S GET THIS SINE/SAW WORKING!! //
       //////////////////////////////////////////////////////////
 
-      // Which screen are we on? Well, we'll have to be either 
-      // kScreenSyn1Edit/kScreenSyn2Edit/kScreenSyn3Edit/kScreenSyn4Edit/
-      int synEditIndex = root->mScreen - kScreenSyn1Edit; // [0..3]
+      int synEditIndex = root->mScreen - kScreenEditorSyn1; // [0..3]
       
       // Send arbitrary message to DSP...
-      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagKnobToggle, sizeof(int), &root->mScreen);
+      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagKnobSwitch, sizeof(int), &root->mScreen);
 
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-    }, "", style, "SINE", "SAW");
+    }, "", style);
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
@@ -341,7 +341,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(mixer, kCtrlTagMixer);
 
-    pGraphics->AttachControl(knob, kCtrlTagKnobToggle);
+    pGraphics->AttachControl(knobSwitch, kCtrlTagKnobSwitch);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
@@ -470,9 +470,9 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 // This is called when IPlugWasmDSP::OnArbitraryMessage is called...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
-  if (ctrlTag == kCtrlTagKnobToggle && msgTag == 1) {
+  if (ctrlTag == kCtrlTagKnobSwitch && msgTag == 1) {
     const int screen = *static_cast<const int*>(pData);
-    int synEditIndex = screen - kScreenSyn1Edit;
+    int synEditIndex = screen - kScreenEditorSyn1;
     mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIndex]->CycleSynthCore();
   }
   

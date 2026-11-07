@@ -1,6 +1,33 @@
 #if IPLUG_EDITOR
 #include "IControl.h"
 
+struct SynthData
+{
+  int coreIndex; // [0..2], only three cores for now
+  int octave; // [-2..+2], relative to C4 octave (with C4 == 60)
+  float attack;
+  float decay;
+  float sustain;
+  float release;
+  float filterCutoff;
+  float filterResonance;
+  float filterAttack;
+  float filterDecay;
+  float filterSustain;
+  float filterRelease;
+};
+
+struct KeyboardBoundsData
+{
+  KeyboardBoundsData()
+  : mKeyboardBoundsIdx(0),
+    mKeyboardBoundsTotal(2)
+  {
+  }
+  int mKeyboardBoundsIdx;
+  int mKeyboardBoundsTotal;
+};
+
 // A root control that is invisible; holds data and funcs for drawing UI
 class RootUIControl : public IControl 
 {
@@ -8,8 +35,9 @@ public:
   RootUIControl(IGraphics *pGraphics)
   : IControl(IRECT()),
     mGraphics(pGraphics), mScreen(kScreenNavigation),
-    mKeyboardBoundsIdx(0), mKeyboardBoundsTotal(2),
-    mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1)
+    mKeyboardBoundsDatas(6),
+    mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1),
+    mSynthDatas(4)/*, mSamplerDatas(2)*/
   {
     mIgnoreMouse = true; // Member of parent IControl
   }
@@ -45,7 +73,7 @@ public:
 
     auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
 
-    auto knob = mGraphics->GetControlWithTag(kCtrlTagKnobToggle)->As<IVToggleControl>();
+    auto knobSwitch = mGraphics->GetControlWithTag(kCtrlTagKnobSwitch)->As<IVSwitchControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -78,43 +106,43 @@ public:
           str = "HOME";
           break;
 
-        case kScreenSyn1Seq:
+        case kScreenSequencerSyn1:
           str = "SYN1 SEQUENCER";
           break;
-        case kScreenSyn2Seq:
+        case kScreenSequencerSyn2:
           str = "SYN2 SEQUENCER";
           break;
-        case kScreenSyn3Seq:
+        case kScreenSequencerSyn3:
           str = "SYN3 SEQUENCER";
           break;
-        case kScreenSyn4Seq:
+        case kScreenSequencerSyn4:
           str = "SYN4 SEQUENCER";
           break;
 
-        case kScreenSyn1Edit:
+        case kScreenEditorSyn1:
           str = "SYN1 SETTINGS";
           break;
-        case kScreenSyn2Edit:
+        case kScreenEditorSyn2:
           str = "SYN2 SETTINGS";
           break;
-        case kScreenSyn3Edit:
+        case kScreenEditorSyn3:
           str = "SYN3 SETTINGS";
           break;
-        case kScreenSyn4Edit:
+        case kScreenEditorSyn4:
           str = "SYN4 SETTINGS";
           break;
 
-        case kScreenSamp1Seq:
+        case kScreenSequencerSamp1:
           str = "SAMP1 SEQUENCER";
           break;
-        case kScreenSamp2Seq:
+        case kScreenSequencerSamp2:
           str = "SAMP2 SEQUENCER";
           break;
 
-        case kScreenSamp1Edit:
+        case kScreenEditorSamp1:
           str = "SAMP1 SETTINGS";
           break;
-        case kScreenSamp2Edit:
+        case kScreenEditorSamp2:
           str = "SAMP2 SETTINGS";
           break;
 
@@ -131,22 +159,22 @@ public:
     solo->Hide(false);
     title->Hide(false);
     step->Hide(false);
-    if (mScreen == kScreenSyn1Seq || mScreen == kScreenSyn2Seq || mScreen == kScreenSyn3Seq || mScreen == kScreenSyn4Seq ||
-        mScreen == kScreenSamp1Seq || mScreen == kScreenSamp2Seq) {
-      int sync = mKeyboardBoundsIdx;
+    if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 ||
+        mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
+      int sync = mKeyboardBoundsDatas[mScreen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
       cycle->Hide(false);
-    } else if (mScreen == kScreenSyn1Edit || mScreen == kScreenSyn2Edit || mScreen == kScreenSyn3Edit || mScreen == kScreenSyn4Edit) {
+    } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
       // buttons; that would be ok, this will just be a long Update() function (that's ok)
       //
       // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
                                   // takes up the sequencerBounds
-      knob->Hide(false);
-    } else if (mScreen == kScreenSamp1Edit || mScreen == kScreenSamp2Edit) {
+      knobSwitch->Hide(false);
+    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else /* if (mScreen == kScreenNavigation) */ {
@@ -170,8 +198,8 @@ public:
     }
   }
 
-  int mKeyboardBoundsIdx;
-  const int mKeyboardBoundsTotal;
+  std::vector<SynthData> mSynthDatas;
+  std::vector<KeyboardBoundsData> mKeyboardBoundsDatas;
 
   Timer *mPlaybackTimer;
   IGraphics *mGraphics;

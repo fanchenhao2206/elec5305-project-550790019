@@ -66,7 +66,7 @@ enum EControlTags
 
   kCtrlTagMixer,
 
-  kCtrlTagKnobToggle,
+  kCtrlTagKnobSwitch,
 
   // TODO: to remove 
   kCtrlTagMeter,
@@ -82,21 +82,21 @@ enum EScreens
 {
   kScreenNavigation = 0,
 
-  kScreenSyn1Seq,
-  kScreenSyn2Seq,
-  kScreenSyn3Seq,
-  kScreenSyn4Seq,
+  kScreenSequencerSyn1,
+  kScreenSequencerSyn2,
+  kScreenSequencerSyn3,
+  kScreenSequencerSyn4,
 
-  kScreenSamp1Seq,
-  kScreenSamp2Seq,
+  kScreenSequencerSamp1,
+  kScreenSequencerSamp2,
 
-  kScreenSyn1Edit,
-  kScreenSyn2Edit,
-  kScreenSyn3Edit,
-  kScreenSyn4Edit,
+  kScreenEditorSyn1,
+  kScreenEditorSyn2,
+  kScreenEditorSyn3,
+  kScreenEditorSyn4,
 
-  kScreenSamp1Edit,
-  kScreenSamp2Edit,
+  kScreenEditorSamp1,
+  kScreenEditorSamp2,
 
   kNumScreens
 };
