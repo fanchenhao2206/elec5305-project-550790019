@@ -73,7 +73,7 @@ public:
 
     auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
 
-    auto knobSwitch = mGraphics->GetControlWithTag(kCtrlTagKnobSwitch)->As<IVSwitchControl>();
+    auto core = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -173,7 +173,7 @@ public:
       //
       // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
                                   // takes up the sequencerBounds
-      knobSwitch->Hide(false);
+      core->Hide(false);
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds

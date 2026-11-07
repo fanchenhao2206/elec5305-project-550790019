@@ -201,8 +201,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
     auto keyboard = new IVKeyboardControl(keyboardBounds);
-    auto cycleButton = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
-      // Cycle through its currently active sub-control
+    auto cycleSeq = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
+      // Cycle through the sequencer's currently active sub-control
       KeyboardBoundsData &kbData = root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1];
       kbData.mKeyboardBoundsIdx += 1; 
       kbData.mKeyboardBoundsIdx %= kbData.mKeyboardBoundsTotal;
@@ -218,7 +218,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "TOGGLE", style);
-    auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
+    auto play = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
         root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
@@ -294,21 +294,17 @@ picoDAW::picoDAW(const InstanceInfo& info)
         root->mPlaybackStepIdx = 0;
       }
     }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
-    auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
+    auto solo = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
       /* 2206: once mixer is ready... */
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
-    auto knobSwitch = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
-
-      //////////////////////////////////////////////////////////
-      // 2206: HERE WE ARE, LET'S GET THIS SINE/SAW WORKING!! //
-      //////////////////////////////////////////////////////////
-
+    auto core = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
+      // Which editor screen are we on? (Has to be one of the synth editors...)
       int synEditIndex = root->mScreen - kScreenEditorSyn1; // [0..3]
-      
+
       // Send arbitrary message to DSP...
-      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagKnobSwitch, sizeof(int), &root->mScreen);
+      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagCoreSwitch, sizeof(int), &root->mScreen);
 
       // Then animation...
       float x, y;
@@ -341,14 +337,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(mixer, kCtrlTagMixer);
 
-    pGraphics->AttachControl(knobSwitch, kCtrlTagKnobSwitch);
+    pGraphics->AttachControl(core, kCtrlTagCoreSwitch);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
-    pGraphics->AttachControl(cycleButton, kCtrlTagCycleButton);
-    pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
-    pGraphics->AttachControl(soloToggle, kCtrlTagSoloToggle);
+    pGraphics->AttachControl(cycleSeq, kCtrlTagCycleButton);
+    pGraphics->AttachControl(play, kCtrlTagPlayToggle);
+    pGraphics->AttachControl(solo, kCtrlTagSoloToggle);
 
     // Load home page and return to event loop...
     root->Update();
@@ -470,7 +466,7 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 // This is called when IPlugWasmDSP::OnArbitraryMessage is called...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
-  if (ctrlTag == kCtrlTagKnobSwitch && msgTag == 1) {
+  if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
     const int screen = *static_cast<const int*>(pData);
     int synEditIndex = screen - kScreenEditorSyn1;
     mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIndex]->CycleSynthCore();
