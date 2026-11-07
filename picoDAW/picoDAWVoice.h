@@ -12,9 +12,6 @@ class picoDAWVoice : public SynthVoice
 public:
   picoDAWVoice()
   {
-    mNSynthCores = 3;
-    mSynthCoreIndex = 0;
-
     mSineCore = new SinOscillator<sample>();
     mTriangleCore = new TriangleOscillator<sample>();
     mSawCore = new SawOscillator<sample>();
@@ -22,15 +19,13 @@ public:
     mOSC = mSineCore;
   }
 
-  void CycleSynthCore() override
+  void SetSynthCore(int coreIdx) override
   {
-    mSynthCoreIndex += 1;
-    mSynthCoreIndex %= mNSynthCores;
-    if (mSynthCoreIndex == 0) {
+    if (coreIdx == 0) {
       mOSC = mSineCore;
-    } else if (mSynthCoreIndex == 1) {
+    } else if (coreIdx == 1) {
       mOSC = mTriangleCore;
-    } else if (mSynthCoreIndex == 2) {
+    } else if (coreIdx == 2) {
       mOSC = mSawCore;
     }
   }
@@ -100,9 +95,6 @@ public:
   }
 
 private:
-  int mSynthCoreIndex = 0;
-  int mNSynthCores = 2;
-
   IOscillator<sample> *mSineCore;
   IOscillator<sample> *mSawCore;
   IOscillator<sample> *mTriangleCore;

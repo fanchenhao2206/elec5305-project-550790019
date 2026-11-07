@@ -7,6 +7,7 @@
 #include "RootUIControl.h" // A root control that is invisible; holds data and funcs for drawing UI
 
 #include <string>
+#include <utility>
 
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
@@ -301,10 +302,17 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // 2206: Synth controls...
     auto core = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
       // Which editor screen are we on? (Has to be one of the synth editors...)
-      int synEditIndex = root->mScreen - kScreenEditorSyn1; // [0..3]
+      int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
 
-      // Send arbitrary message to DSP...
-      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagCoreSwitch, sizeof(int), &root->mScreen);
+      // Modify the corresponding struct in root control...
+      SynthData &synData = root->mSynthDatas[synEditIdx];
+      synData.mCoreIdx += 1;
+      synData.mCoreIdx %= synData.mCoreTotal;
+
+      // Send arbitrary message to DSP. It needs to know which voice to modify and
+      // what to modify it to. We need to send it synEditIdx and synData.mCoreIdx...
+      // Maybe std::pair<int, int>? Let's try for now...
+      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagCoreSwitch, sizeof(std::pair<int,int>), new std::pair<int,int>(synEditIdx, synData.mCoreIdx));
 
       // Then animation...
       float x, y;
@@ -467,9 +475,16 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
   if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
-    const int screen = *static_cast<const int*>(pData);
-    int synEditIndex = screen - kScreenEditorSyn1;
-    mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIndex]->CycleSynthCore();
+    // Received arbitrary message from core switch. It gave us which voice to 
+    // modify and what to modify it to. We received synEditIdx at .first, and
+    // synData.mCoreIdx at .second. This is certainly better than inventing a 
+    // new two-member struct.
+    const std::pair<int,int> msg = *static_cast<const std::pair<int,int>*>(pData);
+    int synEditIdx = msg.first;
+    int coreIdx = msg.second;
+    mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIdx]->SetSynthCore(coreIdx);
+    delete static_cast<const std::pair<int,int>*>(pData); // This makes you feel like you're
+                                                          // actually programming doesn't it
   }
   
   return false;

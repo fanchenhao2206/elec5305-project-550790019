@@ -3,18 +3,38 @@
 
 struct SynthData
 {
-  int coreIndex; // [0..2], only three cores for now
-  int octave; // [-2..+2], relative to C4 octave (with C4 == 60)
-  float attack;
-  float decay;
-  float sustain;
-  float release;
-  float filterCutoff;
-  float filterResonance;
-  float filterAttack;
-  float filterDecay;
-  float filterSustain;
-  float filterRelease;
+  SynthData()
+  : mCoreIdx(0),
+    mCoreTotal(3),
+    mOctave(0),
+
+    mAttack(0.),
+    mDecay(0.),
+    mSustain(1.),
+    mRelease(0.),
+
+    mFilterCutoff(0.5),
+    mFilterResonance(0.),
+
+    mFilterAttack(0.),
+    mFilterDecay(0.),
+    mFilterSustain(1.),
+    mFilterRelease(0.)
+  {}
+
+  int mCoreIdx; // [0..2], only three cores for now
+  int mCoreTotal; // total three cores, for now
+  int mOctave; // [-2..+2], relative to C4 octave (with C4 == 60)
+  double mAttack;
+  double mDecay;
+  double mSustain;
+  double mRelease;
+  double mFilterCutoff;
+  double mFilterResonance;
+  double mFilterAttack;
+  double mFilterDecay;
+  double mFilterSustain;
+  double mFilterRelease;
 };
 
 struct KeyboardBoundsData
@@ -22,8 +42,8 @@ struct KeyboardBoundsData
   KeyboardBoundsData()
   : mKeyboardBoundsIdx(0),
     mKeyboardBoundsTotal(2)
-  {
-  }
+  {}
+
   int mKeyboardBoundsIdx;
   int mKeyboardBoundsTotal;
 };
@@ -46,13 +66,15 @@ public:
 
   void Update()
   {
-    // Hide all controls
+    ///////////////////////
+    // Hide all controls //
+    ///////////////////////
+
     for (auto ctrlTag : mGraphics->GetControlTags()) {
       ctrlTag.second->Hide(true); // Manually unhide later...
       ctrlTag.second->SetDisabled(false); // Manually disable later...
     }
 
-    // And then update the controls behind the curtain
     auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
     auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
     auto step = mGraphics->GetControlWithTag(kCtrlTagStep)->As<ITextControl>();
@@ -82,78 +104,90 @@ public:
     auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
+    //////////////////////////////////////////////////////
+    // So that can update the controls behind a curtain //
+    //////////////////////////////////////////////////////
+
     // 2206: Instead of worrying about adding extra methods to these controls, 
     // just write out the full code for those methods here; for now at least...
     // (Maybe we will need oop... Or maybe not!! Hopefully not... Yeah, don't think we will need!!)
+    if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 ||
+        mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
+      // keyboard->Update(mScreen);
+      // midiSeq->Update(mScreen);
+      // gateSeq->Update(mScreen);
+      // TODO:
+    } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
+      // synth->Update(mScreen);
 
-    // synth->Update(mScreen);
-    // sampler->Update(mScreen);
+      ////////////////////
+      // 2206: DO NOW!! //
+      ////////////////////
 
-    /* keyboard->Update(mScreen); */ {
-      // 2206: How to update keyboard? What is keyboard?
-    }
-    /* midiSeq->Update(mScreen); */ {
-      // 2206: How to update midiSeq? What is midiSeq?
-    }
-    /* gateSeq->Update(mScreen); */ {
-      // 2206: How to update gateSeq? What is gateSeq?
-    }
+      // core->Update(mScreen);
 
-    /* title->Update(mScreen); */ {
-      std::string str = "";
-      switch (mScreen) {
-        case kScreenNavigation:
-          str = "HOME";
-          break;
-
-        case kScreenSequencerSyn1:
-          str = "SYN1 SEQUENCER";
-          break;
-        case kScreenSequencerSyn2:
-          str = "SYN2 SEQUENCER";
-          break;
-        case kScreenSequencerSyn3:
-          str = "SYN3 SEQUENCER";
-          break;
-        case kScreenSequencerSyn4:
-          str = "SYN4 SEQUENCER";
-          break;
-
-        case kScreenEditorSyn1:
-          str = "SYN1 SETTINGS";
-          break;
-        case kScreenEditorSyn2:
-          str = "SYN2 SETTINGS";
-          break;
-        case kScreenEditorSyn3:
-          str = "SYN3 SETTINGS";
-          break;
-        case kScreenEditorSyn4:
-          str = "SYN4 SETTINGS";
-          break;
-
-        case kScreenSequencerSamp1:
-          str = "SAMP1 SEQUENCER";
-          break;
-        case kScreenSequencerSamp2:
-          str = "SAMP2 SEQUENCER";
-          break;
-
-        case kScreenEditorSamp1:
-          str = "SAMP1 SETTINGS";
-          break;
-        case kScreenEditorSamp2:
-          str = "SAMP2 SETTINGS";
-          break;
-
-        default:
-          str = "UNIMPLEMENTED";
-          break;
-      }
-      title->SetStr(str.c_str());
+    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
+      // sampler->Update(mScreen);
+      // TODO:
     }
 
-    // And lastly, unhide the updated controls that are relevant to the current screen
+    // title->Update(mScreen);
+    std::string str = "";
+    switch (mScreen) {
+      case kScreenNavigation:
+        str = "HOME";
+        break;
+
+      case kScreenSequencerSyn1:
+        str = "SYN1 SEQUENCER";
+        break;
+      case kScreenSequencerSyn2:
+        str = "SYN2 SEQUENCER";
+        break;
+      case kScreenSequencerSyn3:
+        str = "SYN3 SEQUENCER";
+        break;
+      case kScreenSequencerSyn4:
+        str = "SYN4 SEQUENCER";
+        break;
+
+      case kScreenEditorSyn1:
+        str = "SYN1 SETTINGS";
+        break;
+      case kScreenEditorSyn2:
+        str = "SYN2 SETTINGS";
+        break;
+      case kScreenEditorSyn3:
+        str = "SYN3 SETTINGS";
+        break;
+      case kScreenEditorSyn4:
+        str = "SYN4 SETTINGS";
+        break;
+
+      case kScreenSequencerSamp1:
+        str = "SAMP1 SEQUENCER";
+        break;
+      case kScreenSequencerSamp2:
+        str = "SAMP2 SEQUENCER";
+        break;
+
+      case kScreenEditorSamp1:
+        str = "SAMP1 SETTINGS";
+        break;
+      case kScreenEditorSamp2:
+        str = "SAMP2 SETTINGS";
+        break;
+
+      default:
+        str = "UNIMPLEMENTED";
+        break;
+    }
+    title->SetStr(str.c_str());
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Then finally, reveal only the controls that are relevant to the current screen //
+    ////////////////////////////////////////////////////////////////////////////////////
+
     home->Hide(false);
     play->Hide(false);
     solo->Hide(false);
@@ -170,9 +204,6 @@ public:
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
       // buttons; that would be ok, this will just be a long Update() function (that's ok)
-      //
-      // synth->Hide(false);      // 2206: the synth screen, edit the parameters of synth like ADSR
-                                  // takes up the sequencerBounds
       core->Hide(false);
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
