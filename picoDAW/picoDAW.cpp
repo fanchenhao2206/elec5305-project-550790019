@@ -443,6 +443,9 @@ void picoDAW::OnParamChange(int paramIdx)
   // TODO:
   // if paramIdx == kParamGain
   // Sync mSynthDatas[0].mGain with GetParam(kParamGain)->Value();
+
+  // And, update the corresponding values in picoDAW_DSP.h. Basically,
+  // Re-add the provided SetParam func you deleted in picoDAW_DSP.h :)
 }
 
 // UI updates are communicated to the DSP, through arbitrary messages...
