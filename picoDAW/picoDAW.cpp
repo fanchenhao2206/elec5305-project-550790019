@@ -416,9 +416,10 @@ void picoDAW::ProcessMidiMsg(const IMidiMsg& msg)
 handle:
   // Route that message to the internal DSP's who need it
   mDSP.ProcessMidiMsg(msg);
-  // mInstrumentASP.ProcessMidiMsg(msg); // Send to all instruments, who will ignore the message 
-  // mInstrumentBSP.ProcessMidiMsg(msg); // if not intended for them? Specified by channel which
-  // mInstrumentCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
+  // mASP.ProcessMidiMsg(msg); // Send to all instruments, who will ignore the message 
+  // mBSP.ProcessMidiMsg(msg); // if not intended for them? Specified by channel which
+  // mCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
+                               // See... event.mAddress (.mChannel?)
 }
 
 // But now we will have the UI updates be communicted to the DSP, through onArbitraryMessage instead...
