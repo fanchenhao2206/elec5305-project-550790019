@@ -332,7 +332,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "OCTAVE", style);
-    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), [pGraphics, root](IControl* pCaller) {
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), /* kParamGain */[pGraphics, root](IControl* pCaller) {
       // Turns out this is an onclick function; useless to me!! Maybe i need params...
       // which are synced with their copies in rootuicontrol. and then, on screen switch,
       // the IParam's values are updated to the corresponding values in rootuicontrol...
