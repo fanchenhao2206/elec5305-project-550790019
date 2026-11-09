@@ -351,34 +351,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
 #if IPLUG_DSP
 void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
-  // We are given a (hopefully) empty buffer "outputs" to fill in with samples,
-  // presumably played back through final audio output...
-
-  // Fill in outputs with samples to play back; of course, if no MIDI KeyOn messages in queue,
-  // probably nothing here right? (Not entirely true, because of the Release in ADSR envelope)
-  // Point being, MIDI messages have been delivered to this DSP, and now we processes those 
-  // messages; process to produce a block of samples, hence ProcessBlock()
+  // Inputs to mDSP is empty, because it is the first DSP plugin in the chain!!
   mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
+
+  // mDSP generates outputs, that we then pass BACK to UI through mMeterSender, for visualisation
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
 }
 
 void picoDAW::OnIdle()
 {
-  // Send message from dlg, to the UI control specified by ctrlTag;
-  // dlg interfaces between UI and DSP, so it essentially transmits
-  // message received from any DSP's, to that specific UI control
-  //
-  // Specifically, these sender instances are a part of dlg (aka *this)
-  // and they each maintain a queue of message datas that will be relevant
-  // to specific UI controls; these senders know which specific UI controls
-  // (on initialisation), so will remember to include the relevant ctrlTag
-  // in the message datas it adds to the queue
-  //
-  // In that sense, these TransmitData are literal helper functions, emptying
-  // the queue and sending messages to the addresses specified within them;
-  // no thinking required; mMeterSender would be sending the levels produced
-  // by mDSP to the UI control given by kCtrlTagMeter; exactly what is done
-  // through mMeterSender.ProcessBlock, for example
+  // Whenever the DSP has time (finished ProcessBlock early, for example), it'll send control
+  // messages back to UI, through ISenders like mMeterSender, letting the UI know of the current
+  // status of the DSP output, or any other changes to send. Specifically, the DSP does this by
+  // filling up IPeakAvgSender::mQueue through PushData, from which the UI takes via TransmitData
   mMeterSender.TransmitData(*this);
 }
 
@@ -422,8 +407,12 @@ handle:
                                // See... event.mAddress (.mChannel?)
 }
 
-// But now we will have the UI updates be communicted to the DSP, through onArbitraryMessage instead...
-// This is called when IPlugWasmDSP::OnArbitraryMessage is called...
+// UI updates are communicated to the DSP, through arbitrary messages...
+// Previously, they were communicated by the UI to us via (i) first changing
+// param values via SetParameterValue, and then (ii) explicitly creating a
+// ParamChange that is sent to us. No real difference from using arbitrary 
+// messages (except here, we'll explicitly pass the value too, to avoid the 
+// params struct --- aka RootUIControl --- being global to both UI and DSP)
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
   if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
