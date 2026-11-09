@@ -222,8 +222,12 @@ picoDAW::picoDAW(const InstanceInfo& info)
           // But we want a row index from bottom to top; matching piano roll sequencers
           int midiStep = (midiSeq->mNRows - 1) - midiCell;
 
-          // 2206: assumes we are in C4 octave (C4 === 60); also, velocity sequencer
-          int currNote = (midiCell < 0) ? -1 : 60 + midiStep;
+          // 2206: Playback is a mess, because currently midiSeq is global across all six instruments
+          // TODO: don't just take from the first instrument [0], like we do here...
+          // We take the octave from RootUIControl, which is relative to C4 == 60;
+          // For example, if octave is -1, then we are in the C3 == 48 octave.
+          int octave = root->mSynthDatas[0].mOctave;
+          int currNote = (midiCell < 0) ? -1 : (60 + octave * 12) + midiStep;
           int currVelocity = 80;
 
           // For knowing whether to hold this note in legato with the previous identical note
@@ -289,7 +293,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // 2206: Synth controls...
     // Break sequencerBounds into a 4x4 grid...
 
-    auto core = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
+    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), [pGraphics, root](IControl* pCaller) {
       // Which editor screen are we on? (Has to be one of the synth editors...)
       int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
 
@@ -308,7 +312,26 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pGraphics->GetMouseDownPoint(x, y);
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-    }, "", style);
+    }, "CORE", style);
+    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), [pGraphics, root](IControl* pCaller) {
+      // Which editor screen are we on? (Has to be one of the synth editors...)
+      int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
+
+      // Modify the corresponding struct in root control...
+      SynthData &synData = root->mSynthDatas[synEditIdx];
+      synData.mOctave += 1;
+      if (synData.mOctave > 2) synData.mOctave = -2;
+
+      // The playback button will use this mOctave value to generate the 
+      // appropriate MIDI messages to send to DSP from us the UI; meaning
+      // we don't need to send any arbitrary messages here...
+
+      // Then animation...
+      float x, y;
+      pGraphics->GetMouseDownPoint(x, y);
+      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
+      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
+    }, "OCTAVE", style);
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
@@ -332,7 +355,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(mixer, kCtrlTagMixer);
 
-    pGraphics->AttachControl(core, kCtrlTagCoreSwitch);
+    pGraphics->AttachControl(coreSwitch, kCtrlTagCoreSwitch);
+    pGraphics->AttachControl(octaveSwitch, kCtrlTagOctaveSwitch);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);

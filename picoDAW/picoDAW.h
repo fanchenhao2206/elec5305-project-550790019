@@ -53,6 +53,7 @@ enum EControlTags
   kCtrlTagMixer,
 
   kCtrlTagCoreSwitch,
+  kCtrlTagOctaveSwitch,
 
   // TODO: to remove 
   kCtrlTagMeter,

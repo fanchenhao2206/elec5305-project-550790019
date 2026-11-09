@@ -94,7 +94,8 @@ public:
 
     auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
 
-    auto core = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
+    auto coreSwitch = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
+    auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagOctaveSwitch)->As<IVSwitchControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -123,7 +124,8 @@ public:
       // 2206: DO NOW!! //
       ////////////////////
 
-      // core->Update(mScreen);
+      // coreSwitch->Update(mScreen);
+      // octaveSwitch->Update(mScreen);
 
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Update(mScreen);
@@ -203,7 +205,8 @@ public:
       // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
       // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
       // buttons; that would be ok, this will just be a long Update() function (that's ok)
-      core->Hide(false);
+      coreSwitch->Hide(false);
+      octaveSwitch->Hide(false);
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
