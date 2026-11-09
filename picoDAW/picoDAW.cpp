@@ -438,6 +438,13 @@ handle:
                                // See... event.mAddress (.mChannel?)
 }
 
+void picoDAW::OnParamChange(int paramIdx)
+{
+  // TODO:
+  // if paramIdx == kParamGain
+  // Sync mSynthDatas[0].mGain with GetParam(kParamGain)->Value();
+}
+
 // UI updates are communicated to the DSP, through arbitrary messages...
 // Previously, they were communicated by the UI to us via (i) first changing
 // param values via SetParameterValue, which then (ii) explicitly calls our
