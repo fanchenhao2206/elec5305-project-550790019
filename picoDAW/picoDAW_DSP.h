@@ -71,10 +71,11 @@ public:
     sample sustain_value = 50. / 100.; // Sustain default (%)
     sample release_value = 10.;        // Release default (ms)
 
-    // Sustain is not part of stage times (it is a percentage and dependent on decay after all)
+    // Sustain is not an actual stage (it is a percentage and is dependent on decay after all)
+    // TODO: But how can voices have different sustain values then?
     mParamsToSmooth[kModSustainSmoother] = sustain_value;
 
-    // Each voice has the same ADSR defaults. First set attack
+    // Then set remaining defaults...
     mSynth.ForEachVoice([attack_value, decay_value, release_value](SynthVoice& voice) {
       voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, attack_value);
       voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, decay_value);
@@ -86,29 +87,6 @@ public:
   {
     mSynth.AddMidiMsgToQueue(msg);
   }
-
-  // void SetParam(int paramIdx, double value)
-  // {
-  //   using EEnvStage = ADSREnvelope<sample>::EStage;
-    
-  //   switch (paramIdx) {
-  //     case kParamSustain:
-  //       mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
-  //       break;
-  //     case kParamAttack:
-  //     case kParamDecay:
-  //     case kParamRelease:
-  //     {
-  //       EEnvStage stage = static_cast<EEnvStage>(EEnvStage::kAttack + (paramIdx - kParamAttack));
-  //       mSynth.ForEachVoice([stage, value](SynthVoice& voice) {
-  //         voice.mAMPEnv.SetStageTime(stage, value);
-  //       });
-  //       break;
-  //     }
-  //     default:
-  //       break;
-  //   }
-  // }
   
 public:
   MidiSynth mSynth { VoiceAllocator::kPolyModeMono, MidiSynth::kDefaultBlockSize };

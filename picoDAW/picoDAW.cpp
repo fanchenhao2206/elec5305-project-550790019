@@ -12,12 +12,6 @@
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  // TODO: to remove
-  // GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
-  // GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  // GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  // GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
-  // GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
   
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
@@ -426,22 +420,6 @@ handle:
   // mInstrumentBSP.ProcessMidiMsg(msg); // if not intended for them? Specified by channel which
   // mInstrumentCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
 }
-
-// // Guide for how UI updates were previously communicated to DSP; through onParamChange calls!!
-// void picoDAW::OnParamChange(int paramIdx)
-// {
-//   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
-// }
-
-// // Guide for how UI changes can be communicated to other UI elements through us
-// void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
-// {
-//   #if IPLUG_EDITOR
-//   if (auto pGraphics = GetUI())
-//   {}
-//   #endif
-// }
-
 
 // But now we will have the UI updates be communicted to the DSP, through onArbitraryMessage instead...
 // This is called when IPlugWasmDSP::OnArbitraryMessage is called...
