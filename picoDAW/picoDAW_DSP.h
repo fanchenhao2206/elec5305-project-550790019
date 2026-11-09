@@ -60,6 +60,26 @@ public:
     {
       mModulations.Add(mModulationsData.Get() + (blockSize * i));
     }
+
+    // Gain default, as in mixer...
+    mParamsToSmooth[kModGainSmoother] = (sample) 100. / 100.;
+
+    // ADSR defaults, as in editor...
+    using EEnvStage = ADSREnvelope<sample>::EStage;
+    sample attack_value = 10.;         // Attack default (ms)
+    sample decay_value = 10.;          // Decay default (ms)
+    sample sustain_value = 50. / 100.; // Sustain default (%)
+    sample release_value = 10.;        // Release default (ms)
+
+    // Sustain is not part of stage times (it is a percentage and dependent on decay after all)
+    mParamsToSmooth[kModSustainSmoother] = sustain_value;
+
+    // Each voice has the same ADSR defaults. First set attack
+    mSynth.ForEachVoice([attack_value, decay_value, release_value](SynthVoice& voice) {
+      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, attack_value);
+      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, decay_value);
+      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, release_value);
+    });
   }
 
   void ProcessMidiMsg(const IMidiMsg& msg)
@@ -67,31 +87,28 @@ public:
     mSynth.AddMidiMsgToQueue(msg);
   }
 
-  void SetParam(int paramIdx, double value)
-  {
-    using EEnvStage = ADSREnvelope<sample>::EStage;
+  // void SetParam(int paramIdx, double value)
+  // {
+  //   using EEnvStage = ADSREnvelope<sample>::EStage;
     
-    switch (paramIdx) {
-      case kParamGain:
-        mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
-        break;
-      case kParamSustain:
-        mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
-        break;
-      case kParamAttack:
-      case kParamDecay:
-      case kParamRelease:
-      {
-        EEnvStage stage = static_cast<EEnvStage>(EEnvStage::kAttack + (paramIdx - kParamAttack));
-        mSynth.ForEachVoice([stage, value](SynthVoice& voice) {
-          voice.mAMPEnv.SetStageTime(stage, value);
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }
+  //   switch (paramIdx) {
+  //     case kParamSustain:
+  //       mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
+  //       break;
+  //     case kParamAttack:
+  //     case kParamDecay:
+  //     case kParamRelease:
+  //     {
+  //       EEnvStage stage = static_cast<EEnvStage>(EEnvStage::kAttack + (paramIdx - kParamAttack));
+  //       mSynth.ForEachVoice([stage, value](SynthVoice& voice) {
+  //         voice.mAMPEnv.SetStageTime(stage, value);
+  //       });
+  //       break;
+  //     }
+  //     default:
+  //       break;
+  //   }
+  // }
   
 public:
   MidiSynth mSynth { VoiceAllocator::kPolyModeMono, MidiSynth::kDefaultBlockSize };
