@@ -8,6 +8,8 @@ struct SynthData
     mCoreTotal(3),
     mOctave(0),
 
+    mGain(1.),
+
     mAttack(0.),
     mDecay(0.),
     mSustain(1.),
@@ -25,6 +27,7 @@ struct SynthData
   int mCoreIdx; // [0..2], only three cores for now
   int mCoreTotal; // total three cores, for now
   int mOctave; // [-2..+2], relative to C4 octave (with C4 == 60)
+  double mGain;
   double mAttack;
   double mDecay;
   double mSustain;
@@ -96,6 +99,7 @@ public:
 
     auto coreSwitch = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
     auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagOctaveSwitch)->As<IVSwitchControl>();
+    auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagGainKnob)->As<IVKnobControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -126,6 +130,7 @@ public:
 
       // coreSwitch->Update(mScreen);
       // octaveSwitch->Update(mScreen);
+      // gainKnob->Update(mScreen);
 
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Update(mScreen);
@@ -202,11 +207,9 @@ public:
       midiSeq->Hide(false);
       cycleKeyboard->Hide(false);
     } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
-      // 2206: These are very naive pseudocode; the way i've been designing the UI, these 
-      // are unlikely to be single controls; instead, a mishmash of 42 different knobs and 
-      // buttons; that would be ok, this will just be a long Update() function (that's ok)
       coreSwitch->Hide(false);
       octaveSwitch->Hide(false);
+      gainKnob->Hide(false);
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds

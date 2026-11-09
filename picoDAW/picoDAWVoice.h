@@ -16,7 +16,15 @@ public:
     mTriangleCore = new TriangleOscillator<sample>();
     mSawCore = new SawOscillator<sample>();
 
-    mOSC = mSineCore;
+    mOSC = mSineCore; // FIXME: This is pretty buggy...
+                      // Open app, press core switch, and then
+                      // press play; expect to hear triangle,
+                      // but instead hear sine. And press switch
+                      // again, do hear saw, as expect. I'm not 
+                      // sure what the solution is, but also a 
+                      // very minor bug, for now, because at 
+                      // least it doesn't crash the plugin!!
+
   }
 
   void SetSynthCore(int coreIdx) override

@@ -332,6 +332,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "OCTAVE", style);
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), [pGraphics, root](IControl* pCaller) {
+      // Turns out this is an onclick function; useless to me!! Maybe i need params...
+      // which are synced with their copies in rootuicontrol. and then, on screen switch,
+      // the IParam's values are updated to the corresponding values in rootuicontrol...
+    }, "GAIN", style);
+    gainKnob->SetValue(1.); // As the initial value. BUT, instead a param should be used,
+                            // whose initial value is 1., so that don't need this line...
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
@@ -357,6 +364,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(coreSwitch, kCtrlTagCoreSwitch);
     pGraphics->AttachControl(octaveSwitch, kCtrlTagOctaveSwitch);
+    pGraphics->AttachControl(gainKnob, kCtrlTagGainKnob);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
