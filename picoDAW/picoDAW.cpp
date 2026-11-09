@@ -14,16 +14,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
 {
   // TODO: to remove
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
-  GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
   GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
-  GetParam(kParamLFOShape)->InitEnum("LFO Shape", LFO<>::kTriangle, {LFO_SHAPE_VALIST});
-  GetParam(kParamLFORateHz)->InitFrequency("LFO Rate", 1., 0.01, 40.);
-  GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
-  GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
-  GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
   
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
@@ -372,7 +366,6 @@ void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   // messages; process to produce a block of samples, hence ProcessBlock()
   mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
-  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
 }
 
 void picoDAW::OnIdle()
@@ -393,7 +386,6 @@ void picoDAW::OnIdle()
   // by mDSP to the UI control given by kCtrlTagMeter; exactly what is done
   // through mMeterSender.ProcessBlock, for example
   mMeterSender.TransmitData(*this);
-  mLFOVisSender.TransmitData(*this);
 }
 
 void picoDAW::OnReset()
@@ -435,42 +427,23 @@ handle:
   // mInstrumentCSP.ProcessMidiMsg(msg); // ranges from [0, 15]; picoDAW is just one instrument!
 }
 
+// Guide for how UI updates were previously communicated to DSP; through onParamChange calls!!
 void picoDAW::OnParamChange(int paramIdx)
 {
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
+// Guide for how UI changes can be communicated to other UI elements through us
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   #if IPLUG_EDITOR
   if (auto pGraphics = GetUI())
-  {
-    // 2206: the value tied to this paramIdx has changed; if the paramIdx
-    // was for the play button, for example, then its value changing means...
-    // the user pressed the play button! Well, let's first double check its value
-    // is true; GetParam(kParamPlayButton)->Bool() that is. And if it is, then 
-    // the user must have pressed it, so we leave it on, until the user either 
-    // presses it again---triggering its value to turn to false---or the song 
-    // finishes and we are the ones to turn it off; we'll do that somewhere.
-
-    // So, if the value is on, and previously was off; start playback!
-    // Ideally, still allow the rest of the UI to be interacted with, 
-    // and any other DSP modules to keep running. In other words, DO NOT 
-    // hang here for the song duration... Trigger the flag for starting playback,
-    // and exit. Notably, a mPlaybackDSP module will receive this flag change
-    // and it is what starts real playback. So we need a seperate mPlaybackDSP 
-    // module (probably); and the current mDSP is really mKeyboardDSP, or 
-    // mSequencerEditDSP (playing the test sounds as draw on sequencer map).
-    if (paramIdx == kParamLFORateMode)
-    {
-      const auto sync = GetParam(kParamLFORateMode)->Bool();
-      pGraphics->HideControl(kParamLFORateHz, sync);
-      pGraphics->HideControl(kParamLFORateTempo, !sync);
-    }
-  }
+  {}
   #endif
 }
 
+
+// But now we will have the UI updates be communicted to the DSP, through onArbitraryMessage instead...
 // This is called when IPlugWasmDSP::OnArbitraryMessage is called...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {

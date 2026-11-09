@@ -14,16 +14,10 @@ enum EParams
 
   // TODO: to remove 
   kParamGain,
-  kParamNoteGlideTime,
   kParamAttack,
   kParamDecay,
   kParamSustain,
   kParamRelease,
-  kParamLFOShape,
-  kParamLFORateHz,
-  kParamLFORateTempo,
-  kParamLFORateMode,
-  kParamLFODepth,
   kParamButton,
 
   kNumParams
@@ -122,6 +116,5 @@ public:
 private:
   picoDAWDSP mDSP;
   IPeakAvgSender<2> mMeterSender;
-  ISender<1> mLFOVisSender;
 #endif
 };

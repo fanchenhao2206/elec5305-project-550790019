@@ -61,7 +61,7 @@ public:
     mInputs[kVoiceControlTimbre].Write(mTimbreBuffer.Get(), startIdx, nFrames);
     
     // convert from "1v/oct" pitch space to frequency in Hertz
-    double osc1Freq = 440. * pow(2., pitch + pitchBend + inputs[kModLFO][0]);
+    double osc1Freq = 440. * pow(2., pitch + pitchBend);
 
     for(auto i = startIdx; i < startIdx + nFrames; i++)
     {
@@ -74,10 +74,10 @@ public:
 
   void SetSampleRateAndBlockSize(double sampleRate, int blockSize) override
   {
-    // mOSC->SetSampleRate(sampleRate);
     mSineCore->SetSampleRate(sampleRate);
     mTriangleCore->SetSampleRate(sampleRate);
     mSawCore->SetSampleRate(sampleRate);
+    
     mAMPEnv.SetSampleRate(sampleRate);
     
     mTimbreBuffer.Resize(blockSize);

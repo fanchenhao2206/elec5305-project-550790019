@@ -34,7 +34,6 @@ public:
     // where sig1 is the output from the synth1, and sig2 for synth2; making a mix
     
     mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames);
-    mLFO.ProcessBlock(mModulations.GetList()[kModLFO], nFrames, qnPos, transportIsRunning, tempo);
 
     // 2206: Clearly this fills in outputs with the final audio-ready output, 
     // but what actually plays back that audio? answer, probably javascript
@@ -54,7 +53,6 @@ public:
   {
     mSynth.SetSampleRateAndBlockSize(sampleRate, blockSize);
     mSynth.Reset();
-    mLFO.SetSampleRate(sampleRate);
     mModulationsData.Resize(blockSize * kNumModulations);
     mModulations.Empty();
     
@@ -74,9 +72,6 @@ public:
     using EEnvStage = ADSREnvelope<sample>::EStage;
     
     switch (paramIdx) {
-      case kParamNoteGlideTime:
-        mSynth.SetNoteGlideTime(value / 1000.);
-        break;
       case kParamGain:
         mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
         break;
@@ -93,21 +88,6 @@ public:
         });
         break;
       }
-      case kParamLFODepth:
-        mLFO.SetScalar(value / 100.);
-        break;
-      case kParamLFORateTempo:
-        mLFO.SetQNScalarFromDivision(static_cast<int>(value));
-        break;
-      case kParamLFORateHz:
-        mLFO.SetFreqCPS(value);
-        break;
-      case kParamLFORateMode:
-        mLFO.SetRateMode(value > 0.5);
-        break;
-      case kParamLFOShape:
-        mLFO.SetShape(static_cast<int>(value));
-        break;
       default:
         break;
     }
@@ -119,5 +99,4 @@ public:
   WDL_PtrList<sample> mModulations; // Ptrlist for global modulations
   LogParamSmooth<sample, kNumModulations> mParamSmoother;
   sample mParamsToSmooth[kNumModulations];
-  LFO<sample> mLFO;
 };
