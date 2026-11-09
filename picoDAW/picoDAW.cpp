@@ -409,9 +409,9 @@ handle:
 
 // UI updates are communicated to the DSP, through arbitrary messages...
 // Previously, they were communicated by the UI to us via (i) first changing
-// param values via SetParameterValue, and then (ii) explicitly creating a
-// ParamChange that is sent to us. No real difference from using arbitrary 
-// messages (except here, we'll explicitly pass the value too, to avoid the 
+// param values via SetParameterValue, which then (ii) explicitly calls our
+// picoDAW::OnParamChange; No real difference from sending an arbitrary message
+// instead! (Except here, we'll explicitly pass the value too, to avoid the 
 // params struct --- aka RootUIControl --- being global to both UI and DSP)
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
