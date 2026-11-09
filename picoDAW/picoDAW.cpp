@@ -418,8 +418,8 @@ bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData
   if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
     // Received arbitrary message from core switch. It gave us which voice to 
     // modify and what to modify it to. We received synEditIdx at .first, and
-    // synData.mCoreIdx at .second. This is certainly better than inventing a 
-    // new two-member struct.
+    // synData.mCoreIdx at .second. Using std::pair is certainly better than 
+    // re-inventing a new two-member struct...
     const std::pair<int,int> msg = *static_cast<const std::pair<int,int>*>(pData);
     int synEditIdx = msg.first;
     int coreIdx = msg.second;
