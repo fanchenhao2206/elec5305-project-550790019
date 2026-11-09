@@ -79,7 +79,6 @@ public:
     auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
     auto step = mGraphics->GetControlWithTag(kCtrlTagStep)->As<ITextControl>();
 
-    auto navigation = mGraphics->GetControlWithTag(kCtrlTagNavigation);
     auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
     auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
     auto navigationSyn3Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq);
@@ -209,7 +208,6 @@ public:
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else /* if (mScreen == kScreenNavigation) */ {
-      navigation->Hide(false);
       navigationSyn1Seq->Hide(false); // For now just syn1 sequencer...
       navigationSyn2Seq->Hide(false); navigationSyn2Seq->SetDisabled(true);
       navigationSyn3Seq->Hide(false); navigationSyn3Seq->SetDisabled(true);

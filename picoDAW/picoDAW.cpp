@@ -73,7 +73,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto step = new ITextControl(stepBounds, "INSERT CURRENT STEP IN PATTERN HERE", style.labelText, COLOR_GRAY);
 
     // Navigation controls...
-    auto navigation = new IPanelControl(sequencerBounds, COLOR_WHITE, true);
     auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
       root->mScreen = kScreenSequencerSyn1;
       root->Update();
@@ -288,6 +287,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // 2206: Synth controls...
+    // Break sequencerBounds into a 4x4 grid...
+
     auto core = new IVSwitchControl(sequencerBounds, [pGraphics, root](IControl* pCaller) {
       // Which editor screen are we on? (Has to be one of the synth editors...)
       int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
@@ -314,8 +315,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(title, kCtrlTagTitle);
     pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
     pGraphics->AttachControl(step, kCtrlTagStep);
-
-    pGraphics->AttachControl(navigation, kCtrlTagNavigation);
 
     pGraphics->AttachControl(navigationSyn1Seq, kCtrlTagNavigationSyn1Seq);
     pGraphics->AttachControl(navigationSyn2Seq, kCtrlTagNavigationSyn2Seq);
