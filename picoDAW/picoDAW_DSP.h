@@ -33,7 +33,8 @@ public:
     // 2206: now add signals into outputs; e.g. outputs[0][s] += sig1[s] + sig2[s];
     // where sig1 is the output from the synth1, and sig2 for synth2; making a mix
     
-    mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames);
+    mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames); 
+    // We give the paramSmoother the paramsToSmooth array that we built; specifically the sustain and gain values...
 
     // 2206: Clearly this fills in outputs with the final audio-ready output, 
     // but what actually plays back that audio? answer, probably javascript
@@ -65,22 +66,21 @@ public:
     mParamsToSmooth[kModGainSmoother] = (sample) 100. / 100.;
 
     // ADSR defaults, as in editor...
-    using EEnvStage = ADSREnvelope<sample>::EStage;
     sample attack_value = 10.;         // Attack default (ms)
     sample decay_value = 10.;          // Decay default (ms)
     sample sustain_value = 50. / 100.; // Sustain default (%)
     sample release_value = 10.;        // Release default (ms)
 
-    // Sustain is not an actual stage (it is a percentage and is dependent on decay after all)
-    // TODO: But how can voices have different sustain values then?
-    mParamsToSmooth[kModSustainSmoother] = sustain_value;
-
-    // Then set remaining defaults...
-    mSynth.ForEachVoice([attack_value, decay_value, release_value](SynthVoice& voice) {
-      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, attack_value);
-      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, decay_value);
-      voice.mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, release_value);
-    });
+    for (int i = 0; i < 6; i++) {
+      auto voice = mSynth.GetVoice(i);
+      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, attack_value); 
+      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, decay_value);
+      mParamsToSmooth[kModSustainSmoother] = sustain_value; // The sustain value to use for the next ProcessBlock,
+                                                            // then passed to mParamSmoother who does magic... and
+                                                            // generates the mModulations.GetList() that contains 
+                                                            // the final individual frame-by-frame sustain values
+      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, release_value);
+    }
   }
 
   void ProcessMidiMsg(const IMidiMsg& msg)
