@@ -530,7 +530,19 @@ void picoDAW::OnParamChange(int paramIdx)
 // a switch case on the message's type, and if 'param', calls the javascript function
 // "onParam", which as above makes the C++ invocation "_onParam" in "IPlugWasmDSP.cpp",
 // which finally calls this IPlugWasmDSP::OnParamMessage (aka picoDAW::OnParamMessage).
-// The remaining UI updates are communicated to the DSP, through arbitrary messages
+//
+// Here below you'll see though, that an alternative is to communicate to the DSP backend
+// through arbitrary messages. These would work well. But because the iPlug2-provided knobs
+// and sliders already integrate so well with IParams, it's more work --- specifically to
+//  modify the provided controls --- to use arbitrary messages, instead of the existing
+// "sending" of parameter change message from the IPlugWasmUI to the IPlugWasmDSP, by 
+// calling IPlugWasmUI::SendParamterValueFromUI, which eventually leads to the above
+// IPlugWasmDSP::OnParamChange. So, the change to make to the knob and slider etc. controls,
+// to make them use arbitrary messages instead, is to change the IControl::SetDirty
+// function to call IPlugWasmUI::SendArbitraryMsgFromUI instead; again, pretty pointless
+// because the parameter change approach is equivalent. Arbitrary messages are used here
+// though, because, in my opinion, they actually are more convenient here!! But they 
+// can definitely TODO: be converted to IParams too, through InitEnums, probably...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
   if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
