@@ -83,6 +83,7 @@ public:
         break;
       case kParamAttack:
         // TODO: We're just updating the first (and only) voice for now
+        // TODO: the current voice/synth/sampler should be an InitEnum too...
         mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
         break;
       case kParamDecay:

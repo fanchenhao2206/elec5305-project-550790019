@@ -8,12 +8,12 @@ struct SynthData
     mCoreTotal(3),
     mOctave(0),
 
-    mGain(1.),
+    // mGain(1.),
 
-    mAttack(0.),
-    mDecay(0.),
-    mSustain(1.),
-    mRelease(0.),
+    // mAttack(0.),
+    // mDecay(0.),
+    // mSustain(1.),
+    // mRelease(0.),
 
     mFilterCutoff(0.5),
     mFilterResonance(0.),
@@ -67,12 +67,43 @@ public:
 
   void Draw(IGraphics& g) override {}
 
-  void Update()
+  void Update(EScreens screen)
   {
-    ///////////////////////
-    // Hide all controls //
-    ///////////////////////
+    // Save params of the old mScreen that we are changing from...
+    if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
+      auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
+      synData.mGain = GetParam(kParamGain)->Value();
+      synData.mAttack = GetParam(kParamAttack)->Value();
+      synData.mDecay = GetParam(kParamDecay)->Value();
+      synData.mSustain = GetParam(kParamSustain)->Value();
+      synData.mRelease = GetParam(kParamRelease)->Value();
+    } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
+      mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
+      mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
+      // TODO:
+    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
+      // TODO:
+    }
 
+    // Load params of the new screen that we are changing to...
+    if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
+      auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
+      GetParam(kParamGain)->Set(synData.mGain);
+      GetParam(kParamAttack)->Set(synData.mAttack);
+      GetParam(kParamDecay)->Set(synData.mDecay);
+      GetParam(kParamSustain)->Set(synData.mSustain);
+      GetParam(kParamRelease)->Set(synData.mRelease);
+    } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
+      screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
+      screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
+      // keyboard->Update(screen);
+      // midiSeq->Update(screen);
+      // gateSeq->Update(screen);
+    } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
+      // sampler->Update(screen);
+    }
+
+    // Hide all controls...
     for (auto ctrlTag : mGraphics->GetControlTags()) {
       ctrlTag.second->Hide(true); // Manually unhide later...
       ctrlTag.second->SetDisabled(false); // Manually disable later...
@@ -112,38 +143,9 @@ public:
     auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
-    //////////////////////////////////////////////////////
-    // So that can update the controls behind a curtain //
-    //////////////////////////////////////////////////////
-
-    // 2206: Instead of worrying about adding extra methods to these controls, 
-    // just write out the full code for those methods here; for now at least...
-    // (Maybe we will need oop... Or maybe not!! Hopefully not... Yeah, don't think we will need!!)
-    if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 ||
-        mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
-      // keyboard->Update(mScreen);
-      // midiSeq->Update(mScreen);
-      // gateSeq->Update(mScreen);
-      // TODO:
-    } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
-      // synth->Update(mScreen);
-
-      ////////////////////
-      // 2206: DO NOW!! //
-      ////////////////////
-
-      // coreSwitch->Update(mScreen);
-      // octaveSwitch->Update(mScreen);
-      // gainKnob->Update(mScreen);
-
-    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
-      // sampler->Update(mScreen);
-      // TODO:
-    }
-
-    // title->Update(mScreen);
+    // Update title control...
     std::string str = "";
-    switch (mScreen) {
+    switch (screen) {
       case kScreenNavigation:
         str = "HOME";
         break;
@@ -194,23 +196,20 @@ public:
     }
     title->SetStr(str.c_str());
 
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Then finally, reveal only the controls that are relevant to the current screen //
-    ////////////////////////////////////////////////////////////////////////////////////
-
+    // Reveal only the controls relevant to the new screen we are changing to...
     home->Hide(false);
     play->Hide(false);
     solo->Hide(false);
     title->Hide(false);
     step->Hide(false);
-    if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 ||
-        mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
-      int sync = mKeyboardBoundsDatas[mScreen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
+    if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
+        screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
+      int sync = mKeyboardBoundsDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
       cycleKeyboard->Hide(false);
-    } else if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
+    } else if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       coreSwitch->Hide(false);
       octaveSwitch->Hide(false);
       gainKnob->Hide(false);
@@ -218,10 +217,10 @@ public:
       decayKnob->Hide(false);
       sustainKnob->Hide(false);
       releaseKnob->Hide(false);
-    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
+    } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
-    } else /* if (mScreen == kScreenNavigation) */ {
+    } else /* if (screen == kScreenNavigation) */ {
       navigationSyn1Seq->Hide(false); // For now just syn1 sequencer...
       navigationSyn2Seq->Hide(false); navigationSyn2Seq->SetDisabled(true);
       navigationSyn3Seq->Hide(false); navigationSyn3Seq->SetDisabled(true);
@@ -239,6 +238,9 @@ public:
       mixer->Hide(false); // 2206: the mixer menu that shows knobs and mute/solo buttons
                           // takes up the keyboardBounds
     }
+
+    // Finally, forget the previous mScreen, and transition to new screen...
+    mScreen = screen;
   }
 
   std::vector<SynthData> mSynthDatas;

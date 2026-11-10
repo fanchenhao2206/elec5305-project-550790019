@@ -68,8 +68,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto root = new RootUIControl(pGraphics);
     auto title = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
     auto homeButton = new IVButtonControl(homeBounds, [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenNavigation;
-      root->Update();
+      root->Update(EScreens::kScreenNavigation);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -80,8 +79,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Navigation controls...
     auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSyn1;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSyn1);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -89,8 +87,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN1 SEQ", style);
     auto navigationSyn2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSyn2;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSyn2);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -98,8 +95,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN2 SEQ", style);
     auto navigationSyn3Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSyn3;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSyn3);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -107,8 +103,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN3 SEQ", style);
     auto navigationSyn4Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSyn4;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSyn4);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -116,8 +111,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN4 SEQ", style);
     auto navigationSamp1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSamp1;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSamp1);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -125,8 +119,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP1 SEQ", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSamp2Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenSequencerSamp2;
-      root->Update();
+      root->Update(EScreens::kScreenSequencerSamp2);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -134,8 +127,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP2 SEQ", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSyn1Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSyn1;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSyn1);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -143,8 +135,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN1 EDIT", style);
     auto navigationSyn2Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 1).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSyn2;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSyn2);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -152,8 +143,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN2 EDIT", style);
     auto navigationSyn3Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 2).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSyn3;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSyn3);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -161,8 +151,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN3 EDIT", style);
     auto navigationSyn4Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 3).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSyn4;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSyn4);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -170,8 +159,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SYN4 EDIT", style);
     auto navigationSamp1Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 4).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSamp1;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSamp1);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -179,8 +167,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP1 EDIT", style.WithColor(kFG, COLOR_BLUE));
     auto navigationSamp2Edit = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 5).SubRectVertical(2, 1), [pGraphics, root](IControl* pCaller) {
-      root->mScreen = kScreenEditorSamp2;
-      root->Update();
+      root->Update(EScreens::kScreenEditorSamp2);
       // Then animation...
       float x, y;
       pGraphics->GetMouseDownPoint(x, y);
@@ -384,7 +371,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(solo, kCtrlTagSoloToggle);
 
     // Load home page and return to event loop...
-    root->Update();
+    root->Update(kScreenNavigation);
   };
 #endif
 }
@@ -477,7 +464,7 @@ handle:
 // our picoDAW::OnParamChange here...
 void picoDAW::OnParamChange(int paramIdx)
 {
-  // Sync our DSP with the change to the given IParam...
+  // Update DSP with the change to the given IParam...
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
