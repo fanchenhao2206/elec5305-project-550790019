@@ -18,7 +18,7 @@ public:
     // mSynth.AddVoice(new picoDAWVoice(), 0);
     // mSynth.AddVoice(new picoDAWVoice(), 0);
     // mSynth.AddVoice(new picoDAWVoice(), 0);
-    // mSynth.AddVoice(new SamplerVoice(), 0); // 2206: sampler
+    // mSynth.AddVoice(new SamplerVoice(), 0); // TODO: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
 

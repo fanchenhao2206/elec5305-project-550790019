@@ -183,7 +183,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "SAMP2 EDIT", style.WithColor(kFG, COLOR_BLUE));
 
-    // 2206: Mixer controls...
+    // TODO: Mixer controls...
     auto mixer = new ITextControl(keyboardBounds, "MIXER", style.labelText, COLOR_GRAY);
 
     // Sequencer controls...
@@ -281,7 +281,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
             stepIdx += 1;
             stepIdx %= nSteps; // to cycle around
           }
-        }, 125); // 2206: use current tempo, not hardcoded 120bpm
+        }, 125); // TODO: use current tempo, not hardcoded 120bpm
       } else {
         // Is currently off, so was previously on; stop playback
         IMidiMsg msg;

@@ -217,7 +217,7 @@ public:
       sustainKnob->Hide(false);
       releaseKnob->Hide(false);
     } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
-      // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
+      // sampler->Hide(false);    // TODO: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else /* if (screen == kScreenNavigation) */ {
       navigationSyn1Seq->Hide(false); // For now just syn1 sequencer...
@@ -234,7 +234,7 @@ public:
       navigationSamp1Edit->Hide(false); navigationSamp1Edit->SetDisabled(true);
       navigationSamp2Edit->Hide(false); navigationSamp2Edit->SetDisabled(true);
       solo->SetDisabled(true);
-      mixer->Hide(false); // 2206: the mixer menu that shows knobs and mute/solo buttons
+      mixer->Hide(false); // TODO: the mixer menu that shows knobs and mute/solo buttons
                           // takes up the keyboardBounds
     }
 
