@@ -438,13 +438,13 @@ handle:
                                // See... event.mAddress (.mChannel?)
 }
 
-// There are two threads in the WASM build of picoDAW. A main javascript thread that will 
-// spin in infinite loop running the "int main()" function of IPlugWasmUI, compiled by emcc
+// There are two threads in the WASM build of picoDAW. The main javascript thread that will 
+// spin in an infinite loop running the "int main()" function of IPlugWasmUI, compiled by emcc
 // into "picoDAW-ui.js". And a secondary AudioWorklet worker thread, spawned by the main thread 
 // before entering the UI loop, endlessly calling its "process" function, specified in the
 // AudioWorkletProcessor API and defined in "IPlugWasmProcessor.js.template". Each invocation
-// calls "processBlock", which is bound to IPlugWasmDSP's "processBlock" code, the machine code 
-// located inside the compiled "picoDAW-dsp.js" module provided on AudioWorklet spawning.
+// calls "processBlock", which is bound to IPlugWasmDSP's "processBlock" C++ code, the transpiled
+// javascript code located inside the "picoDAW-dsp.js" module provided on thread initialisation
 //
 // How do the two threads communicate? They communicate via the javascript functions
 // "setParam", and "onParam", for communicating parameter changes for example. What I 
