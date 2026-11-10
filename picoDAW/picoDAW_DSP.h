@@ -65,28 +65,34 @@ public:
     for(int i = 0; i < kNumModulations; i++) {
       mModulations.Add(mModulationsData.Get() + (blockSize * i));
     }
+  }
 
+  void SetParam(int paramIdx, double value)
+  {
     // Notice that Attack, Decay, and Release can currently be set on a voice-by-voice
     // basis, but Sustain and Gain cannot be. TODO: change mParamsToSmooth very slightly,
     // into a 2D array, of nModulations by nVoices.
-
-    // Gain default, as in mixer...
-    mParamsToSmooth[kModGainSmoother] = (sample) 100. / 100.;
-
-    // Sustain default, as in ADSR...
-    sample sustain_value = 50. / 100.; // Sustain default (%)
-    mParamsToSmooth[kModSustainSmoother] = sustain_value;
-
-    // Remaining A, D, and R defaults...
-    sample attack_value = 10.;         // Attack default (ms)
-    sample decay_value = 10.;          // Decay default (ms)
-    sample release_value = 10.;        // Release default (ms)
-
-    for (int i = 0; i < mNVoices; i++) {
-      auto voice = mSynth.GetVoice(i);
-      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, attack_value); 
-      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, decay_value);
-      voice->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, release_value);
+    switch (paramIdx) {
+      case kParamGain:
+        // The value given is a single gain value
+        mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
+        break;
+      case kParamSustain:
+        // The value given is a single sustain value
+        mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
+        break;
+      case kParamAttack:
+        // TODO: We're just updating the first (and only) voice for now
+        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
+        break;
+      case kParamDecay:
+        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
+        break;
+      case kParamRelease:
+        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
+        break;
+      default:
+        break;
     }
   }
 

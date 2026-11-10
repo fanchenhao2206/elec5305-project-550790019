@@ -61,6 +61,10 @@ enum EControlTags
   kCtrlTagCoreSwitch,
   kCtrlTagOctaveSwitch,
   kCtrlTagGainKnob,
+  kCtrlTagAttackKnob,
+  kCtrlTagDecayKnob,
+  kCtrlTagSustainKnob,
+  kCtrlTagReleaseKnob,
 
   // TODO: to remove 
   kCtrlTagMeter,

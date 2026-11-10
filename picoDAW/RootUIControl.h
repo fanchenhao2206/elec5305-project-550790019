@@ -100,6 +100,10 @@ public:
     auto coreSwitch = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
     auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagOctaveSwitch)->As<IVSwitchControl>();
     auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagGainKnob)->As<IVKnobControl>();
+    auto attackKnob = mGraphics->GetControlWithTag(kCtrlTagAttackKnob)->As<IVKnobControl>();
+    auto decayKnob = mGraphics->GetControlWithTag(kCtrlTagDecayKnob)->As<IVKnobControl>();
+    auto sustainKnob = mGraphics->GetControlWithTag(kCtrlTagSustainKnob)->As<IVKnobControl>();
+    auto releaseKnob = mGraphics->GetControlWithTag(kCtrlTagReleaseKnob)->As<IVKnobControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -210,6 +214,10 @@ public:
       coreSwitch->Hide(false);
       octaveSwitch->Hide(false);
       gainKnob->Hide(false);
+      attackKnob->Hide(false);
+      decayKnob->Hide(false);
+      sustainKnob->Hide(false);
+      releaseKnob->Hide(false);
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // 2206: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds

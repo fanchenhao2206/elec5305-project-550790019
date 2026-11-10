@@ -12,7 +12,13 @@
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  
+  // Knob and slider controls use IParams; updates are communicated by us the IPlugWasmUI
+  // to the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
+  GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
+  GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
+  GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -332,13 +338,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "OCTAVE", style);
-    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), /* kParamGain */[pGraphics, root](IControl* pCaller) {
-      // Turns out this is an onclick function; useless to me!! Maybe i need params...
-      // which are synced with their copies in rootuicontrol. and then, on screen switch,
-      // the IParam's values are updated to the corresponding values in rootuicontrol...
-    }, "GAIN", style);
-    gainKnob->SetValue(1.); // As the initial value. BUT, instead a param should be used,
-                            // whose initial value is 1., so that don't need this line...
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamGain, "GAIN", style);
+
+    auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamAttack, "ATTACK", style);
+    auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamDecay, "DECAY", style);
+    auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamSustain, "SUSTAIN", style);
+    auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamRelease, "RELEASE", style);
+
     // 2206: Sampler controls...
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
@@ -365,6 +371,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(coreSwitch, kCtrlTagCoreSwitch);
     pGraphics->AttachControl(octaveSwitch, kCtrlTagOctaveSwitch);
     pGraphics->AttachControl(gainKnob, kCtrlTagGainKnob);
+    pGraphics->AttachControl(attackKnob, kCtrlTagAttackKnob);
+    pGraphics->AttachControl(decayKnob, kCtrlTagDecayKnob);
+    pGraphics->AttachControl(sustainKnob, kCtrlTagSustainKnob);
+    pGraphics->AttachControl(releaseKnob, kCtrlTagReleaseKnob);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
@@ -462,12 +472,13 @@ handle:
 // initialisation of "IPlugWasmProcessor.js.template", every time a message is passed to 
 // the AudioWorklet through this.port, the "_onMessage" function inside it is called. It 
 // checks the type of message, and if it is 'param', it calls the javascript "onParam" 
-// function, which is bound through emscripten in "IPlugWasmDSP.cpp" to the 
-// IPlugWasmDSP::OnParamMessage (aka picoDAW::OnParamMessage) function.
+// function, which is bound through emscripten in "IPlugWasmDSP.cpp" to the IPlugWasmDSP::
+// OnParamMessage function, which after calling IPlugAPIBase::SetParameterValue, calls
+// our picoDAW::OnParamChange here...
 void picoDAW::OnParamChange(int paramIdx)
 {
   // Sync our DSP with the change to the given IParam...
-  // mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
 // Here below you'll see though, that an alternative is to communicate to the DSP backend
