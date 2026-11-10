@@ -123,7 +123,6 @@ public:
   void OnReset() override;
   void OnIdle() override;
   void OnParamChange(int paramIdx) override;
-  bool OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData) override;
 
 private:
   picoDAWDSP mDSP;

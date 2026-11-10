@@ -457,21 +457,4 @@ void picoDAW::OnParamChange(int paramIdx)
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoice)->Int());
 }
 
-// Here below you'll see though, that an alternative is to communicate to the DSP backend
-// through arbitrary messages. These would work well. But because the iPlug2-provided knobs
-// and sliders already integrate so well with IParams, it's more work --- specifically to
-// modify the provided controls --- to use arbitrary messages, instead of the existing
-// "sending" of parameter change message from the IPlugWasmUI to the IPlugWasmDSP, by 
-// calling IPlugWasmUI::SendParameterValueFromUI, which eventually leads to the above
-// IPlugWasmDSP::OnParamChange. So, the change to make to the knob and slider etc. controls,
-// to make them use arbitrary messages instead, is to change the IControl::SetDirty function
-// to call IPlugWasmUI::SendArbitraryMsgFromUI instead of IPlugWasmUI::SendParameterValueFromUI;
-// again, pretty pointless because the parameter change approach is essentially equivalent.
-// Arbitrary messages are used for these cases here though, because, in my opinion, they are
-// more appropriate. But, TODO: they can definitely be converted to IParams too, through
-// InitEnums, probably...
-bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
-{
-  return false;
-}
 #endif
