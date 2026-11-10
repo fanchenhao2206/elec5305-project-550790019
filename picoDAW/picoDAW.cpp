@@ -25,8 +25,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
   GetParam(kParamCore)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
+  GetParam(kParamOctave)->InitInt("Octave", 0, -2, 2);
 
-  // Notice lack of octave parameter; it's more of a UI-based parameter... TODO: try to make it iparam still
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -294,32 +294,12 @@ picoDAW::picoDAW(const InstanceInfo& info)
       }
     }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
     auto solo = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
-      /* 2206: once mixer is ready... */
+      /* TODO: once mixer is ready... */
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
-    // 2206: Synth controls...
-    // Break sequencerBounds into a 4x4 grid...
-
+    // Synth controls; Break sequencerBounds into a 4x4 grid...
     auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamCore, "CORE", style);
-    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), [pGraphics, root](IControl* pCaller) {
-      // Which editor screen are we on? (Has to be one of the synth editors...)
-      int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
-
-      // Modify the corresponding struct in root control...
-      SynthData &synData = root->mSynthDatas[synEditIdx];
-      synData.mOctave += 1;
-      if (synData.mOctave > 2) synData.mOctave = -2;
-
-      // The playback button will use this mOctave value to generate the 
-      // appropriate MIDI messages to send to DSP from us the UI; meaning
-      // we don't need to send any arbitrary messages here...
-
-      // Then animation...
-      float x, y;
-      pGraphics->GetMouseDownPoint(x, y);
-      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-    }, "OCTAVE", style);
+    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamOctave, "OCTAVE", style);
     auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamGain, "GAIN", style);
 
     auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamAttack, "ATTACK", style);
@@ -327,7 +307,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamSustain, "SUSTAIN", style);
     auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamRelease, "RELEASE", style);
 
-    // 2206: Sampler controls...
+    // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
+    //
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
     pGraphics->AttachControl(title, kCtrlTagTitle);
@@ -370,6 +351,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
   };
 #endif
 }
+
+#if IPLUG_EDITOR
+void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
+{
+  if (auto pGraphics = GetUI()) {
+    if (paramIdx == kParamOctave) {
+      auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
+      auto &octave = root->mSynthDatas[GetParam(kParamVoice)->Int()].mOctave;
+      octave = GetParam(kParamOctave)->Int();
+    }
+  }
+}
+#endif
 
 #if IPLUG_DSP
 void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
@@ -478,19 +472,6 @@ void picoDAW::OnParamChange(int paramIdx)
 // InitEnums, probably...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
-  if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
-    // Received arbitrary message from core switch. It gave us which voice to 
-    // modify and what to modify it to. We received synEditIdx at .first, and
-    // synData.mCoreIdx at .second. Using std::pair is certainly better than 
-    // re-inventing a new two-member struct...
-    const std::pair<int,int> msg = *static_cast<const std::pair<int,int>*>(pData);
-    int synEditIdx = msg.first;
-    int coreIdx = msg.second;
-    mDSP.mSynth.mVoiceAllocator.mVoicePtrs[synEditIdx]->SetSynthCore(coreIdx);
-    delete static_cast<const std::pair<int,int>*>(pData); // This makes you feel like you're
-                                                          // actually programming doesn't it
-  }
-  
   return false;
 }
 #endif

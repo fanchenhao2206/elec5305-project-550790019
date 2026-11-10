@@ -13,7 +13,7 @@ enum EParams
   kParamRoot = 0,
 
   kParamVoice,
-  
+
   kParamGain,
   kParamAttack,
   kParamDecay,
@@ -21,6 +21,7 @@ enum EParams
   kParamRelease,
 
   kParamCore,
+  kParamOctave,
 
   kNumParams
 };
@@ -110,6 +111,10 @@ class picoDAW final : public Plugin
 {
 public:
   picoDAW(const InstanceInfo& info);
+
+#if IPLUG_EDITOR
+  void OnParamChangeUI(int paramIdx, EParamSource source) override;
+#endif
 
 #if IPLUG_DSP // http://bit.ly/2S64BDd
 public:
