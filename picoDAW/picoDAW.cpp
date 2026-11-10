@@ -211,76 +211,81 @@ picoDAW::picoDAW(const InstanceInfo& info)
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
         root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
-          IMidiMsg msg;
-          int channelIdx = 0; // 2206: send to other channel if required
-          int &stepIdx = root->mPlaybackStepIdx;
-          int &prevNote = root->mPrevNote;
-          const int nSteps = midiSeq->mNCols;
+          for (int voiceIdx = 0; voiceIdx < 1; voiceIdx++) {
+            IMidiMsg msg;
+            int channelIdx = 0; // TODO: send to other channel if required(??)
+            int &stepIdx = root->mPlaybackStepIdx;
+            int &prevNote = root->mPrevNote;
+            const int nSteps = midiSeq->mNCols;
 
-          // Recall that cells are given as a row index from top to bottom; matching graphics
-          int midiCell = midiSeq->mCells[stepIdx];
+            // Recall that cells are given as a row index from top to bottom; matching graphics
+            int midiCell = midiSeq->mCells[stepIdx];
 
-          // But we want a row index from bottom to top; matching piano roll sequencers
-          int midiStep = (midiSeq->mNRows - 1) - midiCell;
+            // But we want a row index from bottom to top; matching piano roll sequencers
+            int midiStep = (midiSeq->mNRows - 1) - midiCell;
 
-          // 2206: Playback is a mess, because currently midiSeq is global across all six instruments
-          // TODO: don't just take from the first instrument [0], like we do here...
-          // We take the octave from RootUIControl, which is relative to C4 == 60;
-          // For example, if octave is -1, then we are in the C3 == 48 octave.
-          int octave = root->mSynthDatas[0].mOctave; // This is correct; don't use a param for octave; it's a "UI side" param
-                                                     // As opposed to core, adsr, gain, which are "DSP side" params...
-          int currNote = (midiCell < 0) ? -1 : (60 + octave * 12) + midiStep;
-          int currVelocity = 80;
+            // TODO: Playback is a mess, because currently midiSeq is global across all six instruments
+            // TODO: there is a root->mSeqDatas, and then midiStep := mSeqDatas[voiceIdx]->mMidiSeq, just like here for octave...
+            // TODO: and, root->mPrevNote, should be moved into mSeqDatas instead... (the prevNote for this midi sequencer... right?)
+            // NOTE: luckily, mPlaybackStepIdx is global to all sequencers, so is fine to leave in rootuicontrol...
+            //
+            // We take the octave from RootUIControl, which is relative to C4 == 60;
+            // For example, if octave is -1, then we are in the C3 == 48 octave.
+            int octave = root->mSynthDatas[voiceIdx].mOctave; // This is correct; don't use a param for octave; it's a "UI side" param
+                                                              // As opposed to core, adsr, gain, which are "DSP side" params...
+            int currNote = (midiCell < 0) ? -1 : (60 + octave * 12) + midiStep;
+            int currVelocity = 80; // TODO: velocity sequencer...
 
-          // For knowing whether to hold this note in legato with the previous identical note
-          int gateCell = gateSeq->mCells[stepIdx];
-          int currGate = (gateCell < 0) ? 0 : gateCell;
+            // For knowing whether to hold this note in legato with the previous identical note
+            int gateCell = gateSeq->mCells[stepIdx];
+            int currGate = (gateCell < 0) ? 0 : gateCell;
 
-          // If at start of pattern, then assume (non-existent) prev gate is not legato; retrig!!
-          int prevGate = (stepIdx == 0) ? 1 : gateSeq->mCells[stepIdx - 1];
+            // If at start of pattern, then assume (non-existent) prev gate is not legato; retrig!!
+            int prevGate = (stepIdx == 0) ? 1 : gateSeq->mCells[stepIdx - 1];
 
-          if (currNote < 0) {
-            // Nothing to play this step, so turn off prev and that's it
-            if (prevNote >= 0) {
-              msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
-              root->GetDelegate()->SendMidiMsgFromUI(msg);
-            }
-          } else if (currNote == prevNote) {
-            // Something to play this step, but it's the same note as the previous step
-            // Should this be played legato with previous step? Or retrigger envelope...
-            // The gate sequencer should be used to decide that!!
-            if (currGate == 1 || stepIdx == 0 || (prevGate == 1 && currGate == 0)) {
-              // Retrigger envelope if requested on current step, or if at start of pattern,
-              // or, if the current step is at the start of a (possible) chain of legato notes;
-              // the case if the previous note was NOT legato, and the current note IS legato 
-              // 
-              // However, what if the next note, is instead not legato? Well, in that case, 
-              // technically the current legato note still starts a chain of legato notes, 
-              // but of course its length is just one... In this case though, lets retrigger the
-              // current legato note anyways!! It just means that marking a note as legato is 
-              // meaningless, if it's by its lonesome; only two or more legato identical notes 
-              // in a row produces the legato effect, which is what we should expect of it!!
+            if (currNote < 0) {
+              // Nothing to play this step, so turn off prev and that's it
+              if (prevNote >= 0) {
+                msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+              }
+            } else if (currNote == prevNote) {
+              // Something to play this step, but it's the same note as the previous step
+              // Should this be played legato with previous step? Or retrigger envelope...
+              // The gate sequencer should be used to decide that!!
+              if (currGate == 1 || stepIdx == 0 || (prevGate == 1 && currGate == 0)) {
+                // Retrigger envelope if requested on current step, or if at start of pattern,
+                // or, if the current step is at the start of a (possible) chain of legato notes;
+                // the case if the previous note was NOT legato, and the current note IS legato 
+                // 
+                // However, what if the next note, is instead not legato? Well, in that case, 
+                // technically the current legato note still starts a chain of legato notes, 
+                // but of course its length is just one... In this case though, lets retrigger the
+                // current legato note anyways!! It just means that marking a note as legato is 
+                // meaningless, if it's by its lonesome; only two or more legato identical notes 
+                // in a row produces the legato effect, which is what we should expect of it!!
+                msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+                msg.MakeNoteOnMsg(currNote, currVelocity, 0, channelIdx);
+                root->GetDelegate()->SendMidiMsgFromUI(msg);
+              } /* else {} */ // Play legato with previous identical note
+            } else /* if (currNote != prevNote) */ {
+              // Something to play this step, and it's different than last step
               msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
               root->GetDelegate()->SendMidiMsgFromUI(msg);
               msg.MakeNoteOnMsg(currNote, currVelocity, 0, channelIdx);
               root->GetDelegate()->SendMidiMsgFromUI(msg);
-            } /* else {} */ // Play legato with previous identical note
-          } else /* if (currNote != prevNote) */ {
-            // Something to play this step, and it's different than last step
-            msg.MakeNoteOffMsg(prevNote, 0, channelIdx);
-            root->GetDelegate()->SendMidiMsgFromUI(msg);
-            msg.MakeNoteOnMsg(currNote, currVelocity, 0, channelIdx);
-            root->GetDelegate()->SendMidiMsgFromUI(msg);
-          }
+            }
 
-          prevNote = currNote;
-          stepIdx += 1;
-          stepIdx %= nSteps; // to cycle around
+            prevNote = currNote;
+            stepIdx += 1;
+            stepIdx %= nSteps; // to cycle around
+          }
         }, 125); // 2206: use current tempo, not hardcoded 120bpm
       } else {
         // Is currently off, so was previously on; stop playback
         IMidiMsg msg;
-        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // 2206: stop playback of other channels too
+        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // TODO: stop playback of other channels too(??)
         root->GetDelegate()->SendMidiMsgFromUI(msg);
         root->mPrevNote = -1;
         delete root->mPlaybackTimer;
