@@ -108,9 +108,9 @@ public:
       ctrlTag.second->SetDisabled(false); // Manually disable later...
     }
 
-    auto title = mGraphics->GetControlWithTag(kCtrlTagTitle)->As<ITextControl>();
-    auto home = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
-    auto step = mGraphics->GetControlWithTag(kCtrlTagStep)->As<ITextControl>();
+    auto titleText = mGraphics->GetControlWithTag(kCtrlTagTitleText)->As<ITextControl>();
+    auto homeButton = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
+    auto stepButton = mGraphics->GetControlWithTag(kCtrlTagStepButton)->As<IVButtonControl>();
 
     auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
     auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
@@ -125,7 +125,7 @@ public:
     auto navigationSamp1Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Edit);
     auto navigationSamp2Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Edit);
 
-    auto mixer = mGraphics->GetControlWithTag(kCtrlTagMixer)->As<ITextControl>();
+    auto mixerButton = mGraphics->GetControlWithTag(kCtrlTagMixerButton)->As<IVButtonControl>();
 
     auto coreSwitch = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
     auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagOctaveSwitch)->As<IVSwitchControl>();
@@ -139,10 +139,10 @@ public:
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
     auto cycleKeyboard = mGraphics->GetControlWithTag(kCtrlTagCycleKeyboardButton)->As<IVButtonControl>();
-    auto play = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
-    auto solo = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
+    auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
+    auto soloToggle = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
-    // Update title control...
+    // Update titleText control...
     std::string str = "";
     switch (screen) {
       case kScreenNavigation:
@@ -193,14 +193,14 @@ public:
         str = "UNIMPLEMENTED";
         break;
     }
-    title->SetStr(str.c_str());
+    titleText->SetStr(str.c_str());
 
     // Reveal only the controls relevant to the new screen we are changing to...
-    home->Hide(false);
-    play->Hide(false);
-    solo->Hide(false);
-    title->Hide(false);
-    step->Hide(false);
+    homeButton->Hide(false);
+    playToggle->Hide(false);
+    soloToggle->Hide(false); soloToggle->SetDisabled(true); // TODO: remove this solo disable when mixer done...
+    titleText->Hide(false);
+    stepButton->Hide(false); stepButton->SetDisabled(true); // TODO: remove this step disable when step done...
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
       int sync = mKeyboardBoundsDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
@@ -233,9 +233,10 @@ public:
       navigationSyn4Edit->Hide(false); navigationSyn4Edit->SetDisabled(true);
       navigationSamp1Edit->Hide(false); navigationSamp1Edit->SetDisabled(true);
       navigationSamp2Edit->Hide(false); navigationSamp2Edit->SetDisabled(true);
-      solo->SetDisabled(true);
-      mixer->Hide(false); // TODO: the mixer menu that shows knobs and mute/solo buttons
-                          // takes up the keyboardBounds
+      soloToggle->SetDisabled(true); // Except this disable!! Don't remove this disable!! Unless, can
+                                     // use mScreen (aka prev actual screen) to judge which one to solo,
+                                     // in which case solo button should be valid on navigation screen...
+      mixerButton->Hide(false); mixerButton->SetDisabled(true); // TODO: remove all these disables when done...
     }
 
     // Finally, forget the previous mScreen, and transition to new screen...

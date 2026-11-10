@@ -36,8 +36,8 @@ enum EControlTags
   // NOTE: good
   kCtrlTagRoot = 0,
   kCtrlTagHomeButton,
-  kCtrlTagTitle,
-  kCtrlTagStep,
+  kCtrlTagTitleText,
+  kCtrlTagStepButton,
 
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
@@ -61,7 +61,7 @@ enum EControlTags
   kCtrlTagNavigationSamp1Edit,
   kCtrlTagNavigationSamp2Edit,
 
-  kCtrlTagMixer,
+  kCtrlTagMixerButton,
 
   kCtrlTagCoreSwitch,
   kCtrlTagOctaveSwitch,

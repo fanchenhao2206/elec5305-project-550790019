@@ -74,7 +74,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Common controls...
     auto root = new RootUIControl(pGraphics);
-    auto title = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
+    auto titleText = new ITextControl(titleBounds, "SYN1 SEQ", IText(36.f, "Roboto-Regular"));
     auto homeButton = new IVButtonControl(homeBounds, [pGraphics, root](IControl* pCaller) {
       root->Update(EScreens::kScreenNavigation);
       // Then animation...
@@ -83,7 +83,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "picoDAW", style);
-    auto step = new ITextControl(stepBounds, "INSERT CURRENT STEP IN PATTERN HERE", style.labelText, COLOR_GRAY);
+
+    // TODO: current step
+    auto stepButton = new IVButtonControl(stepBounds, SplashAnimationFunc, "INSERT CURRENT STEP IN PATTERN HERE", style);
 
     // Navigation controls...
     auto navigationSyn1Seq = new IVButtonControl(sequencerBounds.SubRectHorizontal(6, 0).SubRectVertical(2, 0), [pGraphics, root](IControl* pCaller) {
@@ -184,7 +186,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "SAMP2 EDIT", style.WithColor(kFG, COLOR_BLUE));
 
     // TODO: Mixer controls...
-    auto mixer = new ITextControl(keyboardBounds, "MIXER", style.labelText, COLOR_GRAY);
+    auto mixerButton = new IVButtonControl(keyboardBounds, SplashAnimationFunc, "MIXER", style);
 
     // Sequencer controls...
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
@@ -207,7 +209,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "TOGGLE", style);
-    auto play = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
+    auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
         root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
@@ -293,7 +295,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
         root->mPlaybackStepIdx = 0;
       }
     }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
-    auto solo = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
+    auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
       /* TODO: once mixer is ready... */
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
@@ -311,9 +313,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
     //
 
     pGraphics->AttachControl(root, kCtrlTagRoot);
-    pGraphics->AttachControl(title, kCtrlTagTitle);
+    pGraphics->AttachControl(titleText, kCtrlTagTitleText);
     pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
-    pGraphics->AttachControl(step, kCtrlTagStep);
+    pGraphics->AttachControl(stepButton, kCtrlTagStepButton);
 
     pGraphics->AttachControl(navigationSyn1Seq, kCtrlTagNavigationSyn1Seq);
     pGraphics->AttachControl(navigationSyn2Seq, kCtrlTagNavigationSyn2Seq);
@@ -329,7 +331,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(navigationSamp1Edit, kCtrlTagNavigationSamp1Edit);
     pGraphics->AttachControl(navigationSamp2Edit, kCtrlTagNavigationSamp2Edit);
 
-    pGraphics->AttachControl(mixer, kCtrlTagMixer);
+    pGraphics->AttachControl(mixerButton, kCtrlTagMixerButton);
 
     pGraphics->AttachControl(coreSwitch, kCtrlTagCoreSwitch);
     pGraphics->AttachControl(octaveSwitch, kCtrlTagOctaveSwitch);
@@ -343,8 +345,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
     pGraphics->AttachControl(cycleKeyboard, kCtrlTagCycleKeyboardButton);
-    pGraphics->AttachControl(play, kCtrlTagPlayToggle);
-    pGraphics->AttachControl(solo, kCtrlTagSoloToggle);
+    pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
+    pGraphics->AttachControl(soloToggle, kCtrlTagSoloToggle);
 
     // Load home page and return to event loop...
     root->Update(kScreenNavigation);
