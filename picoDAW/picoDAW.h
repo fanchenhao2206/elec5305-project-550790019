@@ -12,6 +12,8 @@ enum EParams
   // NOTE: good
   kParamRoot = 0,
 
+  kParamVoice,
+  
   kParamGain,
   kParamAttack,
   kParamDecay,

@@ -91,6 +91,7 @@ public:
       GetParam(kParamDecay)->Set(synData.mDecay);
       GetParam(kParamSustain)->Set(synData.mSustain);
       GetParam(kParamRelease)->Set(synData.mRelease);
+      GetParam(kParamVoice)->Set(static_cast<double>(screen - kScreenEditorSyn1));
     } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
       screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
       screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {

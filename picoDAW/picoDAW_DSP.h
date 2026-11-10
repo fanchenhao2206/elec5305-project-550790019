@@ -67,7 +67,7 @@ public:
     }
   }
 
-  void SetParam(int paramIdx, double value)
+  void SetParam(int paramIdx, double value, int voiceIdx)
   {
     // Notice that Attack, Decay, and Release can currently be set on a voice-by-voice
     // basis, but Sustain and Gain cannot be. TODO: change mParamsToSmooth very slightly,
@@ -82,15 +82,16 @@ public:
         mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
         break;
       case kParamAttack:
-        // TODO: We're just updating the first (and only) voice for now
-        // TODO: the current voice/synth/sampler should be an InitEnum too...
-        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
+        mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
         break;
       case kParamDecay:
-        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
+        mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
         break;
       case kParamRelease:
-        mSynth.GetVoice(0)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
+        mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
+        break;
+      case kParamCore:
+        mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
       default:
         break;

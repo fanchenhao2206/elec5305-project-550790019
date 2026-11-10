@@ -12,6 +12,9 @@
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
+  // Current instrument...
+  GetParam(kParamVoice)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
+
   // Knob and slider controls use IParams; updates are communicated by us the IPlugWasmUI
   // to the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
@@ -22,6 +25,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
   GetParam(kParamCore)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
+
+  // Notice lack of octave parameter; it's more of a UI-based parameter... TODO: try to make it iparam still
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -450,7 +455,7 @@ handle:
 void picoDAW::OnParamChange(int paramIdx)
 {
   // Update DSP with the change to the given IParam...
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoice)->Int());
 }
 
 // Here below you'll see though, that an alternative is to communicate to the DSP backend
