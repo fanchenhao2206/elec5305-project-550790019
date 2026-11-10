@@ -454,16 +454,16 @@ handle:
 // spins in a loop drawing UI, and then there's a seperate AudioWorklet worker thread that
 // deals with DSP in a loop, also spawned on load.
 // 
-// (i) Through iPlug2, what runs in the two threads is essentially C++ code. The IPlugWasmUI
-// C++ code runs in the UI thread in a loop. Specifically, the "int main()" of IPlugWasmUI 
-// included from "IPlug_include_in_plug_src.h", is compiled into a program with a proper 
-// entry point. This entry point calls "StartMainLoopTimer", which eventually starts the loop
+// (i) Through iPlug2, what runs in the two threads is essentially C++ code. The IPlugWasmUI C++
+// code runs in the UI thread in a loop. Specifically, the "int main()" of IPlugWasmUI included
+// from "IPlug_include_in_plug_src.h", is compiled into a javascript program with a proper entry
+// point. This entry point calls "StartMainLoopTimer", which eventually starts the loop...
 //
-// The resulting program --- with an "int main()"-type entry point --- is called "picoDAW-ui.js",
-// compiled by emcc into javascript through emmake make --makefile picoDAW-wasm-ui.mk in the 
-// "makedist-wasm.sh" script; see also "picoDAW-wasm-ui.mk". This program is included in a <script> 
-// tag in the main index.HTML in the "_initUI" function of "IPlugWasmBundle.js.template", so that
-// the program runs in the main javascript thread when the "_initUI" function is reached
+// The resulting javascriptprogram --- with an "int main()"-type entry point --- is called 
+// "picoDAW-ui.js", compiled by emcc into javascript through emmake make --makefile picoDAW-wasm-ui.mk 
+// in the "makedist-wasm.sh" script; see also "picoDAW-wasm-ui.mk". This program is included in a 
+// <script> tag in the main index.HTML in the "_initUI" function of "IPlugWasmBundle.js.template", 
+// so that the program runs in the main javascript thread when the "_initUI" function is reached
 //
 // (ii) The IPlugWasmDSP C++ code runs inside the AudioWorklet thread, also in a loop, but is a
 // bit more subtle. This is because the AudioWorklet is quite explictly its own thread. It is a
