@@ -5,16 +5,14 @@ struct SynthData
 {
   SynthData()
   : mCoreIdx(0),
-    mCoreTotal(3),
-    mOctave(0),
-
-    // mGain(1.),
-
-    // mAttack(0.),
-    // mDecay(0.),
-    // mSustain(1.),
-    // mRelease(0.),
-
+    mOctave(0), // A "UI-side" parameter that just determines, what type of
+                // MIDI message to send to the DSP; it itself doesn't affect
+                // the DSP especially, so we don't store it as an IParam...
+    mGain(100.),
+    mAttack(10.),
+    mDecay(10.),
+    mSustain(50.),
+    mRelease(10.),
     mFilterCutoff(0.5),
     mFilterResonance(0.),
 
@@ -24,9 +22,8 @@ struct SynthData
     mFilterRelease(0.)
   {}
 
-  int mCoreIdx; // [0..2], only three cores for now
-  int mCoreTotal; // total three cores, for now
-  int mOctave; // [-2..+2], relative to C4 octave (with C4 == 60)
+  int mCoreIdx; // Store the int representation of the underlying enum IParam
+  int mOctave;
   double mGain;
   double mAttack;
   double mDecay;
@@ -77,6 +74,7 @@ public:
       synData.mDecay = GetParam(kParamDecay)->Value();
       synData.mSustain = GetParam(kParamSustain)->Value();
       synData.mRelease = GetParam(kParamRelease)->Value();
+      synData.mCoreIdx = GetParam(kParamCore)->Int();
     } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
       mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
       mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {

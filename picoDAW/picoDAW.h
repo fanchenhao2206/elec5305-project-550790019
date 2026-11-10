@@ -18,6 +18,8 @@ enum EParams
   kParamSustain,
   kParamRelease,
 
+  kParamCore,
+
   kNumParams
 };
 

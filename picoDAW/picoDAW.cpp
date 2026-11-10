@@ -15,10 +15,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
   // Knob and slider controls use IParams; updates are communicated by us the IPlugWasmUI
   // to the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
+
   GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
   GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
+
+  GetParam(kParamCore)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -219,7 +222,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
           // TODO: don't just take from the first instrument [0], like we do here...
           // We take the octave from RootUIControl, which is relative to C4 == 60;
           // For example, if octave is -1, then we are in the C3 == 48 octave.
-          int octave = root->mSynthDatas[0].mOctave;
+          int octave = root->mSynthDatas[0].mOctave; // This is correct; don't use a param for octave; it's a "UI side" param
+                                                     // As opposed to core, adsr, gain, which are "DSP side" params...
           int currNote = (midiCell < 0) ? -1 : (60 + octave * 12) + midiStep;
           int currVelocity = 80;
 
@@ -286,26 +290,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // 2206: Synth controls...
     // Break sequencerBounds into a 4x4 grid...
 
-    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), [pGraphics, root](IControl* pCaller) {
-      // Which editor screen are we on? (Has to be one of the synth editors...)
-      int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
-
-      // Modify the corresponding struct in root control...
-      SynthData &synData = root->mSynthDatas[synEditIdx];
-      synData.mCoreIdx += 1;
-      synData.mCoreIdx %= synData.mCoreTotal;
-
-      // Send arbitrary message to DSP. It needs to know which voice to modify and
-      // what to modify it to. We need to send it synEditIdx and synData.mCoreIdx...
-      // Maybe std::pair<int, int>? Let's try for now...
-      root->GetDelegate()->SendArbitraryMsgFromUI(1, kCtrlTagCoreSwitch, sizeof(std::pair<int,int>), new std::pair<int,int>(synEditIdx, synData.mCoreIdx));
-
-      // Then animation...
-      float x, y;
-      pGraphics->GetMouseDownPoint(x, y);
-      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-    }, "CORE", style);
+    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamCore, "CORE", style);
     auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), [pGraphics, root](IControl* pCaller) {
       // Which editor screen are we on? (Has to be one of the synth editors...)
       int synEditIdx = root->mScreen - kScreenEditorSyn1; // [0..3]
