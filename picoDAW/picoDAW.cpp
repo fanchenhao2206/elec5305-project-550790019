@@ -438,52 +438,13 @@ handle:
                                // See... event.mAddress (.mChannel?)
 }
 
-// First of all, we know that picoDAW represents both an IPlugWasmUI and IPlugWasmDSP,
-// with a portion of methods dedicated to one, and the rest the other, by preprocessor
-// #ifdef guards. And, that both are IEditorDelegates. (The difference is that IPlugWasmUI 
-// has access to a graphics API; it's an IGEditorDelegate that inherits the IEditorDelegate 
-// base class). The path for this is a bit of a mess to see. In both .h files, e.g. 
-// IPlugWasmUI.h you will see a #include "IPlugAPIBase.h", which itself includes a
-// IPlugPluginBase.h, which then includes a IPlugDelegate_select.h, which like its name 
-// implies, sets the delegate class to be either IEditorDelegate or IGEditorDelegate; 
-// both with base class of IEditorDelegate!!
-//
-// The idea behind this seperation, is that when compiled into a WASM build, the two run
-// in seperate javascript threads. So, a user launches picoDAW in their browser, and two
-// threads are spawned. There's the main <script> thread, included in the index.HTML that
-// spins in a loop drawing UI, and then there's a seperate AudioWorklet worker thread that
-// deals with DSP in a loop, also spawned on load.
-// 
-// (i) Through iPlug2, what runs in the two threads is essentially C++ code. The IPlugWasmUI C++
-// code runs in the UI thread in a loop. Specifically, the "int main()" of IPlugWasmUI included
-// from "IPlug_include_in_plug_src.h", is compiled into a javascript program with a proper entry
-// point. This entry point calls "StartMainLoopTimer", which eventually starts the loop...
-//
-// The resulting javascriptprogram --- with an "int main()"-type entry point --- is called 
-// "picoDAW-ui.js", compiled by emcc into javascript through emmake make --makefile picoDAW-wasm-ui.mk 
-// in the "makedist-wasm.sh" script; see also "picoDAW-wasm-ui.mk". This program is included in a 
-// <script> tag in the main index.HTML in the "_initUI" function of "IPlugWasmBundle.js.template", 
-// so that the program runs in the main javascript thread when the "_initUI" function is reached
-//
-// (ii) The IPlugWasmDSP C++ code runs inside the AudioWorklet thread, also in a loop, but is a
-// bit more subtle. This is because the AudioWorklet is quite explictly its own thread. It is a
-// thread spawned by the main javascript thread. The only way it has access to our custom C++
-// DSP code, converted to javascript, is through the "process" function specified in the 
-// "AudioWorkletProcessor" API, custom-defined in the "IPlugWasmProcessor.js.template". The idea
-// is that on every call made to "process" by the AudioWorklet thread, it will call our 
-// corresponding "processBlock" C++ code that is a part of the IPlugWasmDSP delegate. This 
-// is why the IPlugWasmDSP delegate doesn't have a "int main()" entry point; it's only 
-// contribution to the AudioWorklet thread is its "processBlock" function, the AudioWorklet 
-// internals instead contains the inevitable loop that runs in its thread
-//
-// So, the resulting binary, called "picoDAW-dsp.js", doesn't have a "int main()"-type entry point.
-// Instead, the resulting "picoDAW-dsp.js" --- which can instead be thought of as a library of DSP 
-// related functions; a DSP module --- is provided to to the AudioWorklet thread on spawning, which
-// runs the actual DSP loop; "audioWorklet.addModule(dspModuleUrl)" in "IPlugWasmBundle.js.template".
-// The binding for the javascript invocation of "processBlock" in "IPlugWasmProcessor.js.template",
-// to the C++ "processBlock" inside the DSP module "picoDAW-dsp.js", is found in "IPlugWasmDSP.cpp"
-// And the compilation into the DSP module, is found in "makedist-wasm.sh" through 
-// "emmake make --makefile picoDAW-wasm-dsp.mk"; see also "picoDAW-wasm-dsp.mk"
+// There are two threads in the WASM build of picoDAW. A main javascript thread that will 
+// spin in infinite loop running the "int main()" function of IPlugWasmUI, compiled by emcc
+// into "picoDAW-ui.js". And a secondary AudioWorklet worker thread, spawned by the main thread 
+// before entering the UI loop, endlessly calling its "process" function, specified in the
+// AudioWorkletProcessor API and defined in "IPlugWasmProcessor.js.template". Each invocation
+// calls "processBlock", which is bound to IPlugWasmDSP's "processBlock" code, the machine code 
+// located inside the compiled "picoDAW-dsp.js" module provided on AudioWorklet spawning.
 //
 // How do the two threads communicate? They communicate via the javascript functions
 // "setParam", and "onParam", for communicating parameter changes for example. What I 
@@ -496,7 +457,7 @@ handle:
 //   this.workletNode?.port.postMessage({ type: 'param', paramIdx, value });
 // }
 //
-// tapping onto the AudioWorklet thread's this.port, specified in the AudioWorklet
+// tapping onto the AudioWorklet thread's "this.port", specified in the AudioWorklet
 // API, with type 'param'. And you can see that in the corresponding AudioWorklet thread
 // initialisation of "IPlugWasmProcessor.js.template", every time a message is passed to 
 // the AudioWorklet through this.port, the "_onMessage" function inside it is called. It 
@@ -509,40 +470,19 @@ void picoDAW::OnParamChange(int paramIdx)
   // mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 }
 
-// As an example, we can look at the IVKnobControl UI element, initialised and owned
-// by the main UI thread who is running IPlugWasmUI's StartMainLoopTimer on infinite
-// inside a <script> HTML tag in the _initUI of "IPlugWasmBundle.js.template"; specifically
-// it's running the "picoDAW-ui.js" script. (At this point it's worth pointing out that
-// the IPlugWasmUI's StartMainLoopTimer is compiled by emcc into "picoDAW-ui.js" through
-// emmake make --makefile picoDAW-wasm-ui.mk in the "makedist-wasm.sh" script; see also
-// "picoDAW-wasm-ui.mk")
-//
-// The knob's value is changed by clicking and then dragging on it, upward for increasing 
-// and downward for decreasing. And you can see in IKnobControlBase::OnMouseDrag, the 
-// base class of IVKnobControl, that the change is reflected in the UI by first
-// IControl::SetValue(v) of course, and then also IControl::SetDirty(true), so that:
-// (i) the knob control is redrawn on the next frame, and (ii) the change is communicated
-// to the AudioWorklet thread by first calling IPlugWasmUI::SendParamterValueFromUI, 
-// which as above makes the javascript invocation "window.iPlugController.setParam", 
-// which calls "this.workletNode.port.postMessage({ type: 'param' ... })", which finally
-// results in the AudioWorklet's "_onMessage" being triggered, because it is bound to 
-// its "this.port.onmessage" in "IPlugWasmProcessor.js.template". The "_onMessage" does
-// a switch case on the message's type, and if 'param', calls the javascript function
-// "onParam", which as above makes the C++ invocation "_onParam" in "IPlugWasmDSP.cpp",
-// which finally calls this IPlugWasmDSP::OnParamMessage (aka picoDAW::OnParamMessage).
-//
 // Here below you'll see though, that an alternative is to communicate to the DSP backend
 // through arbitrary messages. These would work well. But because the iPlug2-provided knobs
 // and sliders already integrate so well with IParams, it's more work --- specifically to
-//  modify the provided controls --- to use arbitrary messages, instead of the existing
+// modify the provided controls --- to use arbitrary messages, instead of the existing
 // "sending" of parameter change message from the IPlugWasmUI to the IPlugWasmDSP, by 
-// calling IPlugWasmUI::SendParamterValueFromUI, which eventually leads to the above
+// calling IPlugWasmUI::SendParameterValueFromUI, which eventually leads to the above
 // IPlugWasmDSP::OnParamChange. So, the change to make to the knob and slider etc. controls,
-// to make them use arbitrary messages instead, is to change the IControl::SetDirty
-// function to call IPlugWasmUI::SendArbitraryMsgFromUI instead; again, pretty pointless
-// because the parameter change approach is equivalent. Arbitrary messages are used here
-// though, because, in my opinion, they actually are more convenient here!! But they 
-// can definitely TODO: be converted to IParams too, through InitEnums, probably...
+// to make them use arbitrary messages instead, is to change the IControl::SetDirty function
+// to call IPlugWasmUI::SendArbitraryMsgFromUI instead of IPlugWasmUI::SendParameterValueFromUI;
+// again, pretty pointless because the parameter change approach is essentially equivalent.
+// Arbitrary messages are used for these cases here though, because, in my opinion, they are
+// more appropriate. But, TODO: they can definitely be converted to IParams too, through
+// InitEnums, probably...
 bool picoDAW::OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData)
 {
   if (ctrlTag == kCtrlTagCoreSwitch && msgTag == 1) {
