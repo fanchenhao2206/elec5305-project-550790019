@@ -4,6 +4,7 @@
 #pragma once
 
 #include "IPlugPlatform.h"
+#include "Oscillator.h"
 #include <iostream>
 
 BEGIN_IPLUG_NAMESPACE
