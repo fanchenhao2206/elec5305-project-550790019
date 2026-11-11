@@ -98,10 +98,8 @@ public:
     double pitch = mInputs[kVoiceControlPitch].endValue;
     double osc1Freq = 440. * pow(2., pitch + static_cast<double>(mOctave));
 
-    for (auto i = startIdx; i < startIdx + nFrames; i++)
-    {
-      // an MPE synth can use pressure here in addition to gain
-      outputs[0][i] += mOSC->Process(osc1Freq) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain;
+    for (int i = startIdx; i < startIdx + nFrames; i++) {
+      outputs[0][i] += mFilter->Process(mOSC->Process(osc1Freq) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain);
       outputs[1][i] = outputs[0][i];
     }
   }
