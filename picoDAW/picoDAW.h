@@ -12,16 +12,26 @@ enum EParams
   // NOTE: good
   kParamRoot = 0,
 
-  kParamVoice,
+  kParamVoiceIdx,
 
-  kParamGain,
-  kParamAttack,
-  kParamDecay,
-  kParamSustain,
-  kParamRelease,
+  kParamVoiceGain,
+  kParamVoiceOctave,
 
-  kParamCore,
-  kParamOctave,
+  kParamVoiceAttack,
+  kParamVoiceDecay,
+  kParamVoiceSustain,
+  kParamVoiceRelease,
+
+  kParamSynthCoreIdx,
+
+  kParamFilterCutoff,
+  kParamFilterResonance,
+  kParamFilterType,
+
+  kParamFilterAttack,
+  kParamFilterDecay,
+  kParamFilterSustain,
+  kParamFilterRelease,
 
   kNumParams
 };

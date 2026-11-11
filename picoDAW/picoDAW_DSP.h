@@ -73,27 +73,27 @@ public:
     // basis, but Sustain and Gain cannot be. TODO: change mParamsToSmooth very slightly,
     // into a 2D array, of nModulations by nVoices.
     switch (paramIdx) {
-      case kParamGain:
+      case kParamVoiceGain:
         // The value given is a single gain value
         mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
         break;
-      case kParamSustain:
+      case kParamVoiceSustain:
         // The value given is a single sustain value
         mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
         break;
-      case kParamAttack:
+      case kParamVoiceAttack:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
         break;
-      case kParamDecay:
+      case kParamVoiceDecay:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
         break;
-      case kParamRelease:
+      case kParamVoiceRelease:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
         break;
-      case kParamCore:
+      case kParamSynthCoreIdx:
         mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
-      case kParamOctave:
+      case kParamVoiceOctave:
         mSynth.GetVoice(voiceIdx)->SetOctave(static_cast<int>(value));
       default:
         break;

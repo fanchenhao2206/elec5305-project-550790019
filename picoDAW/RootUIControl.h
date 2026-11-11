@@ -69,12 +69,12 @@ public:
     // Save params of the old mScreen that we are changing from...
     if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
-      synData.mGain = GetParam(kParamGain)->Value();
-      synData.mAttack = GetParam(kParamAttack)->Value();
-      synData.mDecay = GetParam(kParamDecay)->Value();
-      synData.mSustain = GetParam(kParamSustain)->Value();
-      synData.mRelease = GetParam(kParamRelease)->Value();
-      synData.mCoreIdx = GetParam(kParamCore)->Int();
+      synData.mGain = GetParam(kParamVoiceGain)->Value();
+      synData.mAttack = GetParam(kParamVoiceAttack)->Value();
+      synData.mDecay = GetParam(kParamVoiceDecay)->Value();
+      synData.mSustain = GetParam(kParamVoiceSustain)->Value();
+      synData.mRelease = GetParam(kParamVoiceRelease)->Value();
+      synData.mCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
     } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
       mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
       mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
@@ -86,12 +86,12 @@ public:
     // Load params of the new screen that we are changing to...
     if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
-      GetParam(kParamGain)->Set(synData.mGain);
-      GetParam(kParamAttack)->Set(synData.mAttack);
-      GetParam(kParamDecay)->Set(synData.mDecay);
-      GetParam(kParamSustain)->Set(synData.mSustain);
-      GetParam(kParamRelease)->Set(synData.mRelease);
-      GetParam(kParamVoice)->Set(static_cast<double>(screen - kScreenEditorSyn1));
+      GetParam(kParamVoiceGain)->Set(synData.mGain);
+      GetParam(kParamVoiceAttack)->Set(synData.mAttack);
+      GetParam(kParamVoiceDecay)->Set(synData.mDecay);
+      GetParam(kParamVoiceSustain)->Set(synData.mSustain);
+      GetParam(kParamVoiceRelease)->Set(synData.mRelease);
+      GetParam(kParamVoiceIdx)->Set(static_cast<double>(screen - kScreenEditorSyn1));
     } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
       screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
       screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {

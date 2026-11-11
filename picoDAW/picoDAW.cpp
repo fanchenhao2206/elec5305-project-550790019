@@ -13,19 +13,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
   // Current instrument...
-  GetParam(kParamVoice)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
+  GetParam(kParamVoiceIdx)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
 
   // Knob and slider controls use IParams; updates are communicated by us the IPlugWasmUI
-  // to the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
-  GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
+  // to them the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
+  GetParam(kParamVoiceGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
+  GetParam(kParamVoiceOctave)->InitInt("Octave", 0, -2, 2);
 
-  GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
-  GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
+  GetParam(kParamVoiceAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamVoiceDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
+  GetParam(kParamVoiceSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
+  GetParam(kParamVoiceRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-  GetParam(kParamCore)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
-  GetParam(kParamOctave)->InitInt("Octave", 0, -2, 2);
+  GetParam(kParamSynthCoreIdx)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [this]() {
@@ -300,14 +300,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // Synth controls; Break sequencerBounds into a 4x4 grid...
-    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamCore, "CORE", style);
-    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamOctave, "OCTAVE", style);
-    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamGain, "GAIN", style);
+    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreIdx, "CORE", style);
+    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceOctave, "OCTAVE", style);
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamVoiceGain, "GAIN", style);
 
-    auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamAttack, "ATTACK", style);
-    auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamDecay, "DECAY", style);
-    auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamSustain, "SUSTAIN", style);
-    auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamRelease, "RELEASE", style);
+    auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamVoiceAttack, "ATTACK", style);
+    auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamVoiceDecay, "DECAY", style);
+    auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamVoiceSustain, "SUSTAIN", style);
+    auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamVoiceRelease, "RELEASE", style);
 
     // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
     //
@@ -445,7 +445,7 @@ handle:
 void picoDAW::OnParamChange(int paramIdx)
 {
   // For DSP-side paramater changes...
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoice)->Int());
+  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoiceIdx)->Int());
 }
 #endif
 
