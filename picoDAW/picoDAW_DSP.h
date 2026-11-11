@@ -104,16 +104,16 @@ public:
         // TODO:
         break;
       case kParamFilterAttack:
-        // TODO:
+        mSynth.GetVoice(voiceIdx)->mFilterEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
         break;
       case kParamFilterDecay:
-        // TODO:
+        mSynth.GetVoice(voiceIdx)->mFilterEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
         break;
       case kParamFilterSustain:
-        // TODO:
+        mParamsToSmooth[kModFilterSustainSmoother] = (sample) value / 100.;
         break;
       case kParamFilterRelease:
-        // TODO:
+        mSynth.GetVoice(voiceIdx)->mFilterEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
         break;
       default:
         break;

@@ -53,9 +53,9 @@ public:
     }
   }
 
-  void SetFilterType(int filterTypeIdx) override
+  void SetFilterCore(int filterCoreIdx) override
   {
-    if (filterTypeIdx == 0) {
+    if (filterCoreIdx == 0) {
       mFilter = mStateVariableFilter;
     } else {
       // TODO: throw error...
@@ -65,12 +65,12 @@ public:
 
   void SetFilterCutoff(double freq) override
   {
-    mFilter->SetFreqCPS(freq);
+    mCutoffFreq = freq;
   }
 
   void SetFilterResonance(double percentage) override
   {
-    mFilter->SetQ(percentage);
+    mResonancePercentage = percentage;
   }
 
   void SetOctave(int octave) override
@@ -109,6 +109,9 @@ public:
     double osc1Freq = 440. * pow(2., pitch + static_cast<double>(mOctave));
 
     for (int i = startIdx; i < startIdx + nFrames; i++) {
+      mFilter->SetFreqCPS(mCutoffFreq * pow(100., mFilterEnv.Process(inputs[kModFilterSustainSmoother][i])));
+      mFilter->SetQ(mResonancePercentage);
+
       outputs[0][i] += mFilter->Process(mOSC->Process(osc1Freq) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain);
       outputs[1][i] = outputs[0][i];
     }
@@ -147,4 +150,6 @@ private:
   // IFilter<sample> *mBilinearTransformFilter;
 
   int mOctave;
+  double mCutoffFreq;
+  double mResonancePercentage;
 };
