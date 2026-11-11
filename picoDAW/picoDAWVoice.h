@@ -1,9 +1,13 @@
+//
+// Tim Fan <fanchenhao2206@icloud.com>
+
 #pragma once
 
 #include "IPlugConstants.h"
-#include "Oscillator.h"
-#include "ADSREnvelope.h"
+#include "picoDAW_Oscillator.h"
+#include "picoDAW_Filter.h"
 #include "picoDAW_DSPConstants.h"
+#include "ADSREnvelope.h"
 
 using namespace iplug;
 
@@ -15,6 +19,19 @@ public:
     mSineCore = new SinOscillator<sample>();
     mTriangleCore = new TriangleOscillator<sample>();
     mSawCore = new SawOscillator<sample>();
+
+    // mBiquadIIRLPFilter = new BiquadIIRLPFilter<sample>();
+    // mBiquadIIRHPFilter = new BiquadIIRHPFilter<sample>();
+    // mBiquadIIRBPFilter = new BiquadIIRBPFilter<sample>();
+
+    // mBilinearTransformLPFilter = new BilinearTransformLPFilter<sample>();
+    // mBilinearTransformHPFilter = new BilinearTransformHPFilter<sample>();
+    // mBilinearTransformBPFilter = new BilinearTransformBPFilter<sample>();
+
+    // mStateVariableFilter = new StateVariableFilter<sample>();
+    // mFilter = mStateVariableFilter; FIXME: also buggy...
+
+    mFilter = new picoDAWFilter<sample>(); // TODO: remove
 
     mOSC = mSineCore; // FIXME: This is pretty buggy...
                       // Open app, press core switch, and then
@@ -51,6 +68,7 @@ public:
   void Trigger(double level, bool isRetrigger) override
   {
     mOSC->Reset();
+    mFilter->Reset();
     
     if(isRetrigger) {
       mAMPEnv.Retrigger(level);
@@ -94,6 +112,8 @@ public:
     mSineCore->SetSampleRate(sampleRate);
     mTriangleCore->SetSampleRate(sampleRate);
     mSawCore->SetSampleRate(sampleRate);
+
+    // mStateVariableFilter->SetSampleRate(sampleRate); // TODO: uncomment and add more...
     
     mAMPEnv.SetSampleRate(sampleRate);
     mFilterEnv.SetSampleRate(sampleRate);
@@ -114,8 +134,10 @@ public:
 
 private:
   IOscillator<sample> *mSineCore;
-  IOscillator<sample> *mSawCore;
+  IOscillator<sample> *mSawCore; // Custom cores implementing IOscillator interface...
   IOscillator<sample> *mTriangleCore;
+
+  picoDAWFilter<sample> *mFilter; // picoDAWFilter because there is no IFilter interface...
 
   int mOctave;
 
