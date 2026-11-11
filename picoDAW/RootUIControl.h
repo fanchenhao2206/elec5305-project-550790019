@@ -127,13 +127,23 @@ public:
 
     auto mixerButton = mGraphics->GetControlWithTag(kCtrlTagMixerButton)->As<IVButtonControl>();
 
-    auto coreSwitch = mGraphics->GetControlWithTag(kCtrlTagCoreSwitch)->As<IVSwitchControl>();
-    auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagOctaveSwitch)->As<IVSwitchControl>();
-    auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagGainKnob)->As<IVKnobControl>();
-    auto attackKnob = mGraphics->GetControlWithTag(kCtrlTagAttackKnob)->As<IVKnobControl>();
-    auto decayKnob = mGraphics->GetControlWithTag(kCtrlTagDecayKnob)->As<IVKnobControl>();
-    auto sustainKnob = mGraphics->GetControlWithTag(kCtrlTagSustainKnob)->As<IVKnobControl>();
-    auto releaseKnob = mGraphics->GetControlWithTag(kCtrlTagReleaseKnob)->As<IVKnobControl>();
+    auto coreIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagSynthCoreSwitch)->As<IVSwitchControl>();
+    auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagVoiceOctaveSwitch)->As<IVSwitchControl>();
+    auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceGainKnob)->As<IVKnobControl>();
+
+    auto attackKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceAttackKnob)->As<IVKnobControl>();
+    auto decayKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceDecayKnob)->As<IVKnobControl>();
+    auto sustainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceSustainKnob)->As<IVKnobControl>();
+    auto releaseKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceReleaseKnob)->As<IVKnobControl>();
+
+    auto cutoffKnob = mGraphics->GetControlWithTag(kCtrlTagFilterCutoffKnob)->As<IVKnobControl>();
+    auto resonanceKnob = mGraphics->GetControlWithTag(kCtrlTagFilterResonanceKnob)->As<IVKnobControl>();
+    auto typeIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagFilterTypeSwitch)->As<IVSwitchControl>();
+
+    auto filterAttackKnob = mGraphics->GetControlWithTag(kCtrlTagFilterAttackKnob)->As<IVKnobControl>();
+    auto filterDecayKnob = mGraphics->GetControlWithTag(kCtrlTagFilterDecayKnob)->As<IVKnobControl>();
+    auto filterSustainKnob = mGraphics->GetControlWithTag(kCtrlTagFilterSustainKnob)->As<IVKnobControl>();
+    auto filterReleaseKnob = mGraphics->GetControlWithTag(kCtrlTagFilterReleaseKnob)->As<IVKnobControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
@@ -209,13 +219,20 @@ public:
       midiSeq->Hide(false);
       cycleKeyboard->Hide(false);
     } else if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
-      coreSwitch->Hide(false);
+      coreIdxSwitch->Hide(false);
       octaveSwitch->Hide(false);
       gainKnob->Hide(false);
       attackKnob->Hide(false);
       decayKnob->Hide(false);
       sustainKnob->Hide(false);
       releaseKnob->Hide(false);
+      cutoffKnob->Hide(false);
+      resonanceKnob->Hide(false);
+      typeIdxSwitch->Hide(false);
+      filterAttackKnob->Hide(false);
+      filterDecayKnob->Hide(false);
+      filterSustainKnob->Hide(false);
+      filterReleaseKnob->Hide(false);
     } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // TODO: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds

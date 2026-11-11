@@ -310,7 +310,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
 
     // Synth controls; Break sequencerBounds into a 4x4 grid...
-    auto coreSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreIdx, "CORE", style);
+    auto coreIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreIdx, "CORE", style);
     auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceOctave, "OCTAVE", style);
     auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamVoiceGain, "GAIN", style);
 
@@ -318,6 +318,15 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamVoiceDecay, "DECAY", style);
     auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamVoiceSustain, "SUSTAIN", style);
     auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamVoiceRelease, "RELEASE", style);
+
+    auto cutoffKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 1), kParamFilterCutoff, "CUTOFF", style);
+    auto resonanceKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 2), kParamFilterResonance, "RESONANCE", style);
+    auto typeIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 3), kParamFilterTypeIdx, "TYPE", style);
+
+    auto filterAttackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamFilterAttack, "ATTACK", style);
+    auto filterDecayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamFilterDecay, "DECAY", style);
+    auto filterSustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamFilterSustain, "SUSTAIN", style);
+    auto filterReleaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamFilterRelease, "RELEASE", style);
 
     // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
     //
@@ -343,13 +352,23 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(mixerButton, kCtrlTagMixerButton);
 
-    pGraphics->AttachControl(coreSwitch, kCtrlTagCoreSwitch);
-    pGraphics->AttachControl(octaveSwitch, kCtrlTagOctaveSwitch);
-    pGraphics->AttachControl(gainKnob, kCtrlTagGainKnob);
-    pGraphics->AttachControl(attackKnob, kCtrlTagAttackKnob);
-    pGraphics->AttachControl(decayKnob, kCtrlTagDecayKnob);
-    pGraphics->AttachControl(sustainKnob, kCtrlTagSustainKnob);
-    pGraphics->AttachControl(releaseKnob, kCtrlTagReleaseKnob);
+    pGraphics->AttachControl(coreIdxSwitch, kCtrlTagSynthCoreSwitch);
+
+    pGraphics->AttachControl(octaveSwitch, kCtrlTagVoiceOctaveSwitch);
+    pGraphics->AttachControl(gainKnob, kCtrlTagVoiceGainKnob);
+    pGraphics->AttachControl(attackKnob, kCtrlTagVoiceAttackKnob);
+    pGraphics->AttachControl(decayKnob, kCtrlTagVoiceDecayKnob);
+    pGraphics->AttachControl(sustainKnob, kCtrlTagVoiceSustainKnob);
+    pGraphics->AttachControl(releaseKnob, kCtrlTagVoiceReleaseKnob);
+
+    pGraphics->AttachControl(cutoffKnob, kCtrlTagFilterCutoffKnob);
+    pGraphics->AttachControl(resonanceKnob, kCtrlTagFilterResonanceKnob);
+    pGraphics->AttachControl(typeIdxSwitch, kCtrlTagFilterTypeSwitch);
+
+    pGraphics->AttachControl(filterAttackKnob, kCtrlTagFilterAttackKnob);
+    pGraphics->AttachControl(filterDecayKnob, kCtrlTagFilterDecayKnob);
+    pGraphics->AttachControl(filterSustainKnob, kCtrlTagFilterSustainKnob);
+    pGraphics->AttachControl(filterReleaseKnob, kCtrlTagFilterReleaseKnob);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);

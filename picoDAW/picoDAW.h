@@ -74,13 +74,22 @@ enum EControlTags
 
   kCtrlTagMixerButton,
 
-  kCtrlTagCoreSwitch,
-  kCtrlTagOctaveSwitch,
-  kCtrlTagGainKnob,
-  kCtrlTagAttackKnob,
-  kCtrlTagDecayKnob,
-  kCtrlTagSustainKnob,
-  kCtrlTagReleaseKnob,
+  kCtrlTagSynthCoreSwitch,
+
+  kCtrlTagVoiceOctaveSwitch,
+  kCtrlTagVoiceGainKnob,
+  kCtrlTagVoiceAttackKnob,
+  kCtrlTagVoiceDecayKnob,
+  kCtrlTagVoiceSustainKnob,
+  kCtrlTagVoiceReleaseKnob,
+
+  kCtrlTagFilterCutoffKnob,
+  kCtrlTagFilterResonanceKnob,
+  kCtrlTagFilterTypeSwitch,
+  kCtrlTagFilterAttackKnob,
+  kCtrlTagFilterDecayKnob,
+  kCtrlTagFilterSustainKnob,
+  kCtrlTagFilterReleaseKnob,
 
   // TODO: to remove 
   kCtrlTagMeter,
