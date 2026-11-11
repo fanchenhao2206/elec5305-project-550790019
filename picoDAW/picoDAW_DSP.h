@@ -101,7 +101,7 @@ public:
         mSynth.GetVoice(voiceIdx)->SetFilterResonance(value);
         break;
       case kParamFilterTypeIdx:
-        // TODO:
+        mSynth.GetVoice(voiceIdx)->SetFilterType(static_cast<int>(value));
         break;
       case kParamFilterAttack:
         mSynth.GetVoice(voiceIdx)->mFilterEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 

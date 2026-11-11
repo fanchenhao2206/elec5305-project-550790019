@@ -63,6 +63,11 @@ public:
     }
   }
 
+  void SetFilterType(int filterTypeIdx) override
+  {
+    mFilterTypeIdx = filterTypeIdx;
+  }
+
   void SetFilterCutoff(double freq) override
   {
     mCutoffFreq = freq;
@@ -109,6 +114,7 @@ public:
     double osc1Freq = 440. * pow(2., pitch + static_cast<double>(mOctave));
 
     for (int i = startIdx; i < startIdx + nFrames; i++) {
+      mFilter->SetMode(static_cast<EMode>(mFilterTypeIdx));
       mFilter->SetFreqCPS(mCutoffFreq * pow(100., mFilterEnv.Process(inputs[kModFilterSustainSmoother][i])));
       mFilter->SetQ(mResonancePercentage);
 
@@ -150,6 +156,7 @@ private:
   // IFilter<sample> *mBilinearTransformFilter;
 
   int mOctave;
+  int mFilterTypeIdx;
   double mCutoffFreq;
   double mResonancePercentage;
 };
