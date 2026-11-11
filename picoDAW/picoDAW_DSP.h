@@ -74,12 +74,10 @@ public:
     // into a 2D array, of nModulations by nVoices.
     switch (paramIdx) {
       case kParamVoiceGain:
-        // The value given is a single gain value
         mParamsToSmooth[kModGainSmoother] = (sample) value / 100.;
         break;
-      case kParamVoiceSustain:
-        // The value given is a single sustain value
-        mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
+      case kParamVoiceOctave:
+        mSynth.GetVoice(voiceIdx)->SetOctave(static_cast<int>(value));
         break;
       case kParamVoiceAttack:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kAttack, value); 
@@ -87,14 +85,36 @@ public:
       case kParamVoiceDecay:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kDecay, value); 
         break;
+      case kParamVoiceSustain:
+        mParamsToSmooth[kModSustainSmoother] = (sample) value / 100.;
+        break;
       case kParamVoiceRelease:
         mSynth.GetVoice(voiceIdx)->mAMPEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
         break;
       case kParamSynthCoreIdx:
         mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
-      case kParamVoiceOctave:
-        mSynth.GetVoice(voiceIdx)->SetOctave(static_cast<int>(value));
+      // case kParamFilterCutoff:
+      //   // TODO:
+      //   break;
+      // case kParamFilterResonance:
+      //   // TODO:
+      //   break;
+      // case kParamFilterTypeIdx:
+      //   // TODO:
+      //   break;
+      // case kParamFilterAttack:
+      //   // TODO:
+      //   break;
+      // case kParamFilterDecay:
+      //   // TODO:
+      //   break;
+      // case kParamFilterSustain:
+      //   // TODO:
+      //   break;
+      // case kParamFilterRelease:
+      //   // TODO:
+      //   break;
       default:
         break;
     }
