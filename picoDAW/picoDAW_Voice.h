@@ -31,15 +31,9 @@ public:
                       // very minor bug, for now, because at 
                       // least it doesn't crash the plugin!!
 
-    // mBiquadIIRLPFilter = new BiquadIIRLPFilter<sample>();
-    // mBiquadIIRHPFilter = new BiquadIIRHPFilter<sample>();
-    // mBiquadIIRBPFilter = new BiquadIIRBPFilter<sample>();
-
-    // mBilinearTransformLPFilter = new BilinearTransformLPFilter<sample>();
-    // mBilinearTransformHPFilter = new BilinearTransformHPFilter<sample>();
-    // mBilinearTransformBPFilter = new BilinearTransformBPFilter<sample>();
-
     mStateVariableFilter = new StateVariableFilter<sample>();
+    // mBiquadIIRFilter = new BiquadIIRLPFilter<sample>();
+    // mBilinearTransformFilter = new BilinearTransformLPFilter<sample>();
 
     mFilter = mStateVariableFilter; // FIXME: also buggy...
 
@@ -136,11 +130,13 @@ public:
   }
 
 private:
-  IOscillator<sample> *mSineCore;
+  IOscillator<sample> *mSineCore; // Default core provided by IPlug...
   IOscillator<sample> *mSawCore; // Custom cores implementing IOscillator interface...
   IOscillator<sample> *mTriangleCore;
 
-  IFilter<sample> *mStateVariableFilter; // Custom filters implementing IFilter interface...
+  IFilter<sample> *mStateVariableFilter; // Default filter provided by IPlug...
+  // IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
+  // IFilter<sample> *mBilinearTransformFilter;
 
   int mOctave;
 };
