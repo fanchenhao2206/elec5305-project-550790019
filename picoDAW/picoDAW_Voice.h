@@ -9,6 +9,8 @@
 #include "picoDAW_DSPConstants.h"
 #include "ADSREnvelope.h"
 
+#include <cassert>
+
 using namespace iplug;
 
 class picoDAWVoice : public SynthVoice
@@ -43,14 +45,27 @@ public:
 
   }
 
-  void SetSynthCore(int coreIdx) override
+  void SetSynthCore(int synthCoreIdx) override
   {
-    if (coreIdx == 0) {
+    if (synthCoreIdx == 0) {
       mOSC = mSineCore;
-    } else if (coreIdx == 1) {
+    } else if (synthCoreIdx == 1) {
       mOSC = mTriangleCore;
-    } else if (coreIdx == 2) {
+    } else if (synthCoreIdx == 2) {
       mOSC = mSawCore;
+    } else {
+      // TODO: throw error...
+      assert(false);
+    }
+  }
+
+  void SetFilterType(int filterTypeIdx) override
+  {
+    if (filterTypeIdx == 0) {
+      mFilter = mStateVariableFilter;
+    } else {
+      // TODO: throw error...
+      assert(false);
     }
   }
 
