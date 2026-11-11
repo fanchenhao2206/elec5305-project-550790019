@@ -9,29 +9,29 @@
 BEGIN_IPLUG_NAMESPACE
 
 template <typename T>
-class picoDAWOscillator : public IOscillator<T>
+class picoDAW_Oscillator : public IOscillator<T>
 {
 public:
-  picoDAWOscillator(double startPhase = 0., double startFreq = 1.)
+  picoDAW_Oscillator(double startPhase = 0., double startFreq = 1.)
   : IOscillator<T>(startPhase, startFreq)
   {
   }
 };
 
 template <typename T>
-class TriangleOscillator : public picoDAWOscillator<T>
+class TriangleOscillator : public picoDAW_Oscillator<T>
 {
 public:
   TriangleOscillator(double startPhase = 0.,
                      double startFreq = 1.)
-    : picoDAWOscillator<T>(startPhase, startFreq)
+    : picoDAW_Oscillator<T>(startPhase, startFreq)
   {}
 
   inline T Process()
   {
-    auto &phase = picoDAWOscillator<T>::mPhase;
+    auto &phase = picoDAW_Oscillator<T>::mPhase;
 
-    phase += picoDAWOscillator<T>::mPhaseIncr;
+    phase += picoDAW_Oscillator<T>::mPhaseIncr;
     phase -= std::floor(phase);
 
     return T(1.0 - 4.0 * std::abs(phase - 0.5));
@@ -45,31 +45,31 @@ public:
       std::cout
         << "TRIANGLE Frequency: " << freqHz
         << " Phase increment: "
-        << picoDAWOscillator<T>::mPhaseIncr
+        << picoDAW_Oscillator<T>::mPhaseIncr
         << " Sample rate: "
-        << picoDAWOscillator<T>::mSampleRate
+        << picoDAW_Oscillator<T>::mSampleRate
         << std::endl;
       counter = 0;
     }
-    picoDAWOscillator<T>::SetFreqCPS(freqHz);
+    picoDAW_Oscillator<T>::SetFreqCPS(freqHz);
     return Process();
   }
 };
 
 template <typename T>
-class SawOscillator : public picoDAWOscillator<T>
+class SawOscillator : public picoDAW_Oscillator<T>
 {
 public:
   SawOscillator(double startPhase = 0.,
                 double startFreq = 1.)
-    : picoDAWOscillator<T>(startPhase, startFreq)
+    : picoDAW_Oscillator<T>(startPhase, startFreq)
   {}
 
   inline T Process()
   {
-    auto &phase = picoDAWOscillator<T>::mPhase;
+    auto &phase = picoDAW_Oscillator<T>::mPhase;
 
-    phase += picoDAWOscillator<T>::mPhaseIncr;
+    phase += picoDAW_Oscillator<T>::mPhaseIncr;
     phase -= std::floor(phase);
 
     return T(2.0 * phase - 1.0);
@@ -83,13 +83,13 @@ public:
       std::cout
         << "SAW Frequency: " << freqHz
         << " Phase increment: "
-        << picoDAWOscillator<T>::mPhaseIncr
+        << picoDAW_Oscillator<T>::mPhaseIncr
         << " Sample rate: "
-        << picoDAWOscillator<T>::mSampleRate
+        << picoDAW_Oscillator<T>::mSampleRate
         << std::endl;
       counter = 0;
     }
-    picoDAWOscillator<T>::SetFreqCPS(freqHz);
+    picoDAW_Oscillator<T>::SetFreqCPS(freqHz);
     return Process();
   }
 };

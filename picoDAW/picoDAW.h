@@ -125,7 +125,7 @@ public:
   void OnParamChange(int paramIdx) override;
 
 private:
-  picoDAWDSP mDSP;
+  picoDAW_DSP mDSP;
   IPeakAvgSender<2> mMeterSender;
 #endif
 };

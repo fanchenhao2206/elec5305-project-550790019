@@ -4,20 +4,20 @@
 #include "IPlugConstants.h"
 #include "Smoothers.h"
 #include "LFO.h"
-#include "picoDAWVoice.h"
+#include "picoDAW_Voice.h"
 #include "picoDAW_DSPConstants.h"
 
 using namespace iplug;
 
-class picoDAWDSP
+class picoDAW_DSP
 {
 public:
-  picoDAWDSP() : mNVoices(1) // Just one voice for now...
+  picoDAW_DSP() : mNVoices(1) // Just one voice for now...
   {
-    mSynth.AddVoice(new picoDAWVoice(), 0);
-    // mSynth.AddVoice(new picoDAWVoice(), 0);
-    // mSynth.AddVoice(new picoDAWVoice(), 0);
-    // mSynth.AddVoice(new picoDAWVoice(), 0);
+    mSynth.AddVoice(new picoDAW_Voice(), 0);
+    // mSynth.AddVoice(new picoDAW_Voice(), 0);
+    // mSynth.AddVoice(new picoDAW_Voice(), 0);
+    // mSynth.AddVoice(new picoDAW_Voice(), 0);
     // mSynth.AddVoice(new SamplerVoice(), 0); // TODO: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
