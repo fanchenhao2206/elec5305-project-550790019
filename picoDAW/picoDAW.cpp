@@ -354,22 +354,14 @@ picoDAW::picoDAW(const InstanceInfo& info)
 #endif
 }
 
-#if IPLUG_EDITOR
-void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
-{
-  if (auto pGraphics = GetUI()) {
-    // TODO: For UI-side parameter changes...
-  }
-}
-#endif
-
 #if IPLUG_DSP
 void picoDAW::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
   // Inputs to mDSP is empty, because it is the first DSP plugin in the chain!!
   mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
 
-  // mDSP generates outputs, that we then pass BACK to UI through mMeterSender, for visualisation
+  // mDSP generates outputs, that we then pass BACK to UI, through mMeterSender, for visualisation
+  // The sending is done through TransmitData, and the notification to ProcessBlock is done here...
   mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
 }
 
@@ -424,15 +416,16 @@ handle:
 
 // There are two threads in the WASM build of picoDAW. The main javascript thread that will 
 // spin in an infinite loop running the "int main()" function of IPlugWasmUI, compiled by emcc
-// into "picoDAW-ui.js". And a secondary AudioWorklet worker thread, spawned by the main thread 
-// before entering the UI loop, endlessly calling its "process" function, specified in the
-// AudioWorkletProcessor API and defined in "IPlugWasmProcessor.js.template". Each invocation
-// calls "processBlock", which is bound to IPlugWasmDSP's "processBlock" C++ code, the transpiled
-// javascript code located inside the "picoDAW-dsp.js" module provided on thread initialisation
+// into "picoDAW-ui.js", and loaded into a <script> tag in "IPlugWasmBundle.js.template". And
+// a secondary AudioWorklet worker thread, spawned by the main thread before entering the UI loop, 
+// endlessly calling its "process" function, specified in the AudioWorkletProcessor API and defined
+// in "IPlugWasmProcessor.js.template". Each invocation calls "processBlock", which is bound to
+// IPlugWasmDSP's "processBlock" C++ code, the transpiled javascript code located inside the
+// "picoDAW-dsp.js" DSP module provided to the AudioWorklet thread on initialisation...
 //
 // How do the two threads communicate? They communicate via the javascript functions
 // "setParam", and "onParam", for communicating parameter changes for example. What I 
-// mean is, in the IPlugWasmUI StartMainLoopTimer loop, whenever it runs into a C++ call
+// mean is, in the IPlugWasmUI StartMainLoopTimer loop whenever it runs into a C++ call
 // to IPlugWasmUI::SendParameterValueFromUI in "IPlugWasmUI.cpp", it makes the javascript
 // invocation "window.iPlugController.setParam", aka, calling IPlugWasmController.setParam
 // from "IPlugWasmBundle.js.template":
@@ -448,11 +441,30 @@ handle:
 // checks the type of message, and if it is 'param', it calls the javascript "onParam" 
 // function, which is bound through emscripten in "IPlugWasmDSP.cpp" to the IPlugWasmDSP::
 // OnParamMessage function, which after calling IPlugAPIBase::SetParameterValue, calls
-// our picoDAW::OnParamChange here...
+// our IPlugWasmDP::OnParamChange (aka picoDAW::OnParamChange) here...
 void picoDAW::OnParamChange(int paramIdx)
 {
   // For DSP-side paramater changes...
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoice)->Int());
 }
+#endif
 
+#if IPLUG_EDITOR
+// Notice that on the UI side, after IPlugWasmUI::SendParameterValueFromUI in "IPlugWasmUI.cpp" 
+// is called to invoke the javascript "setParam", it also calls IPlugAPIBase::SendParameterValueFromUI,
+// itself, specifically, its parent's implementation of the same method name. This method 
+// calls its child's IPlugWasmUI::SetParameterValue, which calls a no-op IPlugWasmUI::OnParamChange, 
+// before finally calling IPluginBase::SendParameterValueFromUI, which again is the same method
+// name, but this time is for the grandparent of IPlugWasmUI; the parent of IPlugAPIBase, aka 
+// IEditorDelegate::SendParameterValueFromUI is what is called... And this function, finally, is
+// what calls IPlugWasmUI::OnParamChangeUI, triggering the UI itself to respond to the parameter
+// change caused by itself. The key to all of this working though, is that IPlugWasmUI::OnParamChange 
+// is a no-op, IPlugWasmDSP::OnParamChangeUI is a no-op, and IPlugWasmUI::OnParamChangeUI and
+// IPlugWasmDSP::OnParamChange do what they need to do for their respective sides...
+void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
+{
+  if (auto pGraphics = GetUI()) {
+    // TODO: For UI-side parameter changes...
+  }
+}
 #endif
