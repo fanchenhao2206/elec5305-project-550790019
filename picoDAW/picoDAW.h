@@ -26,12 +26,13 @@ enum EParams
 
   kParamFilterCutoff,
   kParamFilterResonance,
-  kParamFilterType,
 
   kParamFilterAttack,
   kParamFilterDecay,
   kParamFilterSustain,
   kParamFilterRelease,
+
+  kParamFilterTypeIdx,
 
   kNumParams
 };
