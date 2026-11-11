@@ -43,8 +43,6 @@ public:
     // too; these are all single values that don't require smoothing in between ProcessBlocks...
     // outputs is the almost-ready final output signal...
     mSynth.ProcessBlock(mModulations.GetList(), outputs, 0, nOutputs, nFrames);
-
-    // mFilter.ProcessBlock(outputs, actual_outputs, ... ); TODO:
     
     // The last step, is to use the individual frame-by-frame smoothed gain values, to make sure
     // that any gain change (e.g. via mixer knob) isn't too sudden on the listener's ears...
@@ -110,7 +108,6 @@ public:
 public:
   int mNVoices;
   MidiSynth mSynth { VoiceAllocator::kPolyModeMono, MidiSynth::kDefaultBlockSize };
-  // mFilter...
   WDL_TypedBuf<sample> mModulationsData; // Sample data for global modulations (e.g. smoothed sustain)
   WDL_PtrList<sample> mModulations; // Ptrlist for global modulations
   LogParamSmooth<sample, kNumModulations> mParamSmoother;
