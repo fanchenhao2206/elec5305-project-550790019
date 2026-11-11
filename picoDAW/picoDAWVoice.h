@@ -45,22 +45,26 @@ public:
 
   bool GetBusy() const override
   {
-    return mAMPEnv.GetBusy();
+    return mAMPEnv.GetBusy() || mFilterEnv.GetBusy();
   }
 
   void Trigger(double level, bool isRetrigger) override
   {
     mOSC->Reset();
     
-    if(isRetrigger)
+    if(isRetrigger) {
       mAMPEnv.Retrigger(level);
-    else
+      mFilterEnv.Retrigger(level);
+    } else {
       mAMPEnv.Start(level);
+      mFilterEnv.Start(level);
+    }
   }
   
   void Release() override
   {
     mAMPEnv.Release();
+    mFilterEnv.Release();
   }
 
   void ProcessSamplesAccumulating(sample** inputs, sample** outputs, int nInputs, int nOutputs, int startIdx, int nFrames) override
@@ -92,6 +96,7 @@ public:
     mSawCore->SetSampleRate(sampleRate);
     
     mAMPEnv.SetSampleRate(sampleRate);
+    mFilterEnv.SetSampleRate(sampleRate);
     
     mTimbreBuffer.Resize(blockSize);
   }
