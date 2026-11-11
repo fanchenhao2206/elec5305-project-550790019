@@ -11,10 +11,10 @@
 
 using namespace iplug;
 
-class picoDAW_Voice : public SynthVoice
+class picoDAWVoice : public SynthVoice
 {
 public:
-  picoDAW_Voice()
+  picoDAWVoice()
   {
     mSineCore = new SinOscillator<sample>();
     mTriangleCore = new TriangleOscillator<sample>();
@@ -31,7 +31,7 @@ public:
     // mStateVariableFilter = new StateVariableFilter<sample>();
     // mFilter = mStateVariableFilter; FIXME: also buggy...
 
-    mFilter = new picoDAW_Filter<sample>(); // TODO: remove
+    mFilter = new picoDAWFilter<sample>(); // TODO: remove
 
     mOSC = mSineCore; // FIXME: This is pretty buggy...
                       // Open app, press core switch, and then
@@ -137,7 +137,7 @@ private:
   IOscillator<sample> *mSawCore; // Custom cores implementing IOscillator interface...
   IOscillator<sample> *mTriangleCore;
 
-  picoDAW_Filter<sample> *mFilter; // picoDAW_Filter because there is no IFilter interface...
+  picoDAWFilter<sample> *mFilter; // picoDAWFilter because there is no IFilter interface...
 
   int mOctave;
 

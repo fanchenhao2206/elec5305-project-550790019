@@ -9,15 +9,15 @@
 
 using namespace iplug;
 
-class picoDAW_DSP
+class picoDAWDSP
 {
 public:
-  picoDAW_DSP() : mNVoices(1) // Just one voice for now...
+  picoDAWDSP() : mNVoices(1) // Just one voice for now...
   {
-    mSynth.AddVoice(new picoDAW_Voice(), 0);
-    // mSynth.AddVoice(new picoDAW_Voice(), 0);
-    // mSynth.AddVoice(new picoDAW_Voice(), 0);
-    // mSynth.AddVoice(new picoDAW_Voice(), 0);
+    mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
+    // mSynth.AddVoice(new picoDAWVoice(), 0);
     // mSynth.AddVoice(new SamplerVoice(), 0); // TODO: sampler
     // mSynth.AddVoice(new SamplerVoice(), 0);
   }
@@ -32,7 +32,7 @@ public:
       memset(outputs[i], 0, nFrames * sizeof(sample));
     }
 
-    // Inputs is empty; picoDAW_DSP is the first DSP plugin in the chain!!
+    // Inputs is empty; picoDAWDSP is the first DSP plugin in the chain!!
 
     // First job is to generate the individual frame-by-frame smoothed gain and sustain values,
     // from the single gain and sustain values given to us in mParamsToSmooth via UI updates etc.

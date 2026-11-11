@@ -9,16 +9,16 @@
 BEGIN_IPLUG_NAMESPACE
 
 template <typename T>
-class picoDAW_Filter
+class picoDAWFilter
 {
 public:
-  picoDAW_Filter() {}
+  picoDAWFilter() {}
   virtual void ProcessBlock(T** inputs, T** outputs, int nChans, int nFrames) {}
   virtual void Reset() {}
 };
 
 template<typename T, int NC = 1>
-class StateVariableFilter : public picoDAW_Filter<T>
+class StateVariableFilter : public picoDAWFilter<T>
 {
 public:
   StateVariableFilter(
