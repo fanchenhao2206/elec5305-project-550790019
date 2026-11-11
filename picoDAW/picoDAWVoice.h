@@ -38,6 +38,11 @@ public:
     }
   }
 
+  void SetOctave(int octave) override
+  {
+    mOctave = octave;
+  }
+
   bool GetBusy() const override
   {
     return mAMPEnv.GetBusy();
@@ -69,7 +74,7 @@ public:
     mInputs[kVoiceControlTimbre].Write(mTimbreBuffer.Get(), startIdx, nFrames);
     
     // convert from "1v/oct" pitch space to frequency in Hertz
-    double osc1Freq = 440. * pow(2., pitch + pitchBend);
+    double osc1Freq = 440. * pow(2., pitch + pitchBend + static_cast<double>(mOctave));
 
     for(auto i = startIdx; i < startIdx + nFrames; i++)
     {
@@ -106,6 +111,8 @@ private:
   IOscillator<sample> *mSineCore;
   IOscillator<sample> *mSawCore;
   IOscillator<sample> *mTriangleCore;
+
+  int mOctave;
 
   WDL_TypedBuf<float> mTimbreBuffer;
 

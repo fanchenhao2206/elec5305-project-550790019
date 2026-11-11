@@ -93,6 +93,8 @@ public:
       case kParamCore:
         mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
+      case kParamOctave:
+        mSynth.GetVoice(voiceIdx)->SetOctave(static_cast<int>(value));
       default:
         break;
     }

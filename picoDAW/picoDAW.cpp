@@ -358,27 +358,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   if (auto pGraphics = GetUI()) {
-    if (paramIdx == kParamOctave) {
-      auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
-      // TODO: seperation between octave of midi sequencer, and octave of instrument itself
-      // uh, not relevant for now because they'll only be one, in the instrument editor...
-      // 
-      // What's strange, is actually this octave i realise is more like a DSP parameter 
-      // actually, because what it's doing is tuning the pitch of the instrument itself. 
-      // So really, it could be delivered to the DSP through the usual parameter pipeline, 
-      // into picoDAW::OnParamChange, and the DSP will make a note to change the frequency 
-      // of any midi notes it receives via picoDAWDSP::ProcessMidiMsg. This would make it 
-      // clearer; the play button reads from the respective midi sequencers for what pitch 
-      // the midi note should be, and then once that note is delivered to the DSP, either 
-      // (i) the DSP just changes the midi note's frequency before it gets fed into a 
-      // ProcessBlock, or (ii) the ProcessBlock when it sees a midi note, adjusts the 
-      // resultant frequency depending on its stored pitch tuning; the second is the 
-      // better option. Thus, mOctave here really does belong to the synth itself; 
-      // the DSP itself. So these lines are wrong, conceptually, but it works fine 
-      // for what will submit!! Where it will be wrong though, is when octave is added
-      // to the midi sequencers too... But yeah that's for later!!
-      root->mSynthDatas[GetParam(kParamVoice)->Int()].mOctave = GetParam(kParamOctave)->Int();
-    }
+    // TODO: For UI-side parameter changes...
   }
 }
 #endif
@@ -471,7 +451,7 @@ handle:
 // our picoDAW::OnParamChange here...
 void picoDAW::OnParamChange(int paramIdx)
 {
-  // Update DSP with the change to the given IParam...
+  // For DSP-side paramater changes...
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoice)->Int());
 }
 
