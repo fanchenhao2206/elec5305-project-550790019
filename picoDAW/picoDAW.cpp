@@ -323,10 +323,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto resonanceKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 2), kParamFilterResonance, "RESONANCE", style);
     auto typeIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 3), kParamFilterTypeIdx, "TYPE", style);
 
-    auto filterAttackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamFilterAttack, "ATTACK", style);
-    auto filterDecayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamFilterDecay, "DECAY", style);
-    auto filterSustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamFilterSustain, "SUSTAIN", style);
-    auto filterReleaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamFilterRelease, "RELEASE", style);
+    auto filterAttackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 0), kParamFilterAttack, "ATTACK", style);
+    auto filterDecayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 1), kParamFilterDecay, "DECAY", style);
+    auto filterSustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 2), kParamFilterSustain, "SUSTAIN", style);
+    auto filterReleaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 3), kParamFilterRelease, "RELEASE", style);
 
     // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
     //
