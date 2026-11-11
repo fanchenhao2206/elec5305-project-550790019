@@ -63,6 +63,16 @@ public:
     }
   }
 
+  void SetFilterCutoff(double freq) override
+  {
+    mFilter->SetFreqCPS(freq);
+  }
+
+  void SetFilterResonance(double percentage) override
+  {
+    mFilter->SetQ(percentage);
+  }
+
   void SetOctave(int octave) override
   {
     mOctave = octave;

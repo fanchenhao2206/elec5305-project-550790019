@@ -94,27 +94,27 @@ public:
       case kParamSynthCoreIdx:
         mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
-      // case kParamFilterCutoff:
-      //   // TODO:
-      //   break;
-      // case kParamFilterResonance:
-      //   // TODO:
-      //   break;
-      // case kParamFilterTypeIdx:
-      //   // TODO:
-      //   break;
-      // case kParamFilterAttack:
-      //   // TODO:
-      //   break;
-      // case kParamFilterDecay:
-      //   // TODO:
-      //   break;
-      // case kParamFilterSustain:
-      //   // TODO:
-      //   break;
-      // case kParamFilterRelease:
-      //   // TODO:
-      //   break;
+      case kParamFilterCutoff:
+        mSynth.GetVoice(voiceIdx)->SetFilterCutoff(value);
+        break;
+      case kParamFilterResonance:
+        mSynth.GetVoice(voiceIdx)->SetFilterResonance(value);
+        break;
+      case kParamFilterTypeIdx:
+        // TODO:
+        break;
+      case kParamFilterAttack:
+        // TODO:
+        break;
+      case kParamFilterDecay:
+        // TODO:
+        break;
+      case kParamFilterSustain:
+        // TODO:
+        break;
+      case kParamFilterRelease:
+        // TODO:
+        break;
       default:
         break;
     }
