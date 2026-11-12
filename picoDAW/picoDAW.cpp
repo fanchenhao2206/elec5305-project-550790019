@@ -204,7 +204,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Sequencer controls...
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
-    auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "NO LEGATO", style.valueText, COLOR_MID_GRAY);
+    auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "RETRIGGER", style.valueText, COLOR_MID_GRAY);
     auto gateLabelText02 = new ITextControl(gateLabelBounds.SubRectVertical(2, 0), "LEGATO", style.valueText, COLOR_GRAY);
 
     auto keyboard = new IVKeyboardControl(keyboardBounds);
