@@ -234,7 +234,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
             IMidiMsg msg;
             int channelIdx = 0; // TODO: send to other channel if required(??)
             int &stepIdx = root->mPlaybackStepIdx;
-            int &prevNote = root->mPrevNote;
+            int &prevNote = root->mPrevPlaybackNote;
             const int nSteps = midiSeq->mNCols;
 
             // Recall that cells are given as a row index from top to bottom; matching graphics
@@ -245,7 +245,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
             // TODO: Playback is a mess, because currently midiSeq is global across all six instruments
             // TODO: there is a root->mSeqDatas, and then midiStep := mSeqDatas[voiceIdx]->mMidiSeq, just like here for octave...
-            // TODO: and, root->mPrevNote, should be moved into mSeqDatas instead... (the prevNote for this midi sequencer... right?)
+            // TODO: and, root->mPrevPlaybackNote, should be moved into mSeqDatas instead... (the prevNote for this midi sequencer... right?)
             // NOTE: luckily, mPlaybackStepIdx is global to all sequencers, so is fine to leave in rootuicontrol...
             //
             // Relative to C4 == 60, TODO: should be relative to midiSeq->baseNote or something...
@@ -301,9 +301,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
       } else {
         // Is currently off, so was previously on; stop playback
         IMidiMsg msg;
-        msg.MakeNoteOffMsg(root->mPrevNote, 0, 0); // TODO: stop playback of other channels too(??)
+        msg.MakeNoteOffMsg(root->mPrevPlaybackNote, 0, 0); // TODO: stop playback of other channels too(??)
         root->GetDelegate()->SendMidiMsgFromUI(msg);
-        root->mPrevNote = -1;
+        root->mPrevPlaybackNote = -1;
         delete root->mPlaybackTimer;
         root->mPlaybackTimer = nullptr;
         root->mPlaybackStepIdx = 0;

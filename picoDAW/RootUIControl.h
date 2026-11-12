@@ -9,7 +9,7 @@ public:
   RootUIControl(IGraphics *pGraphics)
   : IControl(IRECT()),
     mGraphics(pGraphics), mScreen(kScreenNavigation),
-    mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1)
+    mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevPlaybackNote(-1)
   {
     mIgnoreMouse = true; // Member of parent IControl
   }
@@ -209,7 +209,7 @@ public:
   IGraphics *mGraphics;
 
   int mPlaybackStepIdx;
-  int mPrevNote;
+  int mPrevPlaybackNote;
 
   EScreens mScreen;
 };
