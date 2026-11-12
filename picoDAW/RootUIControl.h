@@ -1,5 +1,17 @@
 #if IPLUG_EDITOR
 #include "IControl.h"
+#include <vector>
+
+struct SequencerData
+{
+  std::vector<int> mMidiCells;
+  int mNMidiCols;
+  int mNMidiRows;
+  std::vector<int> mGateCells;
+  int mNGateCols;
+  int mNGateRows;
+  int mKeyboardBoundsIdx;
+};
 
 struct SynthData
 {
@@ -19,17 +31,6 @@ struct SynthData
   double mFilterRelease;
 };
 
-struct KeyboardBoundsData
-{
-  KeyboardBoundsData()
-  : mKeyboardBoundsIdx(0),
-    mKeyboardBoundsTotal(2)
-  {}
-
-  int mKeyboardBoundsIdx;
-  int mKeyboardBoundsTotal;
-};
-
 // A root control that is invisible; holds data and funcs for drawing UI
 class RootUIControl : public IControl 
 {
@@ -37,9 +38,8 @@ public:
   RootUIControl(IGraphics *pGraphics)
   : IControl(IRECT()),
     mGraphics(pGraphics), mScreen(kScreenNavigation),
-    mKeyboardBoundsDatas(6),
     mPlaybackTimer(nullptr), mPlaybackStepIdx(0), mPrevNote(-1),
-    mSynthDatas(4)/*, mSamplerDatas(2)*/
+    mSequencerDatas(6), mSynthDatas(4)/*, mSamplerDatas(2)*/
   {
     mIgnoreMouse = true; // Member of parent IControl
   }
@@ -210,7 +210,7 @@ public:
     stepButton->Hide(false); stepButton->SetDisabled(true); // TODO: remove this step disable when step done...
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
-      int sync = mKeyboardBoundsDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
+      int sync = mSequencerDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       gateLabelText01->Hide(sync != 1);
@@ -272,7 +272,7 @@ public:
   }
 
   std::vector<SynthData> mSynthDatas;
-  std::vector<KeyboardBoundsData> mKeyboardBoundsDatas;
+  std::vector<SequencerData> mSequencerDatas;
 
   Timer *mPlaybackTimer;
   IGraphics *mGraphics;
