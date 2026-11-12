@@ -142,6 +142,8 @@ public:
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
+    auto gateLabelText01 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->As<ITextControl>();
+    auto gateLabelText02 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->As<ITextControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
     auto keyboardModeSwitch = mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->As<IVSwitchControl>();
     auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
@@ -211,6 +213,8 @@ public:
       int sync = mKeyboardBoundsDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
+      gateLabelText01->Hide(sync != 1);
+      gateLabelText02->Hide(sync != 1);
       midiSeq->Hide(false);
       keyboardModeSwitch->Hide(false);
       noteLabelText01->Hide(false);

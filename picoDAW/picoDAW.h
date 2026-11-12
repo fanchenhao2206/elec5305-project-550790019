@@ -67,6 +67,8 @@ enum EControlTags
 
   kCtrlTagKeyboard,
   kCtrlTagGateSequencer,
+  kCtrlTagGateLabelText01,
+  kCtrlTagGateLabelText02,
   kCtrlTagMidiSequencer,
   kCtrlTagVelocitySequencer,
   kCtrlTagKeyboardModeSwitch,

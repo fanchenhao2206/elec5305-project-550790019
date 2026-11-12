@@ -74,6 +74,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     const IRECT b = pGraphics->GetBounds().GetPadded(0);
     IRECT homeBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(2.5, 2.5);
     IRECT keyboardBounds = b.GetFromBottom(120).GetReducedFromLeft(160).GetReducedFromRight(160);
+    IRECT gateLabelBounds = IRECT(keyboardBounds.R, keyboardBounds.T, b.R, keyboardBounds.B);
     IRECT sequencerBounds = b.GetReducedFromBottom(120 + 5).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 + 7.5);
     IRECT noteLabelBounds = IRECT(sequencerBounds.R, sequencerBounds.T, b.R, sequencerBounds.B);
     IRECT stepBounds = sequencerBounds.GetFromTop(20).GetTranslated(0, -20 - 5);
@@ -204,6 +205,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Sequencer controls...
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
+    auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "NO LEGATO", style.valueText, COLOR_MID_GRAY);
+    auto gateLabelText02 = new ITextControl(gateLabelBounds.SubRectVertical(2, 0), "LEGATO", style.valueText, COLOR_GRAY);
+
     auto keyboard = new IVKeyboardControl(keyboardBounds);
     auto keyboardModeSwitch = new IVSwitchControl(modeSwitchBounds, kParamKeyboardModeIdx, "MODE", style);
 
@@ -385,6 +389,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
+    pGraphics->AttachControl(gateLabelText01, kCtrlTagGateLabelText01);
+    pGraphics->AttachControl(gateLabelText02, kCtrlTagGateLabelText02);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
     pGraphics->AttachControl(keyboardModeSwitch, kCtrlTagKeyboardModeSwitch);
     pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
@@ -562,6 +568,8 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
       case kParamKeyboardModeIdx:
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
         pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
+        pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
+        pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
         root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1].mKeyboardBoundsIdx = static_cast<int>(value);
         break;
       default:
