@@ -144,7 +144,7 @@ public:
     stepButton->Hide(false); stepButton->SetDisabled(true); // TODO: remove this step disable when step done...
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
-      int sync = GetParam(kParamKeyboardModeIdx)->Int();
+      int sync = mKeyboardModeIdx;
       std::cout << sync << std::endl;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);

@@ -516,14 +516,15 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
     double value = GetParam(paramIdx)->Value();
     switch (paramIdx) {
       case kParamKeyboardModeIdx:
-        if (root->mScreen == kScreenSequencerSyn1 || root->mScreen == kScreenSequencerSyn2 || 
-          root->mScreen == kScreenSequencerSyn3 || root->mScreen == kScreenSequencerSyn4 ||
-          root->mScreen == kScreenSequencerSamp1 || root->mScreen == kScreenSequencerSamp2) {
+        // if (root->mScreen == kScreenSequencerSyn1 || root->mScreen == kScreenSequencerSyn2 || 
+        //   root->mScreen == kScreenSequencerSyn3 || root->mScreen == kScreenSequencerSyn4 ||
+        //   root->mScreen == kScreenSequencerSamp1 || root->mScreen == kScreenSequencerSamp2) {
           pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
           pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
           pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
           pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
-        }
+        // }
+          root->mKeyboardModeIdx = static_cast<int>(value);
         break;
       default:
         break;
