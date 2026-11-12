@@ -45,26 +45,22 @@ public:
 
   }
 
-  void SetSynthCore(int synthCoreIdx) override
+  void UpdateSynthCore()
   {
-    mSynthCoreIdx = synthCoreIdx;
-    if (synthCoreIdx == 0) {
-      mOSC = mSineCore;
-    } else if (synthCoreIdx == 1) {
-      mOSC = mTriangleCore;
-    } else if (synthCoreIdx == 2) {
-      mOSC = mSawCore;
-    } else if (synthCoreIdx == 3) {
-      mOSC = mSquareCore;
+    if (!mAntiAliasing) {  
+      if (mSynthCoreIdx == 0) {
+        mOSC = mSineCore; // Non-AA cores...
+      } else if (mSynthCoreIdx == 1) {
+        mOSC = mTriangleCore;
+      } else if (mSynthCoreIdx == 2) {
+        mOSC = mSawCore;
+      } else if (mSynthCoreIdx == 3) {
+        mOSC = mSquareCore;
+      } else {
+        // TODO: throw error...
+        assert(false);
+      }
     } else {
-      // TODO: throw error...
-      assert(false);
-    }
-  }
-
-  void SetSynthCoreAntiAliasing(bool antiAliasing) override
-  {
-    if (antiAliasing) {
       if (mSynthCoreIdx == 0) {
         mOSC = mSineCore; // No-op; Pure sine has no harmonics...
       } else if (mSynthCoreIdx == 1) {
@@ -77,9 +73,19 @@ public:
         // TODO: throw error...
         assert(false);
       }
-    } else {
-      SetSynthCore(mSynthCoreIdx);
-    }
+    } 
+  }
+
+  void SetSynthCore(int synthCoreIdx) override
+  {
+    mSynthCoreIdx = synthCoreIdx;
+    UpdateSynthCore();
+  }
+
+  void SetSynthCoreAntiAliasing(bool antiAliasing) override
+  {
+    mAntiAliasing = antiAliasing;
+    UpdateSynthCore();
   }
 
   void SetFilterCore(int filterCoreIdx) override
@@ -201,6 +207,7 @@ private:
   IFilter<sample> *mMoogLadderFilter;
 
   int mSynthCoreIdx;
+  bool mAntiAliasing;
 
   int mOctave;
   int mFilterTypeIdx;
