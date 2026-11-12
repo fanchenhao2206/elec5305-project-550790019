@@ -10,7 +10,6 @@ struct SequencerData
   std::vector<int> mGateCells;
   int mNGateCols;
   int mNGateRows;
-  int mKeyboardBoundsIdx;
 
   SequencerData()
   : mMidiCells(16, -1),
@@ -18,8 +17,7 @@ struct SequencerData
     mNMidiRows(12),
     mGateCells(16, -1),
     mNGateCols(16),
-    mNGateRows(2),
-    mKeyboardBoundsIdx(0)
+    mNGateRows(2)
   {}
 };
 
@@ -144,7 +142,6 @@ public:
       seqData.mGateCells = gateSeq->mCells;
       seqData.mNGateCols = gateSeq->mNCols;
       seqData.mNGateRows = gateSeq->mNRows;
-      seqData.mKeyboardBoundsIdx = GetParam(kParamKeyboardModeIdx)->Int();
     } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
       // TODO:
     }
@@ -176,7 +173,6 @@ public:
       gateSeq->mCells = seqData.mGateCells;
       gateSeq->mNCols = seqData.mNGateCols;
       gateSeq->mNRows = seqData.mNGateRows;
-      GetParam(kParamFilterRelease)->Set(static_cast<double>(seqData.mKeyboardBoundsIdx));
     } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
       // sampler->Update(screen);
     }
@@ -248,11 +244,6 @@ public:
     stepButton->Hide(false); stepButton->SetDisabled(true); // TODO: remove this step disable when step done...
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
-      int sync = mSequencerDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
-      // keyboard->Hide(sync != 0);
-      // gateSeq->Hide(sync != 1);
-      // gateLabelText01->Hide(sync != 1);
-      // gateLabelText02->Hide(sync != 1);
       midiSeq->Hide(false);
       keyboardModeSwitch->Hide(false);
       noteLabelText01->Hide(false);
