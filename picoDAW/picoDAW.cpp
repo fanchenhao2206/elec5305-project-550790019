@@ -26,7 +26,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamVoiceSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamVoiceRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-  GetParam(kParamSynthCoreIdx)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW" });
+  GetParam(kParamSynthCoreIdx)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW", "SQUARE" });
 
   GetParam(kParamFilterCutoff)->InitDouble("Cutoff", 2000., 20., 20000., 1., "Hz", IParam::kFlagsNone, "Filter", IParam::ShapePowCurve(3.) );
   GetParam(kParamFilterResonance)->InitDouble("Resonance", 0.1, 0.1, 100., 0.1, "%", IParam::kFlagsNone, "Filter");

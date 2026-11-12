@@ -21,6 +21,7 @@ public:
     mSineCore = new SinOscillator<sample>();
     mTriangleCore = new TriangleOscillator<sample>();
     mSawCore = new SawOscillator<sample>();
+    mSquareCore = new SquareOscillator<sample>();
 
     mOSC = mSineCore; // FIXME: This is pretty buggy...
                       // Open app, press core switch, and then
@@ -47,6 +48,8 @@ public:
       mOSC = mTriangleCore;
     } else if (synthCoreIdx == 2) {
       mOSC = mSawCore;
+    } else if (synthCoreIdx == 3) {
+      mOSC = mSquareCore;
     } else {
       // TODO: throw error...
       assert(false);
@@ -128,6 +131,7 @@ public:
     mSineCore->SetSampleRate(sampleRate);
     mTriangleCore->SetSampleRate(sampleRate);
     mSawCore->SetSampleRate(sampleRate);
+    mSquareCore->SetSampleRate(sampleRate);
 
     mStateVariableFilter->SetSampleRate(sampleRate);
     
@@ -150,6 +154,7 @@ private:
   IOscillator<sample> *mSineCore; // Default core provided by IPlug...
   IOscillator<sample> *mSawCore; // Custom cores implementing IOscillator interface...
   IOscillator<sample> *mTriangleCore;
+  IOscillator<sample> *mSquareCore;
 
   IFilter<sample> *mStateVariableFilter; // Default filter provided by IPlug...
   // IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
