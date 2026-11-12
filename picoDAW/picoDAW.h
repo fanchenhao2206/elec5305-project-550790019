@@ -12,6 +12,8 @@ enum EParams
   // NOTE: good
   kParamRoot = 0,
 
+  kParamKeyboardModeIdx,
+
   kParamVoiceIdx,
 
   kParamVoiceGain,
@@ -67,7 +69,7 @@ enum EControlTags
   kCtrlTagGateSequencer,
   kCtrlTagMidiSequencer,
   kCtrlTagVelocitySequencer,
-  kCtrlTagCycleKeyboardButton,
+  kCtrlTagKeyboardModeSwitch,
   kCtrlTagPlayToggle,
   kCtrlTagSoloToggle,
 

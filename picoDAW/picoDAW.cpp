@@ -12,11 +12,13 @@
 picoDAW::picoDAW(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  // Current instrument...
-  GetParam(kParamVoiceIdx)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
+  // UI parameters... Changes are communicated from us the UI, to us the UI, through the
+  // pipeline described by IPlugWasmUI::onParamChangeUI (aka picoDAW::onParamChangeUI)
+  GetParam(kParamKeyboardModeIdx)->InitEnum("Mode", 0, { "KEYBOARD", "LEGATO" });
 
-  // Knob and slider controls use IParams; updates are communicated by us the IPlugWasmUI
-  // to them the DSP through the parameter pipeline; see IPlugWasmDSP::onParamChange...
+  // DSP parameters... Changes are communicated from us the UI, to them the DSP, through
+  // the pipeline described by IPlugWasmDSP::onParamChange (aka picoDAW::onParamChange)
+  GetParam(kParamVoiceIdx)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
   GetParam(kParamVoiceGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamVoiceOctave)->InitInt("Octave", 0, -2, 2);
 
@@ -37,7 +39,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamFilterSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamFilterRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-#if IPLUG_EDITOR // http://bit.ly/2S64BDd
+#if IPLUG_EDITOR // Code only relevant to IPlugWasmUI...
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
   };
@@ -75,7 +77,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT sequencerBounds = b.GetReducedFromBottom(120 + 5).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 + 7.5);
     IRECT noteLabelBounds = IRECT(sequencerBounds.R, sequencerBounds.T, b.R, sequencerBounds.B);
     IRECT stepBounds = sequencerBounds.GetFromTop(20).GetTranslated(0, -20 - 5);
-    IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 120).GetTranslated(-(320 + 80), 2.5);
+    IRECT modeSwitchBounds = keyboardBounds.GetCentredInside(160, 120).GetTranslated(-(320 + 80), 2.5);
     IRECT playButtonBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(800 -2.5, 2.5);
     IRECT soloButtonBounds = playButtonBounds.GetTranslated(-160, 0);
     IRECT titleBounds = IRECT(homeBounds.R, 0, soloButtonBounds.L, 60);
@@ -203,25 +205,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
     auto keyboard = new IVKeyboardControl(keyboardBounds);
-
-    // TODO: change to a enum param-based switch control...
-    auto cycleKeyboard = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
-      // Cycle through the sequencer's currently active sub-control
-      KeyboardBoundsData &kbData = root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1];
-      kbData.mKeyboardBoundsIdx += 1; 
-      kbData.mKeyboardBoundsIdx %= kbData.mKeyboardBoundsTotal;
-                  
-      // Hide/Show controls so only the active one is displayed
-      int sync = kbData.mKeyboardBoundsIdx;
-      pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
-      pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
-
-      // Then animation...
-      float x, y;
-      pGraphics->GetMouseDownPoint(x, y);
-      pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
-      pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
-    }, "TOGGLE", style);
+    auto keyboardModeSwitch = new IVSwitchControl(modeSwitchBounds, kParamKeyboardModeIdx, "MODE", style);
 
     // Text controls on the side of the sequencer...
     auto noteLabelText01 = new ITextControl(noteLabelBounds.SubRectVertical(12, 11), "C", style.valueText, COLOR_MID_GRAY);
@@ -402,7 +386,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
-    pGraphics->AttachControl(cycleKeyboard, kCtrlTagCycleKeyboardButton);
+    pGraphics->AttachControl(keyboardModeSwitch, kCtrlTagKeyboardModeSwitch);
     pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
     pGraphics->AttachControl(soloToggle, kCtrlTagSoloToggle);
 
@@ -574,6 +558,11 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
         break;
       case kParamFilterRelease:
         root->mSynthDatas[voiceIdx].mFilterRelease = value;
+        break;
+      case kParamKeyboardModeIdx:
+        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
+        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
+        root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1].mKeyboardBoundsIdx = static_cast<int>(value);
         break;
       default:
         break;

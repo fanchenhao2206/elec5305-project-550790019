@@ -143,7 +143,7 @@ public:
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
-    auto cycleKeyboard = mGraphics->GetControlWithTag(kCtrlTagCycleKeyboardButton)->As<IVButtonControl>();
+    auto keyboardModeSwitch = mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->As<IVSwitchControl>();
     auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto soloToggle = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
 
@@ -212,7 +212,7 @@ public:
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
-      cycleKeyboard->Hide(false);
+      keyboardModeSwitch->Hide(false);
       noteLabelText01->Hide(false);
       noteLabelText02->Hide(false);
       noteLabelText03->Hide(false);
