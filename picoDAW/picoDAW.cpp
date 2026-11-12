@@ -95,19 +95,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "picoDAW", style);
 
-    auto noteLabelText01 = new ITextControl(noteLabelBounds.SubRectVertical(12, 11), "C", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText02 = new ITextControl(noteLabelBounds.SubRectVertical(12, 10), "C#/Db", style.valueText, COLOR_GRAY);
-    auto noteLabelText03 = new ITextControl(noteLabelBounds.SubRectVertical(12, 9), "D", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText04 = new ITextControl(noteLabelBounds.SubRectVertical(12, 8), "D#/Eb", style.valueText, COLOR_GRAY);
-    auto noteLabelText05 = new ITextControl(noteLabelBounds.SubRectVertical(12, 7), "E", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText06 = new ITextControl(noteLabelBounds.SubRectVertical(12, 6), "F", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText07 = new ITextControl(noteLabelBounds.SubRectVertical(12, 5), "F#/Gb", style.valueText, COLOR_GRAY);
-    auto noteLabelText08 = new ITextControl(noteLabelBounds.SubRectVertical(12, 4), "G", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText09 = new ITextControl(noteLabelBounds.SubRectVertical(12, 3), "G#/Ab", style.valueText, COLOR_GRAY);
-    auto noteLabelText10 = new ITextControl(noteLabelBounds.SubRectVertical(12, 2), "A", style.valueText, COLOR_MID_GRAY);
-    auto noteLabelText11 = new ITextControl(noteLabelBounds.SubRectVertical(12, 1), "A#/Bb", style.valueText, COLOR_GRAY);
-    auto noteLabelText12 = new ITextControl(noteLabelBounds.SubRectVertical(12, 0), "B", style.valueText, COLOR_MID_GRAY);
-
     // TODO: current step
     auto stepButton = new IVButtonControl(stepBounds, SplashAnimationFunc, "INSERT CURRENT STEP IN PATTERN HERE", style);
 
@@ -216,6 +203,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
     auto keyboard = new IVKeyboardControl(keyboardBounds);
+
+    // TODO: change to a enum param-based switch control...
     auto cycleKeyboard = new IVButtonControl(cycleButtonBounds, [pGraphics, root](IControl* pCaller) {
       // Cycle through the sequencer's currently active sub-control
       KeyboardBoundsData &kbData = root->mKeyboardBoundsDatas[root->mScreen - kScreenSequencerSyn1];
@@ -234,8 +223,21 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "TOGGLE", style);
 
-    // TODO: text controls on the side of the sequencer...
+    // Text controls on the side of the sequencer...
+    auto noteLabelText01 = new ITextControl(noteLabelBounds.SubRectVertical(12, 11), "C", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText02 = new ITextControl(noteLabelBounds.SubRectVertical(12, 10), "C#/Db", style.valueText, COLOR_GRAY);
+    auto noteLabelText03 = new ITextControl(noteLabelBounds.SubRectVertical(12, 9), "D", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText04 = new ITextControl(noteLabelBounds.SubRectVertical(12, 8), "D#/Eb", style.valueText, COLOR_GRAY);
+    auto noteLabelText05 = new ITextControl(noteLabelBounds.SubRectVertical(12, 7), "E", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText06 = new ITextControl(noteLabelBounds.SubRectVertical(12, 6), "F", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText07 = new ITextControl(noteLabelBounds.SubRectVertical(12, 5), "F#/Gb", style.valueText, COLOR_GRAY);
+    auto noteLabelText08 = new ITextControl(noteLabelBounds.SubRectVertical(12, 4), "G", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText09 = new ITextControl(noteLabelBounds.SubRectVertical(12, 3), "G#/Ab", style.valueText, COLOR_GRAY);
+    auto noteLabelText10 = new ITextControl(noteLabelBounds.SubRectVertical(12, 2), "A", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText11 = new ITextControl(noteLabelBounds.SubRectVertical(12, 1), "A#/Bb", style.valueText, COLOR_GRAY);
+    auto noteLabelText12 = new ITextControl(noteLabelBounds.SubRectVertical(12, 0), "B", style.valueText, COLOR_MID_GRAY);
 
+    // More global controls... TODO: change to param based, and then handle startPlaybackTimer onParamChangeUI...
     auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
