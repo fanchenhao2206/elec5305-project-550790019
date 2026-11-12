@@ -202,8 +202,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto mixerButton = new IVButtonControl(keyboardBounds, SplashAnimationFunc, "MIXER", style);
 
     // Sequencer controls...
-    auto midiSeq = new IVSequencerControl(sequencerBounds, 12, 16);
-    auto gateSeq = new IVSequencerControl(keyboardBounds, 2, 16);
+    auto midiSeq = new IVNoteSequencerControl(sequencerBounds, 12, 16);
+    auto gateSeq = new IVStepValueControl(keyboardBounds, 2, 16, 0);
+    IVStepValueControl::Link(*midiSeq, *gateSeq);
     auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "RETRIGGER", style.valueText, COLOR_MID_GRAY);
     auto gateLabelText02 = new ITextControl(gateLabelBounds.SubRectVertical(2, 0), "LEGATO", style.valueText, COLOR_GRAY);
 
@@ -234,13 +235,13 @@ picoDAW::picoDAW(const InstanceInfo& info)
             int channelIdx = 0; // TODO: send to other channel if required(??)
             int &stepIdx = root->mPlaybackStepIdx;
             int &prevNote = root->mPrevPlaybackNote;
-            const int nSteps = midiSeq->mNCols;
+            const int nSteps = midiSeq->NCols();
 
             // Recall that cells are given as a row index from top to bottom; matching graphics
-            int midiCell = midiSeq->mCells[stepIdx];
+            int midiCell = midiSeq->GetRow(stepIdx);
 
             // But we want a row index from bottom to top; matching piano roll sequencers
-            int midiStep = (midiSeq->mNRows - 1) - midiCell;
+            int midiStep = (midiSeq->NRows() - 1) - midiCell;
 
             // TODO: Playback is a mess, because currently midiSeq is global across all six instruments
             // TODO: there is a root->mSeqDatas, and then midiStep := mSeqDatas[voiceIdx]->mMidiSeq, just like here for octave...
@@ -252,11 +253,11 @@ picoDAW::picoDAW(const InstanceInfo& info)
             int currVelocity = 80; // TODO: velocity sequencer...
 
             // For knowing whether to hold this note in legato with the previous identical note
-            int gateCell = gateSeq->mCells[stepIdx];
+            int gateCell = gateSeq->GetRow(stepIdx);
             int currGate = (gateCell < 0) ? 0 : gateCell;
 
             // If at start of pattern, then assume (non-existent) prev gate is not legato; retrig!!
-            int prevGate = (stepIdx == 0) ? 1 : gateSeq->mCells[stepIdx - 1];
+            int prevGate = (stepIdx == 0) ? 1 : gateSeq->GetRow(stepIdx - 1);
 
             if (currNote < 0) {
               // Nothing to play this step, so turn off prev and that's it

@@ -68,8 +68,8 @@ public:
     auto filterSustainKnob = mGraphics->GetControlWithTag(kCtrlTagFilterSustainKnob)->As<IVKnobControl>();
     auto filterReleaseKnob = mGraphics->GetControlWithTag(kCtrlTagFilterReleaseKnob)->As<IVKnobControl>();
 
-    auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVSequencerControl>();
-    auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVSequencerControl>();
+    auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVNoteSequencerControl>();
+    auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVStepValueControl>();
     auto gateLabelText01 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->As<ITextControl>();
     auto gateLabelText02 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->As<ITextControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();

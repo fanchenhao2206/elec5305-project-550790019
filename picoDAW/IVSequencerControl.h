@@ -1,208 +1,334 @@
 /**
- * IVSequencerControl.h by Tim Fan <fanchenhao2206@icloud.com>
- * 
- * A simple step sequencer whose number of rows and columns are passed 
- * as template parameters, and is edited using mouse clicks and drags; 
- * TODO: on each edit, send MIDI message to DSP to audition new note;
- * this should be done through the provided updateFn, i think is plan
+ * IVSequencerControls.h
+ *
+ * Split of the original IVSequencerControl into:
+ *
+ *   IVStepGridControl       - geometry, hit-testing, hover, grid drawing, mouse plumbing
+ *   IVNoteSequencerControl  - free editing: each step is off (-1) or holds one row (a note)
+ *   IVStepValueControl      - gate/velocity: FOLLOWS a note sequencer.
+ *                             A step is active iff the note step is active. The user can only
+ *                             change the value of active steps; they can never turn a step
+ *                             on/off. When a note step turns on, the follower step is set to
+ *                             its default value.
+ *
+ * Wiring example (in your plugin's layout function):
+ *
+ *   auto* notes = new IVNoteSequencerControl(b1, 24, 16, [&]{ SendNotesToDSP(); });
+ *   auto* gate  = new IVStepValueControl(b2, 8, 16, /*defaultRow*\/ 0, [&]{ SendGateToDSP(); });
+ *   auto* vel   = new IVStepValueControl(b3, 8, 16, /*defaultRow*\/ 2, [&]{ SendVelToDSP(); });
+ *   IVStepValueControl::Link(*notes, *gate);
+ *   IVStepValueControl::Link(*notes, *vel);
+ *   pGraphics->AttachControl(notes); ... etc.
+ *
+ * Lifetime: IGraphics owns attached controls and destroys them together, so Link()'s
+ * stored callbacks are safe as long as all linked controls live in the same IGraphics.
  */
 
 #pragma once
 
 #include "IControl.h"
+#include <algorithm>
+#include <cassert>
+#include <cstdio>
+#include <functional>
 #include <vector>
 
 BEGIN_IPLUG_NAMESPACE
 BEGIN_IGRAPHICS_NAMESPACE
 
-class IVSequencerControl : public IControl
+//------------------------------------------------------------------------------
+// Base: grid geometry + mouse plumbing. Subclasses decide what a click means.
+//------------------------------------------------------------------------------
+class IVStepGridControl : public IControl
 {
 public:
-  IVSequencerControl(const IRECT& bounds, int nRows, int nCols,
-    std::function<void()> updateFn = nullptr)
-  : IControl(bounds, kNoParameter), mUpdateFn(updateFn),
-    mClickCol(-1), mClickRow(-1), mHoverCol(-1), mHoverRow(-1),
-    mNCols(nCols), // Each column represents a step; e.g. 16 columns for a 16-step sequencer
-    mNRows(nRows), // Each row represents the value for the corresponding step; e.g. play E4 on this step
-    mCells(nCols, -1)
-  {}
+  IVStepGridControl(const IRECT& bounds, int nRows, int nCols,
+                    std::function<void()> updateFn = nullptr)
+  : IControl(bounds, kNoParameter)
+  , mNRows(nRows)
+  , mNCols(nCols)
+  , mUpdateFn(updateFn)
+  {
+    assert(nRows > 0 && nCols > 0);
+  }
 
-  // TODO: It looks like I can't get away with using the same MIDISequencer
-  // also for GateSequencer and VelocitySequencer as well... Specifically, 
-  // because you are not allowed to "turn off" notes in Gate/Velocity sequencer
-  // Notes in those sequencers, are turned off when a note in the corresponding 
-  // step in MIDISequencer is turned off; only then!! Further more, the default 
-  // note in those sequencers are turned on when the corresponding step in 
-  // MIDISequencer is turned on.
+  int NRows() const { return mNRows; }
+  int NCols() const { return mNCols; }
 
   void Draw(IGraphics& g) override
   {
     g.FillRect(COLOR_WHITE, mRECT);
-    g.DrawRect(COLOR_BLACK, mRECT, 0, 4.f);
 
-    // sketch:
-    char str[64];
-    sprintf(str, "col: %d, row: %d", mHoverCol, mHoverRow);
-    g.DrawText(DEFAULT_TEXT, str, mRECT);
+    const float rowSpacing = mRECT.H() / mNRows;
+    const float colSpacing = mRECT.W() / mNCols;
 
-    // Draw grid: nRow by nCol cells
-    float rowSpacing = mRECT.H() / mNRows;
-    float colSpacing = mRECT.W() / mNCols;
-
-    // Fill in hover over cell
-    g.FillRect(COLOR_GRAY, IRECT::MakeXYWH(
-      mRECT.L + (mHoverCol * colSpacing), mRECT.T + (mHoverRow * rowSpacing),
-      colSpacing, rowSpacing));
-
-    // Fill in selected cells
-    assert(mCells.size() == mNCols);
-    for (int i = 0; i < mNCols; i++) {
-      int cell = mCells[i];
-      if (cell < 0) continue;
-
-      // Fill in the cell at column i, and row given by cell
-      g.FillRect(COLOR_BLACK, IRECT::MakeXYWH(
-        mRECT.L + (i * colSpacing), mRECT.T + (cell * rowSpacing),
+    if (mHoverCol >= 0 && mHoverRow >= 0)
+    {
+      g.FillRect(COLOR_LIGHT_GRAY, IRECT::MakeXYWH(
+        mRECT.L + mHoverCol * colSpacing, mRECT.T + mHoverRow * rowSpacing,
         colSpacing, rowSpacing));
     }
 
-    // Draw dividing lines
-    for (int i = 1; i <= mNRows-1; i++) {
-      // Draw nRow-1 horizontal lines
-      float y = mRECT.T + (i * rowSpacing);
+    DrawCells(g, rowSpacing, colSpacing);
 
-      // Make it easier to track which note
-      float thickness = (i % 4 == 0) ? 4.f : 1.f; 
-      g.DrawLine(COLOR_BLACK, mRECT.L, y, mRECT.R, y, 0, thickness);
+    // Dividing lines (thicker every 4 to make it easier to track notes / beats)
+    for (int i = 1; i < mNRows; i++)
+    {
+      const float y = mRECT.T + i * rowSpacing;
+      g.DrawLine(COLOR_BLACK, mRECT.L, y, mRECT.R, y, nullptr, (i % 4 == 0) ? 4.f : 1.f);
     }
-    for (int i = 1; i <= mNCols-1; i++) {
-      // Draw nCol-1 vertical lines
-      float x = mRECT.L + (i * colSpacing);
+    for (int i = 1; i < mNCols; i++)
+    {
+      const float x = mRECT.L + i * colSpacing;
+      g.DrawLine(COLOR_BLACK, x, mRECT.T, x, mRECT.B, nullptr, (i % 4 == 0) ? 4.f : 1.f);
+    }
 
-      // Emphasize the bar lines
-      float thickness = (i % 4 == 0) ? 4.f : 1.f; 
-      g.DrawLine(COLOR_BLACK, x, mRECT.B, x, mRECT.T, 0, thickness);
-    }
+    g.DrawRect(COLOR_BLACK, mRECT, nullptr, 4.f);
   }
 
   void OnMouseDown(float x, float y, const IMouseMod& mod) override
   {
-    // Mouse needs to be in-bounds to edit the sequencer
-    if (!mRECT.Contains(x, y)) return;
+    int col, row;
+    if (!CellFromPoint(x, y, col, row)) return;
 
-    // (x,y) are given as absolute coordinates; now that we know it 
-    // is a point within mRECT, let's find its relative coordinates
-    float relX = x - mRECT.L;
-    float relY = y - mRECT.T;
-
-    // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / mNRows;
-    float colSpacing = mRECT.W() / mNCols;
-
-    float colIdx = (int)(relX / colSpacing);
-    float rowIdx = (int)(relY / rowSpacing);
-
-    // So, turn it on! Or, off it is already on
-    if (mCells[colIdx] == rowIdx) {
-      // We clicked on (row,col), but that is already on; so turn off
-      mCells[colIdx] = -1;
-    } else {
-      // We clicked on (row,col), which is not already on, so turn it on
-      mCells[colIdx] = rowIdx;
-    }
-
-    // And re-draw control
+    mDragging = true;
+    mHoverCol = col;
+    mHoverRow = row;
+    OnCellDown(col, row);
     SetDirty(true);
-
-    // Used by OnMouseDrag to know what mode it is in
-    mClickCol = colIdx;
-    mClickRow = rowIdx;
   }
 
   void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override
   {
-    // Mouse needs to be in-bounds to edit the sequencer
-    if (!mRECT.Contains(x, y)) return;
+    if (!mDragging) return;
 
-    // (x,y) are given as absolute coordinates; now that we know it 
-    // is a point within mRECT, let's find its relative coordinates
-    float relX = x - mRECT.L;
-    float relY = y - mRECT.T;
+    int col, row;
+    if (!CellFromPoint(x, y, col, row)) return;
 
-    // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / mNRows;
-    float colSpacing = mRECT.W() / mNCols;
-
-    float colIdx = (int)(relX / colSpacing);
-    float rowIdx = (int)(relY / rowSpacing);
-
-    // So, turn it on! Or, off, depending on mClickCol/Row
-    if (mCells[mClickCol] > -1) {
-      // User turned ON the cell they clicked, so lets turn ON this cell too
-      mCells[colIdx] = rowIdx;
-    } else {
-      // User turned OFF the cell they clicked, so lets turn OFF this cell too
-      if (mCells[colIdx] == rowIdx) {
-        // As long as it was previously on...
-        mCells[colIdx] = -1;
-      }
-    }
-
-    mHoverCol = colIdx;
-    mHoverRow = rowIdx;
-
-    // And re-draw control
+    mHoverCol = col;
+    mHoverRow = row;
+    OnCellDrag(col, row);
     SetDirty(true);
+  }
+
+  void OnMouseUp(float x, float y, const IMouseMod& mod) override
+  {
+    mDragging = false;
   }
 
   void OnMouseOver(float x, float y, const IMouseMod& mod) override
   {
-    // Mouse needs to be in-bounds to edit the sequencer
-    if (!mRECT.Contains(x, y)) return;
-
-    // (x,y) are given as absolute coordinates; now that we know it 
-    // is a point within mRECT, let's find its relative coordinates
-    float relX = x - mRECT.L;
-    float relY = y - mRECT.T;
-
-    // Then, it's easy to find which grid this point belongs in
-    float rowSpacing = mRECT.H() / mNRows;
-    float colSpacing = mRECT.W() / mNCols;
-
-    float colIdx = (int)(relX / colSpacing);
-    float rowIdx = (int)(relY / rowSpacing);
-
-    mHoverCol = colIdx;
-    mHoverRow = rowIdx;
-
-    // And re-draw control
-    SetDirty(true);
+    int col, row;
+    if (!CellFromPoint(x, y, col, row)) return;
+    mHoverCol = col;
+    mHoverRow = row;
+    SetDirty(false);
   }
 
   void OnMouseOut() override
   {
-    mHoverCol = -1;
-    mHoverRow = -1;
-
-    // And re-draw control
-    SetDirty(true);
+    mHoverCol = mHoverRow = -1;
+    SetDirty(false);
   }
 
-  /* .cpp files that extend me (e.g. IMidiSequencer) can override this */
+protected:
+  // What a press / drag over a cell means is up to the subclass.
+  virtual void OnCellDown(int col, int row) = 0;
+  virtual void OnCellDrag(int col, int row) = 0;
+  virtual void DrawCells(IGraphics& g, float rowSpacing, float colSpacing) = 0;
+
+  // Subclasses call this after changing their data.
   virtual void OnNewValue()
   {
-    if(mUpdateFn)
-      mUpdateFn();
+    if (mUpdateFn) mUpdateFn();
   }
-  
-protected:
-  std::function<void()> mUpdateFn;
+
+  // Maps a point to a clamped (col,row). Returns false if outside the control.
+  bool CellFromPoint(float x, float y, int& col, int& row) const
+  {
+    if (!mRECT.Contains(x, y)) return false;
+
+    const float rowSpacing = mRECT.H() / mNRows;
+    const float colSpacing = mRECT.W() / mNCols;
+
+    // Contains() is inclusive of the right/bottom edge, so clamp.
+    col = std::clamp(static_cast<int>((x - mRECT.L) / colSpacing), 0, mNCols - 1);
+    row = std::clamp(static_cast<int>((y - mRECT.T) / rowSpacing), 0, mNRows - 1);
+    return true;
+  }
+
+  const int mNRows;
+  const int mNCols;
+
 private:
-  int mClickCol, mClickRow;
-  int mHoverCol, mHoverRow;
+  std::function<void()> mUpdateFn;
+  int mHoverCol = -1, mHoverRow = -1;
+  bool mDragging = false;
+};
+
+//------------------------------------------------------------------------------
+// Notes: each step is off (-1) or on at one row. Click toggles, drag paints/erases.
+//------------------------------------------------------------------------------
+class IVNoteSequencerControl : public IVStepGridControl
+{
 public:
+  using StepToggledFn = std::function<void(int col, bool on)>;
+
+  IVNoteSequencerControl(const IRECT& bounds, int nRows, int nCols,
+                         std::function<void()> updateFn = nullptr)
+  : IVStepGridControl(bounds, nRows, nCols, updateFn)
+  , mCells(nCols, -1)
+  {}
+
+  bool IsStepActive(int col) const { return mCells[col] >= 0; }
+  int  GetRow(int col) const { return mCells[col]; }  // -1 if off
+
+  // Followers (gate/velocity) register here to hear about on/off changes.
+  void AddStepToggledListener(StepToggledFn fn) { mListeners.push_back(std::move(fn)); }
+
+protected:
+  void OnCellDown(int col, int row) override
+  {
+    // Decide the paint mode ONCE, at mouse-down: if the clicked cell was already
+    // on, this gesture erases; otherwise it paints.
+    mPaintOn = (mCells[col] != row);
+    ApplyPaint(col, row);
+  }
+
+  void OnCellDrag(int col, int row) override
+  {
+    ApplyPaint(col, row);
+  }
+
+  void DrawCells(IGraphics& g, float rowSpacing, float colSpacing) override
+  {
+    for (int c = 0; c < mNCols; c++)
+    {
+      if (mCells[c] < 0) continue;
+      g.FillRect(COLOR_BLACK, IRECT::MakeXYWH(
+        mRECT.L + c * colSpacing, mRECT.T + mCells[c] * rowSpacing,
+        colSpacing, rowSpacing));
+    }
+  }
+
+private:
+  void ApplyPaint(int col, int row)
+  {
+    const bool wasOn = mCells[col] >= 0;
+    const int  old   = mCells[col];
+
+    if (mPaintOn)
+      mCells[col] = row;                 // set / move the note in this column
+    else if (mCells[col] == row)
+      mCells[col] = -1;                  // erase only what we pass over
+
+    if (mCells[col] == old) return;      // nothing changed
+
+    const bool isOn = mCells[col] >= 0;
+    if (isOn != wasOn)
+      for (auto& fn : mListeners) fn(col, isOn);
+
+    OnNewValue();                        // e.g. audition the note via MIDI to the DSP
+  }
+
+  bool mPaintOn = true;
   std::vector<int> mCells;
-  int mNCols, mNRows;
+  std::vector<StepToggledFn> mListeners;
+};
+
+//------------------------------------------------------------------------------
+// Gate / velocity: follows a note sequencer.
+//  - inactive steps (no note) are drawn dimmed and can't be edited
+//  - the user can't turn steps on/off; only the note sequencer does that
+//  - when a note step turns on, this step is reset to the default row
+// Row 0 is the TOP row = the maximum value; bars grow upward from the bottom.
+//------------------------------------------------------------------------------
+class IVStepValueControl : public IVStepGridControl
+{
+public:
+  enum class DrawStyle
+  {
+    kCell, // only the selected cell is filled (like the original control)
+    kBar   // bar from the selected row down to the bottom (velocity-style)
+  };
+
+  IVStepValueControl(const IRECT& bounds, int nRows, int nCols, int defaultRow,
+                     std::function<void()> updateFn = nullptr,
+                     DrawStyle style = DrawStyle::kCell)
+  : IVStepGridControl(bounds, nRows, nCols, updateFn)
+  , mStyle(style)
+  , mDefaultRow(std::clamp(defaultRow, 0, nRows - 1))
+  , mRows(nCols, std::clamp(defaultRow, 0, nRows - 1))
+  , mActive(nCols, false)
+  {}
+
+  // Connect a follower to a leader; also syncs the initial active state.
+  static void Link(IVNoteSequencerControl& leader, IVStepValueControl& follower)
+  {
+    assert(leader.NCols() == follower.NCols());
+    for (int c = 0; c < follower.NCols(); c++)
+      follower.mActive[c] = leader.IsStepActive(c);
+
+    IVStepValueControl* f = &follower;
+    leader.AddStepToggledListener([f](int col, bool on) { f->OnLeaderStepToggled(col, on); });
+  }
+
+  bool  IsStepActive(int col) const { return mActive[col]; }
+
+  // Drop-in replacement for the old mCells[col]: the row index, or -1 if the step has no note.
+  int   GetRow(int col) const { return mActive[col] ? mRows[col] : -1; }
+
+  // 0..1 (1 = top row), or -1 if the step has no note.
+  float GetNormalized(int col) const
+  {
+    if (!mActive[col]) return -1.f;
+    if (mNRows == 1) return 1.f;
+    return 1.f - static_cast<float>(mRows[col]) / (mNRows - 1);
+  }
+
+  void OnLeaderStepToggled(int col, bool on)
+  {
+    mActive[col] = on;
+    if (on) mRows[col] = mDefaultRow;    // fresh note => default gate/velocity
+    SetDirty(true);
+    OnNewValue();
+  }
+
+protected:
+  void OnCellDown(int col, int row) override { SetValue(col, row); }
+  void OnCellDrag(int col, int row) override { SetValue(col, row); }
+
+  void DrawCells(IGraphics& g, float rowSpacing, float colSpacing) override
+  {
+    for (int c = 0; c < mNCols; c++)
+    {
+      const float x = mRECT.L + c * colSpacing;
+
+      if (!mActive[c])
+      {
+        // No note here: dim the whole column so it's clearly not editable.
+        g.FillRect(IColor(40, 0, 0, 0), IRECT::MakeXYWH(x, mRECT.T, colSpacing, mRECT.H()));
+        continue;
+      }
+
+      const float top = mRECT.T + mRows[c] * rowSpacing;
+      const float bottom = (mStyle == DrawStyle::kBar) ? mRECT.B : top + rowSpacing;
+      g.FillRect(COLOR_BLACK, IRECT(x, top, x + colSpacing, bottom));
+    }
+  }
+
+private:
+  void SetValue(int col, int row)
+  {
+    if (!mActive[col] || mRows[col] == row) return;  // can't edit a step with no note
+    mRows[col] = row;
+    OnNewValue();
+  }
+
+  const DrawStyle mStyle;
+  const int mDefaultRow;
+  std::vector<int>  mRows;
+  std::vector<bool> mActive;
 };
 
 END_IGRAPHICS_NAMESPACE
