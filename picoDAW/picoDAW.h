@@ -89,8 +89,6 @@ enum EControlTags
   kCtrlTagMixerButton,
 
   kCtrlTagSynthCoreSwitch,
-  kCtrlTagFilterCoreSwitch,
-
   kCtrlTagVoiceOctaveSwitch,
   kCtrlTagVoiceGainKnob,
   kCtrlTagVoiceAttackKnob,
@@ -98,6 +96,8 @@ enum EControlTags
   kCtrlTagVoiceSustainKnob,
   kCtrlTagVoiceReleaseKnob,
 
+  kCtrlTagFilterPanel,
+  kCtrlTagFilterCoreSwitch,
   kCtrlTagFilterCutoffKnob,
   kCtrlTagFilterResonanceKnob,
   kCtrlTagFilterTypeSwitch,

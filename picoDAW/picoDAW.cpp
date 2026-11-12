@@ -327,6 +327,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamVoiceSustain, "SUSTAIN", style);
     auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamVoiceRelease, "RELEASE", style);
 
+    auto filterPanel = new IPanelControl(sequencerBounds.SubRectHorizontal(2, 1), COLOR_WHITE, true);
     auto filterIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 0), kParamFilterCoreIdx, "FILTER CORE", style);
     auto cutoffKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 1), kParamFilterCutoff, "CUTOFF", style);
     auto resonanceKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 2), kParamFilterResonance, "RESONANCE", style);
@@ -383,6 +384,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(sustainKnob, kCtrlTagVoiceSustainKnob);
     pGraphics->AttachControl(releaseKnob, kCtrlTagVoiceReleaseKnob);
 
+    pGraphics->AttachControl(filterPanel, kCtrlTagFilterPanel);
     pGraphics->AttachControl(filterIdxSwitch, kCtrlTagFilterCoreSwitch);
 
     pGraphics->AttachControl(cutoffKnob, kCtrlTagFilterCutoffKnob);
