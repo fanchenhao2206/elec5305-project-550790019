@@ -59,6 +59,7 @@ public:
     auto sustainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceSustainKnob)->As<IVKnobControl>();
     auto releaseKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceReleaseKnob)->As<IVKnobControl>();
 
+    auto filterIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagFilterCoreSwitch)->As<IVSwitchControl>();
     auto cutoffKnob = mGraphics->GetControlWithTag(kCtrlTagFilterCutoffKnob)->As<IVKnobControl>();
     auto resonanceKnob = mGraphics->GetControlWithTag(kCtrlTagFilterResonanceKnob)->As<IVKnobControl>();
     auto typeIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagFilterTypeSwitch)->As<IVSwitchControl>();
@@ -174,6 +175,7 @@ public:
       decayKnob->Hide(false);
       sustainKnob->Hide(false);
       releaseKnob->Hide(false);
+      filterIdxSwitch->Hide(false);
       cutoffKnob->Hide(false);
       resonanceKnob->Hide(false);
       typeIdxSwitch->Hide(false);

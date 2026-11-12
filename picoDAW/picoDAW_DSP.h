@@ -94,6 +94,9 @@ public:
       case kParamSynthCoreIdx:
         mSynth.GetVoice(voiceIdx)->SetSynthCore(static_cast<int>(value));
         break;
+      case kParamFilterCoreIdx:
+        mSynth.GetVoice(voiceIdx)->SetFilterCore(static_cast<int>(value));
+        break;
       case kParamFilterCutoff:
         mSynth.GetVoice(voiceIdx)->SetFilterCutoff(value);
         break;

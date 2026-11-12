@@ -26,7 +26,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamVoiceSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamVoiceRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-  GetParam(kParamSynthCoreIdx)->InitEnum("Core", 0, { "SINE", "TRIANGLE", "SAW", "SQUARE" });
+  GetParam(kParamSynthCoreIdx)->InitEnum("Osc. Core", 0, { "SINE", "TRIANGLE", "SAW", "SQUARE" });
+  GetParam(kParamFilterCoreIdx)->InitEnum("Filter Core", 0, { "STATEVARIABLE", "BIQUADIIR", "MOOGLADDER" });
 
   GetParam(kParamFilterCutoff)->InitDouble("Cutoff", 2000., 20., 20000., 1., "Hz", IParam::kFlagsNone, "Filter", IParam::ShapePowCurve(3.) );
   GetParam(kParamFilterResonance)->InitDouble("Resonance", 0.1, 0.1, 100., 0.1, "%", IParam::kFlagsNone, "Filter");
@@ -317,15 +318,16 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto soloToggle = new IVToggleControl(soloButtonBounds, kParamSoloToggle, "", style, "SOLO", "SOLO");
 
     // Synth controls; Break sequencerBounds into a 4x4 grid...
-    auto coreIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreIdx, "CORE", style);
-    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceOctave, "OCTAVE", style);
-    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamVoiceGain, "GAIN", style);
+    auto coreIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 0), kParamSynthCoreIdx, "OSC. CORE", style);
+    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamVoiceOctave, "OCTAVE", style);
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceGain, "GAIN", style);
 
     auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamVoiceAttack, "ATTACK", style);
     auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamVoiceDecay, "DECAY", style);
     auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamVoiceSustain, "SUSTAIN", style);
     auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamVoiceRelease, "RELEASE", style);
 
+    auto filterIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 0), kParamFilterCoreIdx, "FILTER CORE", style);
     auto cutoffKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 1), kParamFilterCutoff, "CUTOFF", style);
     auto resonanceKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 2), kParamFilterResonance, "RESONANCE", style);
     auto typeIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 3), kParamFilterTypeIdx, "TYPE", style);
@@ -380,6 +382,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(decayKnob, kCtrlTagVoiceDecayKnob);
     pGraphics->AttachControl(sustainKnob, kCtrlTagVoiceSustainKnob);
     pGraphics->AttachControl(releaseKnob, kCtrlTagVoiceReleaseKnob);
+
+    pGraphics->AttachControl(filterIdxSwitch, kCtrlTagFilterCoreSwitch);
 
     pGraphics->AttachControl(cutoffKnob, kCtrlTagFilterCutoffKnob);
     pGraphics->AttachControl(resonanceKnob, kCtrlTagFilterResonanceKnob);

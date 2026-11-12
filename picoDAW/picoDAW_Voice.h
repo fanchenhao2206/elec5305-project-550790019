@@ -33,8 +33,8 @@ public:
                       // least it doesn't crash the plugin!!
 
     mStateVariableFilter = new StateVariableFilter<sample>();
-    // mBiquadIIRFilter = new BiquadIIRLPFilter<sample>();
-    // mBilinearTransformFilter = new BilinearTransformLPFilter<sample>();
+    mBiquadIIRFilter = new BiquadIIRFilter<sample>();
+    mMoogLadderFilter = new MoogLadderFilter<sample>();
 
     mFilter = mStateVariableFilter; // FIXME: also buggy...
 
@@ -60,6 +60,10 @@ public:
   {
     if (filterCoreIdx == 0) {
       mFilter = mStateVariableFilter;
+    } else if (filterCoreIdx == 1) {
+      mFilter = mBiquadIIRFilter;
+    } else if (filterCoreIdx == 2) {
+      mFilter = mMoogLadderFilter;
     } else {
       // TODO: throw error...
       assert(false);
@@ -134,6 +138,8 @@ public:
     mSquareCore->SetSampleRate(sampleRate);
 
     mStateVariableFilter->SetSampleRate(sampleRate);
+    mBiquadIIRFilter->SetSampleRate(sampleRate);
+    mMoogLadderFilter->SetSampleRate(sampleRate);
     
     mAMPEnv.SetSampleRate(sampleRate);
     mFilterEnv.SetSampleRate(sampleRate);
@@ -157,8 +163,8 @@ private:
   IOscillator<sample> *mSquareCore;
 
   IFilter<sample> *mStateVariableFilter; // Default filter provided by IPlug...
-  // IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
-  // IFilter<sample> *mBilinearTransformFilter;
+  IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
+  IFilter<sample> *mMoogLadderFilter;
 
   int mOctave;
   int mFilterTypeIdx;
