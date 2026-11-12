@@ -1,7 +1,7 @@
 #if IPLUG_EDITOR
 #include "IControl.h"
 #include <vector>
-
+#include <iostream>
 // A root control that is invisible; holds data and funcs for drawing UI
 class RootUIControl : public IControl 
 {
@@ -145,6 +145,7 @@ public:
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
       int sync = GetParam(kParamKeyboardModeIdx)->Int();
+      std::cout << sync << std::endl;
       keyboard->Hide(sync != 0);
       gateSeq->Hide(sync != 1);
       gateLabelText01->Hide(sync != 1);
@@ -210,6 +211,8 @@ public:
 
   int mPlaybackStepIdx;
   int mPrevPlaybackNote;
+
+  int mKeyboardModeIdx;
 
   EScreens mScreen;
 };

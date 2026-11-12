@@ -309,9 +309,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
         root->mPlaybackStepIdx = 0;
       }
     }, "", style, "PLAY", "PLAY"); // Although, this one appears on all screens...
-    auto soloToggle = new IVToggleControl(soloButtonBounds, [pGraphics](IControl* pCaller) {
-      /* TODO: once mixer is ready... */
-    }, "", style, "SOLO", "SOLO"); // And this one too... But, disabled except in SEQ or EDIT screens
+    // auto playToggle = new IVToggleControl(playButtonBounds, kParamPlayToggle, "", style, "PLAY", "PLAY");
+    auto soloToggle = new IVToggleControl(soloButtonBounds, kParamSoloToggle, "", style, "SOLO", "SOLO");
 
     // Synth controls; Break sequencerBounds into a 4x4 grid...
     auto coreIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreIdx, "CORE", style);
@@ -512,14 +511,19 @@ void picoDAW::OnParamChange(int paramIdx)
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   if (auto pGraphics = GetUI()) {
+    auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
     int voiceIdx = GetParam(kParamVoiceIdx)->Int();
     double value = GetParam(paramIdx)->Value();
     switch (paramIdx) {
       case kParamKeyboardModeIdx:
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
-        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
-        pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
-        pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
+        if (root->mScreen == kScreenSequencerSyn1 || root->mScreen == kScreenSequencerSyn2 || 
+          root->mScreen == kScreenSequencerSyn3 || root->mScreen == kScreenSequencerSyn4 ||
+          root->mScreen == kScreenSequencerSamp1 || root->mScreen == kScreenSequencerSamp2) {
+          pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
+          pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
+          pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
+          pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
+        }
         break;
       default:
         break;

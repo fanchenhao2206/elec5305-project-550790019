@@ -13,27 +13,24 @@ enum EParams
   kParamRoot = 0,
 
   kParamKeyboardModeIdx,
+  kParamSoloToggle,
+  kParamPlayToggle,
 
   kParamVoiceIdx,
-
   kParamVoiceGain,
   kParamVoiceOctave,
-
   kParamVoiceAttack,
   kParamVoiceDecay,
   kParamVoiceSustain,
   kParamVoiceRelease,
-
   kParamSynthCoreIdx,
 
   kParamFilterCutoff,
   kParamFilterResonance,
-
   kParamFilterAttack,
   kParamFilterDecay,
   kParamFilterSustain,
   kParamFilterRelease,
-
   kParamFilterTypeIdx,
 
   kNumParams
