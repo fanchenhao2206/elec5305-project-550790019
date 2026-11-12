@@ -14,7 +14,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 {
   // UI parameters... Changes are communicated from us the UI, to us the UI, through the
   // pipeline described by IPlugWasmUI::onParamChangeUI (aka picoDAW::onParamChangeUI)
-  GetParam(kParamKeyboardModeIdx)->InitEnum("Mode", 0, { "KEYBOARD", "LEGATO" });
+  GetParam(kParamKeyboardModeIdx)->InitEnum("Mode", 0, { "KEYBOARD", "LEGATO", "VELOCITY" });
 
   // DSP parameters... Changes are communicated from us the UI, to them the DSP, through
   // the pipeline described by IPlugWasmDSP::onParamChange (aka picoDAW::onParamChange)
@@ -204,7 +204,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Sequencer controls...
     auto midiSeq = new IVNoteSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVStepValueControl(keyboardBounds, 2, 16, 0);
+    auto velocitySeq = new IVStepValueControl(keyboardBounds, 8, 16, 5, nullptr, IVStepValueControl::DrawStyle::kBar);
     IVStepValueControl::Link(*midiSeq, *gateSeq);
+    IVStepValueControl::Link(*midiSeq, *velocitySeq);
     auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "RETRIGGER", style.valueText, COLOR_MID_GRAY);
     auto gateLabelText02 = new ITextControl(gateLabelBounds.SubRectVertical(2, 0), "LEGATO", style.valueText, COLOR_GRAY);
 
@@ -226,10 +228,10 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto noteLabelText12 = new ITextControl(noteLabelBounds.SubRectVertical(12, 0), "B", style.valueText, COLOR_MID_GRAY);
 
     // More global controls... TODO: change to param based, and then handle startPlaybackTimer onParamChangeUI...
-    auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
+    auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq, velocitySeq](IControl* pCaller) {
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
-        root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq](Timer &t) {
+        root->mPlaybackTimer = Timer::Create([root, midiSeq, gateSeq, velocitySeq](Timer &t) {
           for (int voiceIdx = 0; voiceIdx < 1; voiceIdx++) {
             IMidiMsg msg;
             int channelIdx = 0; // TODO: send to other channel if required(??)
@@ -250,7 +252,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
             //
             // Relative to C4 == 60, TODO: should be relative to midiSeq->baseNote or something...
             int currNote = (midiCell < 0) ? -1 : 60 + midiStep;
-            int currVelocity = 80; // TODO: velocity sequencer...
+
+            int velocityCell = velocitySeq->GetRow(stepIdx); // 0 means loudest, 7 means quietest...
+            int currVelocity = (velocityCell < 0) ? 0 : (8 - velocityCell) * 16; // 8 steps, max is 128
 
             // For knowing whether to hold this note in legato with the previous identical note
             int gateCell = gateSeq->GetRow(stepIdx);
@@ -390,6 +394,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
     pGraphics->AttachControl(gateLabelText01, kCtrlTagGateLabelText01);
     pGraphics->AttachControl(gateLabelText02, kCtrlTagGateLabelText02);
+    pGraphics->AttachControl(velocitySeq, kCtrlTagVelocitySequencer);
     pGraphics->AttachControl(keyboard, kCtrlTagKeyboard);
     pGraphics->AttachControl(keyboardModeSwitch, kCtrlTagKeyboardModeSwitch);
     pGraphics->AttachControl(playToggle, kCtrlTagPlayToggle);
@@ -519,6 +524,7 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
         pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
         pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
         pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
+        pGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->Hide(static_cast<int>(value) != 2);
         root->mKeyboardModeIdx = static_cast<int>(value);
         break;
       default:

@@ -213,9 +213,17 @@ private:
 class IVStepValueControl : public IVStepGridControl
 {
 public:
+  enum class DrawStyle
+  {
+    kCell, // only the selected cell is filled (like the original control)
+    kBar   // bar from the selected row down to the bottom (velocity-style)
+  };
+
   IVStepValueControl(const IRECT& bounds, int nRows, int nCols, int defaultRow,
-                     std::function<void()> updateFn = nullptr)
+                     std::function<void()> updateFn = nullptr,
+                     DrawStyle style = DrawStyle::kCell)
   : IVStepGridControl(bounds, nRows, nCols, updateFn)
+  , mStyle(style)
   , mDefaultRow(std::clamp(defaultRow, 0, nRows - 1))
   , mRows(nCols, std::clamp(defaultRow, 0, nRows - 1))
   , mActive(nCols, false)
@@ -271,7 +279,7 @@ protected:
       }
 
       const float top = mRECT.T + mRows[c] * rowSpacing;
-      const float bottom = top + rowSpacing;
+      const float bottom = (mStyle == DrawStyle::kBar) ? mRECT.B : top + rowSpacing;
       g.FillRect(COLOR_BLACK, IRECT(x, top, x + colSpacing, bottom));
     }
   }
@@ -284,6 +292,7 @@ private:
     OnNewValue();
   }
 
+  const DrawStyle mStyle;
   const int mDefaultRow;
   std::vector<int>  mRows;
   std::vector<bool> mActive;

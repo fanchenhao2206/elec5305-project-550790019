@@ -72,6 +72,7 @@ public:
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVStepValueControl>();
     auto gateLabelText01 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->As<ITextControl>();
     auto gateLabelText02 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->As<ITextControl>();
+    auto velocitySeq = mGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->As<IVStepValueControl>();
     auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
     auto keyboardModeSwitch = mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->As<IVSwitchControl>();
     auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
@@ -150,6 +151,7 @@ public:
       gateSeq->Hide(sync != 1);
       gateLabelText01->Hide(sync != 1);
       gateLabelText02->Hide(sync != 1);
+      velocitySeq->Hide(sync != 2);
       midiSeq->Hide(false);
       keyboardModeSwitch->Hide(false);
       noteLabelText01->Hide(false);
