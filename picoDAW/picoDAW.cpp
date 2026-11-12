@@ -514,15 +514,12 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
   if (auto pGraphics = GetUI()) {
     int voiceIdx = GetParam(kParamVoiceIdx)->Int();
     double value = GetParam(paramIdx)->Value();
-
-    auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
     switch (paramIdx) {
       case kParamKeyboardModeIdx:
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
         pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
         pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
         pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
-        root->mSequencerDatas[root->mScreen - kScreenSequencerSyn1].mKeyboardBoundsIdx = static_cast<int>(value);
         break;
       default:
         break;

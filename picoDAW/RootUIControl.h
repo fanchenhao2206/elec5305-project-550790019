@@ -11,20 +11,30 @@ struct SequencerData
   int mNGateCols;
   int mNGateRows;
   int mKeyboardBoundsIdx;
+
+  SequencerData()
+  : mMidiCells(16, -1),
+    mNMidiCols(16),
+    mNMidiRows(12),
+    mGateCells(16, -1),
+    mNGateCols(16),
+    mNGateRows(2),
+    mKeyboardBoundsIdx(0)
+  {}
 };
 
 struct SynthData
 {
-  int mSynthCoreIdx;
-  int mVoiceOctave;
   double mVoiceGain;
+  int mVoiceOctave;
   double mVoiceAttack;
   double mVoiceDecay;
   double mVoiceSustain;
   double mVoiceRelease;
-  int mFilterTypeIdx;
+  int mSynthCoreIdx;
   double mFilterCutoff;
   double mFilterResonance;
+  int mFilterTypeIdx;
   double mFilterAttack;
   double mFilterDecay;
   double mFilterSustain;
@@ -48,64 +58,6 @@ public:
 
   void Update(EScreens screen)
   {
-    // Save params of the old mScreen that we are changing from...
-    if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
-      auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
-      synData.mVoiceGain = GetParam(kParamVoiceGain)->Value();
-      synData.mVoiceOctave = GetParam(kParamVoiceOctave)->Value();
-      synData.mVoiceAttack = GetParam(kParamVoiceAttack)->Value();
-      synData.mVoiceDecay = GetParam(kParamVoiceDecay)->Value();
-      synData.mVoiceSustain = GetParam(kParamVoiceSustain)->Value();
-      synData.mVoiceRelease = GetParam(kParamVoiceRelease)->Value();
-      synData.mSynthCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
-      synData.mFilterCutoff = GetParam(kParamFilterCutoff)->Value();
-      synData.mFilterResonance = GetParam(kParamFilterResonance)->Value();
-      synData.mFilterTypeIdx = GetParam(kParamFilterTypeIdx)->Int();
-      synData.mFilterAttack = GetParam(kParamFilterAttack)->Value();
-      synData.mFilterDecay = GetParam(kParamFilterDecay)->Value();
-      synData.mFilterSustain = GetParam(kParamFilterSustain)->Value();
-      synData.mFilterRelease = GetParam(kParamFilterRelease)->Value();
-    } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
-      mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
-      mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
-      // TODO:
-    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
-      // TODO:
-    }
-
-    // Load params of the new screen that we are changing to...
-    if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
-      auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
-      GetParam(kParamVoiceGain)->Set(synData.mVoiceGain);
-      GetParam(kParamVoiceOctave)->Set(static_cast<double>(synData.mVoiceOctave));
-      GetParam(kParamVoiceAttack)->Set(synData.mVoiceAttack);
-      GetParam(kParamVoiceDecay)->Set(synData.mVoiceDecay);
-      GetParam(kParamVoiceSustain)->Set(synData.mVoiceSustain);
-      GetParam(kParamVoiceRelease)->Set(synData.mVoiceRelease);
-      GetParam(kParamVoiceIdx)->Set(static_cast<double>(screen - kScreenEditorSyn1));
-      GetParam(kParamFilterCutoff)->Set(synData.mFilterCutoff);
-      GetParam(kParamFilterResonance)->Set(synData.mFilterResonance);
-      GetParam(kParamFilterTypeIdx)->Set(static_cast<double>(synData.mFilterTypeIdx));
-      GetParam(kParamFilterAttack)->Set(synData.mFilterAttack);
-      GetParam(kParamFilterDecay)->Set(synData.mFilterDecay);
-      GetParam(kParamFilterSustain)->Set(synData.mFilterSustain);
-      GetParam(kParamFilterRelease)->Set(synData.mFilterRelease);
-    } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
-      screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
-      screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
-      // keyboard->Update(screen);
-      // midiSeq->Update(screen);
-      // gateSeq->Update(screen);
-    } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
-      // sampler->Update(screen);
-    }
-
-    // Hide all controls...
-    for (auto ctrlTag : mGraphics->GetControlTags()) {
-      ctrlTag.second->Hide(true); // Manually unhide later...
-      ctrlTag.second->SetDisabled(false); // Manually disable later...
-    }
-
     auto titleText = mGraphics->GetControlWithTag(kCtrlTagTitleText)->As<ITextControl>();
     auto homeButton = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
     auto stepButton = mGraphics->GetControlWithTag(kCtrlTagStepButton)->As<IVButtonControl>();
@@ -164,6 +116,76 @@ public:
     auto keyboardModeSwitch = mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->As<IVSwitchControl>();
     auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
     auto soloToggle = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
+
+    // Save params of the old mScreen that we are changing from...
+    if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
+      auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
+      synData.mVoiceGain = GetParam(kParamVoiceGain)->Value();
+      synData.mVoiceOctave = GetParam(kParamVoiceOctave)->Value();
+      synData.mVoiceAttack = GetParam(kParamVoiceAttack)->Value();
+      synData.mVoiceDecay = GetParam(kParamVoiceDecay)->Value();
+      synData.mVoiceSustain = GetParam(kParamVoiceSustain)->Value();
+      synData.mVoiceRelease = GetParam(kParamVoiceRelease)->Value();
+      synData.mSynthCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
+      synData.mFilterCutoff = GetParam(kParamFilterCutoff)->Value();
+      synData.mFilterResonance = GetParam(kParamFilterResonance)->Value();
+      synData.mFilterTypeIdx = GetParam(kParamFilterTypeIdx)->Int();
+      synData.mFilterAttack = GetParam(kParamFilterAttack)->Value();
+      synData.mFilterDecay = GetParam(kParamFilterDecay)->Value();
+      synData.mFilterSustain = GetParam(kParamFilterSustain)->Value();
+      synData.mFilterRelease = GetParam(kParamFilterRelease)->Value();
+    } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
+      mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
+      mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
+      auto &seqData = mSequencerDatas[mScreen - kScreenSequencerSyn1];
+      seqData.mMidiCells = midiSeq->mCells;
+      seqData.mNMidiCols = midiSeq->mNCols;
+      seqData.mNMidiRows = midiSeq->mNRows;
+      seqData.mGateCells = gateSeq->mCells;
+      seqData.mNGateCols = gateSeq->mNCols;
+      seqData.mNGateRows = gateSeq->mNRows;
+      seqData.mKeyboardBoundsIdx = GetParam(kParamKeyboardModeIdx)->Int();
+    } else if (mScreen == kScreenEditorSamp1 || mScreen == kScreenEditorSamp2) {
+      // TODO:
+    }
+
+    // Load params of the new screen that we are changing to...
+    if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
+      auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
+      GetParam(kParamVoiceGain)->Set(synData.mVoiceGain);
+      GetParam(kParamVoiceOctave)->Set(static_cast<double>(synData.mVoiceOctave));
+      GetParam(kParamVoiceAttack)->Set(synData.mVoiceAttack);
+      GetParam(kParamVoiceDecay)->Set(synData.mVoiceDecay);
+      GetParam(kParamVoiceSustain)->Set(synData.mVoiceSustain);
+      GetParam(kParamVoiceRelease)->Set(synData.mVoiceRelease);
+      GetParam(kParamVoiceIdx)->Set(static_cast<double>(screen - kScreenEditorSyn1));
+      GetParam(kParamFilterCutoff)->Set(synData.mFilterCutoff);
+      GetParam(kParamFilterResonance)->Set(synData.mFilterResonance);
+      GetParam(kParamFilterTypeIdx)->Set(static_cast<double>(synData.mFilterTypeIdx));
+      GetParam(kParamFilterAttack)->Set(synData.mFilterAttack);
+      GetParam(kParamFilterDecay)->Set(synData.mFilterDecay);
+      GetParam(kParamFilterSustain)->Set(synData.mFilterSustain);
+      GetParam(kParamFilterRelease)->Set(synData.mFilterRelease);
+    } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
+      screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
+      screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
+      auto &seqData = mSequencerDatas[screen - kScreenSequencerSyn1];
+      midiSeq->mCells = seqData.mMidiCells;
+      midiSeq->mNCols = seqData.mNMidiCols;
+      midiSeq->mNRows = seqData.mNMidiRows;
+      gateSeq->mCells = seqData.mGateCells;
+      gateSeq->mNCols = seqData.mNGateCols;
+      gateSeq->mNRows = seqData.mNGateRows;
+      GetParam(kParamFilterRelease)->Set(static_cast<double>(seqData.mKeyboardBoundsIdx));
+    } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
+      // sampler->Update(screen);
+    }
+
+    // Hide all controls...
+    for (auto ctrlTag : mGraphics->GetControlTags()) {
+      ctrlTag.second->Hide(true); // Manually unhide later...
+      ctrlTag.second->SetDisabled(false); // Manually disable later...
+    }
 
     // Update titleText control...
     std::string str = "";
@@ -227,10 +249,10 @@ public:
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
       int sync = mSequencerDatas[screen - kScreenSequencerSyn1].mKeyboardBoundsIdx;
-      keyboard->Hide(sync != 0);
-      gateSeq->Hide(sync != 1);
-      gateLabelText01->Hide(sync != 1);
-      gateLabelText02->Hide(sync != 1);
+      // keyboard->Hide(sync != 0);
+      // gateSeq->Hide(sync != 1);
+      // gateLabelText01->Hide(sync != 1);
+      // gateLabelText02->Hide(sync != 1);
       midiSeq->Hide(false);
       keyboardModeSwitch->Hide(false);
       noteLabelText01->Hide(false);
