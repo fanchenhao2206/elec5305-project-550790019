@@ -241,11 +241,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
             // TODO: and, root->mPrevNote, should be moved into mSeqDatas instead... (the prevNote for this midi sequencer... right?)
             // NOTE: luckily, mPlaybackStepIdx is global to all sequencers, so is fine to leave in rootuicontrol...
             //
-            // We take the octave from RootUIControl, which is relative to C4 == 60;
-            // For example, if octave is -1, then we are in the C3 == 48 octave.
-            int octave = root->mSynthDatas[voiceIdx].mOctave; // This is correct; don't use a param for octave; it's a "UI side" param
-                                                              // As opposed to core, adsr, gain, which are "DSP side" params...
-            int currNote = (midiCell < 0) ? -1 : (60 + octave * 12) + midiStep;
+            // Relative to (C4 == 60) octave...
+            int currNote = (midiCell < 0) ? -1 : 60 + midiStep;
             int currVelocity = 80; // TODO: velocity sequencer...
 
             // For knowing whether to hold this note in legato with the previous identical note
@@ -493,7 +490,62 @@ void picoDAW::OnParamChange(int paramIdx)
 void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   if (auto pGraphics = GetUI()) {
-    // TODO: For UI-side parameter changes...
+    int voiceIdx = GetParam(kParamVoiceIdx)->Int();
+    double value = GetParam(paramIdx)->Value();
+
+    auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
+    switch (paramIdx) {
+      // TODO: better solution is have a mVoiceDatas, where the first four are synthdatas, and the last two are samplerdatas...
+      case kParamVoiceGain:
+        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthGain...
+        root->mSynthDatas[voiceIdx].mVoiceGain = value;
+        break;
+      case kParamVoiceOctave:
+        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthOctave...
+        root->mSynthDatas[voiceIdx].mVoiceOctave = value;
+        break;
+      case kParamVoiceAttack:
+        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthAttack...
+        root->mSynthDatas[voiceIdx].mVoiceAttack = value;
+        break;
+      case kParamVoiceDecay:
+        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthDecay...
+        root->mSynthDatas[voiceIdx].mVoiceDecay = value;
+        break;
+      case kParamVoiceSustain:
+        // TODO: ...
+        root->mSynthDatas[voiceIdx].mVoiceSustain = value;
+        break;
+      case kParamVoiceRelease:
+        root->mSynthDatas[voiceIdx].mVoiceRelease = value;
+        break;
+      case kParamSynthCoreIdx:
+        root->mSynthDatas[voiceIdx].mSynthCoreIdx = static_cast<int>(value);
+        break;
+      case kParamFilterCutoff:
+        root->mSynthDatas[voiceIdx].mFilterCutoff = value;
+        break;
+      case kParamFilterResonance:
+        root->mSynthDatas[voiceIdx].mFilterResonance = value;
+        break;
+      case kParamFilterTypeIdx:
+        root->mSynthDatas[voiceIdx].mFilterTypeIdx = static_cast<int>(value);
+        break;
+      case kParamFilterAttack:
+        root->mSynthDatas[voiceIdx].mFilterAttack = value;
+        break;
+      case kParamFilterDecay:
+        root->mSynthDatas[voiceIdx].mFilterDecay = value;
+        break;
+      case kParamFilterSustain:
+        root->mSynthDatas[voiceIdx].mFilterSustain = value;
+        break;
+      case kParamFilterRelease:
+        root->mSynthDatas[voiceIdx].mFilterRelease = value;
+        break;
+      default:
+        break;
+    }
   }
 }
 #endif

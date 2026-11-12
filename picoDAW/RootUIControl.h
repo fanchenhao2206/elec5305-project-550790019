@@ -3,32 +3,14 @@
 
 struct SynthData
 {
-  SynthData()
-  : mCoreIdx(0),
-    mOctave(0), // A "UI-side" parameter that just determines, what type of
-                // MIDI message to send to the DSP; it itself doesn't affect
-                // the DSP especially, so we don't store it as an IParam...
-    mGain(100.),
-    mAttack(10.),
-    mDecay(10.),
-    mSustain(50.),
-    mRelease(10.),
-    mFilterCutoff(0.5),
-    mFilterResonance(0.),
-
-    mFilterAttack(0.),
-    mFilterDecay(0.),
-    mFilterSustain(1.),
-    mFilterRelease(0.)
-  {}
-
-  int mCoreIdx; // Store the int representation of the underlying enum IParam
-  int mOctave;
-  double mGain;
-  double mAttack;
-  double mDecay;
-  double mSustain;
-  double mRelease;
+  int mSynthCoreIdx;
+  int mVoiceOctave;
+  double mVoiceGain;
+  double mVoiceAttack;
+  double mVoiceDecay;
+  double mVoiceSustain;
+  double mVoiceRelease;
+  int mFilterTypeIdx;
   double mFilterCutoff;
   double mFilterResonance;
   double mFilterAttack;
@@ -69,12 +51,12 @@ public:
     // Save params of the old mScreen that we are changing from...
     if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
-      synData.mGain = GetParam(kParamVoiceGain)->Value();
-      synData.mAttack = GetParam(kParamVoiceAttack)->Value();
-      synData.mDecay = GetParam(kParamVoiceDecay)->Value();
-      synData.mSustain = GetParam(kParamVoiceSustain)->Value();
-      synData.mRelease = GetParam(kParamVoiceRelease)->Value();
-      synData.mCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
+      synData.mVoiceGain = GetParam(kParamVoiceGain)->Value();
+      synData.mVoiceAttack = GetParam(kParamVoiceAttack)->Value();
+      synData.mVoiceDecay = GetParam(kParamVoiceDecay)->Value();
+      synData.mVoiceSustain = GetParam(kParamVoiceSustain)->Value();
+      synData.mVoiceRelease = GetParam(kParamVoiceRelease)->Value();
+      synData.mSynthCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
     } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
       mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
       mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
@@ -86,11 +68,11 @@ public:
     // Load params of the new screen that we are changing to...
     if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
-      GetParam(kParamVoiceGain)->Set(synData.mGain);
-      GetParam(kParamVoiceAttack)->Set(synData.mAttack);
-      GetParam(kParamVoiceDecay)->Set(synData.mDecay);
-      GetParam(kParamVoiceSustain)->Set(synData.mSustain);
-      GetParam(kParamVoiceRelease)->Set(synData.mRelease);
+      GetParam(kParamVoiceGain)->Set(synData.mVoiceGain);
+      GetParam(kParamVoiceAttack)->Set(synData.mVoiceAttack);
+      GetParam(kParamVoiceDecay)->Set(synData.mVoiceDecay);
+      GetParam(kParamVoiceSustain)->Set(synData.mVoiceSustain);
+      GetParam(kParamVoiceRelease)->Set(synData.mVoiceRelease);
       GetParam(kParamVoiceIdx)->Set(static_cast<double>(screen - kScreenEditorSyn1));
     } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
       screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
