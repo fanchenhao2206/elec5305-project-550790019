@@ -1,4 +1,4 @@
-//
+// Implementing custom filters... (and anti-aliased versions too)
 // Tim Fan <fanchenhao2206@icloud.com>
 
 #pragma once
