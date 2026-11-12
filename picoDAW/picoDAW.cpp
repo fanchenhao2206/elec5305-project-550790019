@@ -18,7 +18,6 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
   // DSP parameters... Changes are communicated from us the UI, to them the DSP, through
   // the pipeline described by IPlugWasmDSP::onParamChange (aka picoDAW::onParamChange)
-  GetParam(kParamVoiceIdx)->InitEnum("Voice", 0, { "SYNTH1", "SYNTH2", "SYNTH3", "SYNTH4", "SAMP1", "SAMP2" });
   GetParam(kParamVoiceGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamVoiceOctave)->InitInt("Octave", 0, -2, 2);
 
@@ -492,7 +491,7 @@ handle:
 void picoDAW::OnParamChange(int paramIdx)
 {
   // For DSP-side paramater changes...
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value(), GetParam(kParamVoiceIdx)->Int());
+  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value()/*, GetParam(kParamVoiceIdx)->Int()*/);
 }
 #endif
 
@@ -512,19 +511,14 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   if (auto pGraphics = GetUI()) {
     auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
-    int voiceIdx = GetParam(kParamVoiceIdx)->Int();
     double value = GetParam(paramIdx)->Value();
     switch (paramIdx) {
       case kParamKeyboardModeIdx:
-        // if (root->mScreen == kScreenSequencerSyn1 || root->mScreen == kScreenSequencerSyn2 || 
-        //   root->mScreen == kScreenSequencerSyn3 || root->mScreen == kScreenSequencerSyn4 ||
-        //   root->mScreen == kScreenSequencerSamp1 || root->mScreen == kScreenSequencerSamp2) {
-          pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
-          pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
-          pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
-          pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
-        // }
-          root->mKeyboardModeIdx = static_cast<int>(value);
+        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
+        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
+        pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
+        pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
+        root->mKeyboardModeIdx = static_cast<int>(value);
         break;
       default:
         break;

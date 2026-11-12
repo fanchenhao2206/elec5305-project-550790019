@@ -16,7 +16,6 @@ enum EParams
   kParamSoloToggle,
   kParamPlayToggle,
 
-  kParamVoiceIdx,
   kParamVoiceGain,
   kParamVoiceOctave,
   kParamVoiceAttack,

@@ -67,7 +67,7 @@ public:
     }
   }
 
-  void SetParam(int paramIdx, double value, int voiceIdx)
+  void SetParam(int paramIdx, double value, int voiceIdx = 0 /* TODO: should not have default... */)
   {
     // Notice that Attack, Decay, and Release can currently be set on a voice-by-voice
     // basis, but Sustain and Gain cannot be. TODO: change mParamsToSmooth very slightly,
