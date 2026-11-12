@@ -27,6 +27,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamVoiceRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
   GetParam(kParamSynthCoreIdx)->InitEnum("Osc. Core", 0, { "SINE", "TRIANGLE", "SAW", "SQUARE" });
+  GetParam(kParamSynthCoreAntiAliasing)->InitBool("ANTI ALIASING", false);
   GetParam(kParamFilterCoreIdx)->InitEnum("Filter Core", 0, { "STATEVARIABLE", "BIQUADIIR", "MOOGLADDER" });
 
   GetParam(kParamFilterCutoff)->InitDouble("Cutoff", 2000., 20., 20000., 1., "Hz", IParam::kFlagsNone, "Filter", IParam::ShapePowCurve(3.) );
@@ -319,8 +320,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
     // Synth controls; Break sequencerBounds into a 4x4 grid...
     auto coreIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 0), kParamSynthCoreIdx, "OSC. CORE", style);
-    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamVoiceOctave, "OCTAVE", style);
-    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceGain, "GAIN", style);
+    auto coreAntiAliasToggle = new IVToggleControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 1), kParamSynthCoreAntiAliasing, "", style, "ANTI-ALIAS", "ANTI-ALIAS");
+    auto octaveSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 2), kParamVoiceOctave, "OCTAVE", style);
+    auto gainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 0).SubRectVertical(4, 3), kParamVoiceGain, "GAIN", style);
 
     auto attackKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 0), kParamVoiceAttack, "ATTACK", style);
     auto decayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 1), kParamVoiceDecay, "DECAY", style);
@@ -376,6 +378,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(mixerButton, kCtrlTagMixerButton);
 
     pGraphics->AttachControl(coreIdxSwitch, kCtrlTagSynthCoreSwitch);
+    pGraphics->AttachControl(coreAntiAliasToggle, kCtrlTagSynthCoreAntiAliasingToggle);
 
     pGraphics->AttachControl(octaveSwitch, kCtrlTagVoiceOctaveSwitch);
     pGraphics->AttachControl(gainKnob, kCtrlTagVoiceGainKnob);

@@ -23,6 +23,7 @@ enum EParams
   kParamVoiceSustain,
   kParamVoiceRelease,
   kParamSynthCoreIdx,
+  kParamSynthCoreAntiAliasing,
 
   kParamFilterCoreIdx,
   kParamFilterCutoff,
@@ -89,6 +90,7 @@ enum EControlTags
   kCtrlTagMixerButton,
 
   kCtrlTagSynthCoreSwitch,
+  kCtrlTagSynthCoreAntiAliasingToggle,
   kCtrlTagVoiceOctaveSwitch,
   kCtrlTagVoiceGainKnob,
   kCtrlTagVoiceAttackKnob,

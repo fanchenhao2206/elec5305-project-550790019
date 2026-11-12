@@ -19,9 +19,14 @@ public:
   picoDAWVoice()
   {
     mSineCore = new SinOscillator<sample>();
+
     mTriangleCore = new TriangleOscillator<sample>();
     mSawCore = new SawOscillator<sample>();
     mSquareCore = new SquareOscillator<sample>();
+
+    mBLTriangleCore = new BLTriangleOscillator<sample>();
+    mBLSawCore = new BLSawOscillator<sample>();
+    mBLSquareCore = new BLSquareOscillator<sample>();
 
     mOSC = mSineCore; // FIXME: This is pretty buggy...
                       // Open app, press core switch, and then
@@ -42,6 +47,7 @@ public:
 
   void SetSynthCore(int synthCoreIdx) override
   {
+    mSynthCoreIdx = synthCoreIdx;
     if (synthCoreIdx == 0) {
       mOSC = mSineCore;
     } else if (synthCoreIdx == 1) {
@@ -53,6 +59,26 @@ public:
     } else {
       // TODO: throw error...
       assert(false);
+    }
+  }
+
+  void SetSynthCoreAntiAliasing(bool antiAliasing) override
+  {
+    if (antiAliasing) {
+      if (mSynthCoreIdx == 0) {
+        mOSC = mSineCore; // No-op; Pure sine has no harmonics...
+      } else if (mSynthCoreIdx == 1) {
+        mOSC = mBLTriangleCore;
+      } else if (mSynthCoreIdx == 2) {
+        mOSC = mBLSawCore;
+      } else if (mSynthCoreIdx == 3) {
+        mOSC = mBLSquareCore;
+      } else {
+        // TODO: throw error...
+        assert(false);
+      }
+    } else {
+      SetSynthCore(mSynthCoreIdx);
     }
   }
 
@@ -137,6 +163,10 @@ public:
     mSawCore->SetSampleRate(sampleRate);
     mSquareCore->SetSampleRate(sampleRate);
 
+    mBLTriangleCore->SetSampleRate(sampleRate);
+    mBLSawCore->SetSampleRate(sampleRate);
+    mBLSquareCore->SetSampleRate(sampleRate);
+
     mStateVariableFilter->SetSampleRate(sampleRate);
     mBiquadIIRFilter->SetSampleRate(sampleRate);
     mMoogLadderFilter->SetSampleRate(sampleRate);
@@ -162,9 +192,15 @@ private:
   IOscillator<sample> *mTriangleCore;
   IOscillator<sample> *mSquareCore;
 
+  IOscillator<sample> *mBLSawCore; // Custom cores with anti-aliasing (aka band-limiting)
+  IOscillator<sample> *mBLTriangleCore;
+  IOscillator<sample> *mBLSquareCore;
+
   IFilter<sample> *mStateVariableFilter; // Default filter provided by IPlug...
   IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
   IFilter<sample> *mMoogLadderFilter;
+
+  int mSynthCoreIdx;
 
   int mOctave;
   int mFilterTypeIdx;

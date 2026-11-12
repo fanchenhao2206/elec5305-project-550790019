@@ -51,6 +51,7 @@ public:
     auto mixerButton = mGraphics->GetControlWithTag(kCtrlTagMixerButton)->As<IVButtonControl>();
 
     auto coreIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagSynthCoreSwitch)->As<IVSwitchControl>();
+    auto coreAntiAliasToggle = mGraphics->GetControlWithTag(kCtrlTagSynthCoreAntiAliasingToggle)->As<IVToggleControl>();
     auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagVoiceOctaveSwitch)->As<IVSwitchControl>();
     auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceGainKnob)->As<IVKnobControl>();
 
@@ -170,6 +171,7 @@ public:
       noteLabelText12->Hide(false);
     } else if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       coreIdxSwitch->Hide(false);
+      coreAntiAliasToggle->Hide(false);
       octaveSwitch->Hide(false);
       gainKnob->Hide(false);
       attackKnob->Hide(false);
