@@ -204,7 +204,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     // Sequencer controls...
     auto midiSeq = new IVNoteSequencerControl(sequencerBounds, 12, 16);
     auto gateSeq = new IVStepValueControl(keyboardBounds, 2, 16, 0);
-    auto velocitySeq = new IVStepValueControl(keyboardBounds, 8, 16, 5, nullptr, IVStepValueControl::DrawStyle::kBar);
+    auto velocitySeq = new IVStepValueControl(keyboardBounds, 8, 16, 3, nullptr, IVStepValueControl::DrawStyle::kBar);
     IVStepValueControl::Link(*midiSeq, *gateSeq);
     IVStepValueControl::Link(*midiSeq, *velocitySeq);
     auto gateLabelText01 = new ITextControl(gateLabelBounds.SubRectVertical(2, 1), "RETRIGGER", style.valueText, COLOR_MID_GRAY);
