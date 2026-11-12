@@ -517,54 +517,6 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 
     auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
     switch (paramIdx) {
-      // TODO: better solution is have a mVoiceDatas, where the first four are synthdatas, and the last two are samplerdatas...
-      case kParamVoiceGain:
-        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthGain...
-        root->mSynthDatas[voiceIdx].mVoiceGain = value;
-        break;
-      case kParamVoiceOctave:
-        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthOctave...
-        root->mSynthDatas[voiceIdx].mVoiceOctave = value;
-        break;
-      case kParamVoiceAttack:
-        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthAttack...
-        root->mSynthDatas[voiceIdx].mVoiceAttack = value;
-        break;
-      case kParamVoiceDecay:
-        // TODO: obviously wrong once sampler comes into mix too; unless change param to SynthDecay...
-        root->mSynthDatas[voiceIdx].mVoiceDecay = value;
-        break;
-      case kParamVoiceSustain:
-        // TODO: ...
-        root->mSynthDatas[voiceIdx].mVoiceSustain = value;
-        break;
-      case kParamVoiceRelease:
-        root->mSynthDatas[voiceIdx].mVoiceRelease = value;
-        break;
-      case kParamSynthCoreIdx:
-        root->mSynthDatas[voiceIdx].mSynthCoreIdx = static_cast<int>(value);
-        break;
-      case kParamFilterCutoff:
-        root->mSynthDatas[voiceIdx].mFilterCutoff = value;
-        break;
-      case kParamFilterResonance:
-        root->mSynthDatas[voiceIdx].mFilterResonance = value;
-        break;
-      case kParamFilterTypeIdx:
-        root->mSynthDatas[voiceIdx].mFilterTypeIdx = static_cast<int>(value);
-        break;
-      case kParamFilterAttack:
-        root->mSynthDatas[voiceIdx].mFilterAttack = value;
-        break;
-      case kParamFilterDecay:
-        root->mSynthDatas[voiceIdx].mFilterDecay = value;
-        break;
-      case kParamFilterSustain:
-        root->mSynthDatas[voiceIdx].mFilterSustain = value;
-        break;
-      case kParamFilterRelease:
-        root->mSynthDatas[voiceIdx].mFilterRelease = value;
-        break;
       case kParamKeyboardModeIdx:
         pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
         pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);

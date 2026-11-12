@@ -52,11 +52,19 @@ public:
     if (mScreen == kScreenEditorSyn1 || mScreen == kScreenEditorSyn2 || mScreen == kScreenEditorSyn3 || mScreen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[mScreen - kScreenEditorSyn1];
       synData.mVoiceGain = GetParam(kParamVoiceGain)->Value();
+      synData.mVoiceOctave = GetParam(kParamVoiceOctave)->Value();
       synData.mVoiceAttack = GetParam(kParamVoiceAttack)->Value();
       synData.mVoiceDecay = GetParam(kParamVoiceDecay)->Value();
       synData.mVoiceSustain = GetParam(kParamVoiceSustain)->Value();
       synData.mVoiceRelease = GetParam(kParamVoiceRelease)->Value();
       synData.mSynthCoreIdx = GetParam(kParamSynthCoreIdx)->Int();
+      synData.mFilterCutoff = GetParam(kParamFilterCutoff)->Value();
+      synData.mFilterResonance = GetParam(kParamFilterResonance)->Value();
+      synData.mFilterTypeIdx = GetParam(kParamFilterTypeIdx)->Int();
+      synData.mFilterAttack = GetParam(kParamFilterAttack)->Value();
+      synData.mFilterDecay = GetParam(kParamFilterDecay)->Value();
+      synData.mFilterSustain = GetParam(kParamFilterSustain)->Value();
+      synData.mFilterRelease = GetParam(kParamFilterRelease)->Value();
     } else if (mScreen == kScreenSequencerSyn1 || mScreen == kScreenSequencerSyn2 || 
       mScreen == kScreenSequencerSyn3 || mScreen == kScreenSequencerSyn4 || 
       mScreen == kScreenSequencerSamp1 || mScreen == kScreenSequencerSamp2) {
@@ -69,11 +77,19 @@ public:
     if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       auto &synData = mSynthDatas[screen - kScreenEditorSyn1];
       GetParam(kParamVoiceGain)->Set(synData.mVoiceGain);
+      GetParam(kParamVoiceOctave)->Set(static_cast<double>(synData.mVoiceOctave));
       GetParam(kParamVoiceAttack)->Set(synData.mVoiceAttack);
       GetParam(kParamVoiceDecay)->Set(synData.mVoiceDecay);
       GetParam(kParamVoiceSustain)->Set(synData.mVoiceSustain);
       GetParam(kParamVoiceRelease)->Set(synData.mVoiceRelease);
       GetParam(kParamVoiceIdx)->Set(static_cast<double>(screen - kScreenEditorSyn1));
+      GetParam(kParamFilterCutoff)->Set(synData.mFilterCutoff);
+      GetParam(kParamFilterResonance)->Set(synData.mFilterResonance);
+      GetParam(kParamFilterTypeIdx)->Set(static_cast<double>(synData.mFilterTypeIdx));
+      GetParam(kParamFilterAttack)->Set(synData.mFilterAttack);
+      GetParam(kParamFilterDecay)->Set(synData.mFilterDecay);
+      GetParam(kParamFilterSustain)->Set(synData.mFilterSustain);
+      GetParam(kParamFilterRelease)->Set(synData.mFilterRelease);
     } else if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || 
       screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 || 
       screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
