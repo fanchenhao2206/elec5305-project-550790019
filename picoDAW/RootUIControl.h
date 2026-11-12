@@ -278,16 +278,16 @@ public:
                                   // takes up the sequencerBounds
     } else /* if (screen == kScreenNavigation) */ {
       navigationSyn1Seq->Hide(false); // For now just syn1 sequencer...
-      navigationSyn2Seq->Hide(false); navigationSyn2Seq->SetDisabled(true);
-      navigationSyn3Seq->Hide(false); navigationSyn3Seq->SetDisabled(true);
-      navigationSyn4Seq->Hide(false); navigationSyn4Seq->SetDisabled(true);
+      navigationSyn2Seq->Hide(false); //navigationSyn2Seq->SetDisabled(true);
+      navigationSyn3Seq->Hide(false); //navigationSyn3Seq->SetDisabled(true);
+      navigationSyn4Seq->Hide(false); //navigationSyn4Seq->SetDisabled(true);
       navigationSamp1Seq->Hide(false); navigationSamp1Seq->SetDisabled(true);
       navigationSamp2Seq->Hide(false); navigationSamp2Seq->SetDisabled(true);
 
       navigationSyn1Edit->Hide(false); // For now just syn1 edit...
-      navigationSyn2Edit->Hide(false); navigationSyn2Edit->SetDisabled(true);
-      navigationSyn3Edit->Hide(false); navigationSyn3Edit->SetDisabled(true);
-      navigationSyn4Edit->Hide(false); navigationSyn4Edit->SetDisabled(true);
+      navigationSyn2Edit->Hide(false); //navigationSyn2Edit->SetDisabled(true);
+      navigationSyn3Edit->Hide(false); //navigationSyn3Edit->SetDisabled(true);
+      navigationSyn4Edit->Hide(false); //navigationSyn4Edit->SetDisabled(true);
       navigationSamp1Edit->Hide(false); navigationSamp1Edit->SetDisabled(true);
       navigationSamp2Edit->Hide(false); navigationSamp2Edit->SetDisabled(true);
       soloToggle->SetDisabled(true); // Except this disable!! Don't remove this disable!! Unless, can
