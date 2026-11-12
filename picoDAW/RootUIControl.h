@@ -94,6 +94,19 @@ public:
     auto homeButton = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
     auto stepButton = mGraphics->GetControlWithTag(kCtrlTagStepButton)->As<IVButtonControl>();
 
+    auto noteLabelText01 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText01)->As<ITextControl>();
+    auto noteLabelText02 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText02)->As<ITextControl>();
+    auto noteLabelText03 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText03)->As<ITextControl>();
+    auto noteLabelText04 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText04)->As<ITextControl>();
+    auto noteLabelText05 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText05)->As<ITextControl>();
+    auto noteLabelText06 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText06)->As<ITextControl>();
+    auto noteLabelText07 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText07)->As<ITextControl>();
+    auto noteLabelText08 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText08)->As<ITextControl>();
+    auto noteLabelText09 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText09)->As<ITextControl>();
+    auto noteLabelText10 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText10)->As<ITextControl>();
+    auto noteLabelText11 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText11)->As<ITextControl>();
+    auto noteLabelText12 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText12)->As<ITextControl>();
+
     auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
     auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
     auto navigationSyn3Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq);
@@ -200,6 +213,18 @@ public:
       gateSeq->Hide(sync != 1);
       midiSeq->Hide(false);
       cycleKeyboard->Hide(false);
+      noteLabelText01->Hide(false);
+      noteLabelText02->Hide(false);
+      noteLabelText03->Hide(false);
+      noteLabelText04->Hide(false);
+      noteLabelText05->Hide(false);
+      noteLabelText06->Hide(false);
+      noteLabelText07->Hide(false);
+      noteLabelText08->Hide(false);
+      noteLabelText09->Hide(false);
+      noteLabelText10->Hide(false);
+      noteLabelText11->Hide(false);
+      noteLabelText12->Hide(false);
     } else if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
       coreIdxSwitch->Hide(false);
       octaveSwitch->Hide(false);

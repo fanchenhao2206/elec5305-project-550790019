@@ -73,6 +73,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     IRECT homeBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(2.5, 2.5);
     IRECT keyboardBounds = b.GetFromBottom(120).GetReducedFromLeft(160).GetReducedFromRight(160);
     IRECT sequencerBounds = b.GetReducedFromBottom(120 + 5).GetReducedFromLeft(160).GetReducedFromRight(160).GetReducedFromTop(80 + 7.5);
+    IRECT noteLabelBounds = IRECT(sequencerBounds.R, sequencerBounds.T, b.R, sequencerBounds.B);
     IRECT stepBounds = sequencerBounds.GetFromTop(20).GetTranslated(0, -20 - 5);
     IRECT cycleButtonBounds = keyboardBounds.GetCentredInside(160, 120).GetTranslated(-(320 + 80), 2.5);
     IRECT playButtonBounds = IRECT::MakeXYWH(0, 0, 160, 60).GetTranslated(800 -2.5, 2.5);
@@ -93,6 +94,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "picoDAW", style);
+
+    auto noteLabelText01 = new ITextControl(noteLabelBounds.SubRectVertical(12, 11), "C", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText02 = new ITextControl(noteLabelBounds.SubRectVertical(12, 10), "C#/Db", style.valueText, COLOR_GRAY);
+    auto noteLabelText03 = new ITextControl(noteLabelBounds.SubRectVertical(12, 9), "D", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText04 = new ITextControl(noteLabelBounds.SubRectVertical(12, 8), "D#/Eb", style.valueText, COLOR_GRAY);
+    auto noteLabelText05 = new ITextControl(noteLabelBounds.SubRectVertical(12, 7), "E", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText06 = new ITextControl(noteLabelBounds.SubRectVertical(12, 6), "F", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText07 = new ITextControl(noteLabelBounds.SubRectVertical(12, 5), "F#/Gb", style.valueText, COLOR_GRAY);
+    auto noteLabelText08 = new ITextControl(noteLabelBounds.SubRectVertical(12, 4), "G", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText09 = new ITextControl(noteLabelBounds.SubRectVertical(12, 3), "G#/Ab", style.valueText, COLOR_GRAY);
+    auto noteLabelText10 = new ITextControl(noteLabelBounds.SubRectVertical(12, 2), "A", style.valueText, COLOR_MID_GRAY);
+    auto noteLabelText11 = new ITextControl(noteLabelBounds.SubRectVertical(12, 1), "A#/Bb", style.valueText, COLOR_GRAY);
+    auto noteLabelText12 = new ITextControl(noteLabelBounds.SubRectVertical(12, 0), "B", style.valueText, COLOR_MID_GRAY);
 
     // TODO: current step
     auto stepButton = new IVButtonControl(stepBounds, SplashAnimationFunc, "INSERT CURRENT STEP IN PATTERN HERE", style);
@@ -219,6 +233,9 @@ picoDAW::picoDAW(const InstanceInfo& info)
       pCaller->As<IVectorBase>()->SetSplashPoint(x, y);
       pCaller->SetAnimation(SplashAnimationFunc, DEFAULT_ANIMATION_DURATION);
     }, "TOGGLE", style);
+
+    // TODO: text controls on the side of the sequencer...
+
     auto playToggle = new IVToggleControl(playButtonBounds, [pGraphics, root, midiSeq, gateSeq](IControl* pCaller) {
       if (pCaller->GetValue() > 0.5) {
         // Is currently on, so was previously off; start playback wrt. current tempo
@@ -241,7 +258,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
             // TODO: and, root->mPrevNote, should be moved into mSeqDatas instead... (the prevNote for this midi sequencer... right?)
             // NOTE: luckily, mPlaybackStepIdx is global to all sequencers, so is fine to leave in rootuicontrol...
             //
-            // Relative to (C4 == 60) octave...
+            // Relative to C4 == 60, TODO: should be relative to midiSeq->baseNote or something...
             int currNote = (midiCell < 0) ? -1 : 60 + midiStep;
             int currVelocity = 80; // TODO: velocity sequencer...
 
@@ -332,6 +349,19 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(titleText, kCtrlTagTitleText);
     pGraphics->AttachControl(homeButton, kCtrlTagHomeButton);
     pGraphics->AttachControl(stepButton, kCtrlTagStepButton);
+
+    pGraphics->AttachControl(noteLabelText01, kCtrlTagNoteLabelText01);
+    pGraphics->AttachControl(noteLabelText02, kCtrlTagNoteLabelText02);
+    pGraphics->AttachControl(noteLabelText03, kCtrlTagNoteLabelText03);
+    pGraphics->AttachControl(noteLabelText04, kCtrlTagNoteLabelText04);
+    pGraphics->AttachControl(noteLabelText05, kCtrlTagNoteLabelText05);
+    pGraphics->AttachControl(noteLabelText06, kCtrlTagNoteLabelText06);
+    pGraphics->AttachControl(noteLabelText07, kCtrlTagNoteLabelText07);
+    pGraphics->AttachControl(noteLabelText08, kCtrlTagNoteLabelText08);
+    pGraphics->AttachControl(noteLabelText09, kCtrlTagNoteLabelText09);
+    pGraphics->AttachControl(noteLabelText10, kCtrlTagNoteLabelText10);
+    pGraphics->AttachControl(noteLabelText11, kCtrlTagNoteLabelText11);
+    pGraphics->AttachControl(noteLabelText12, kCtrlTagNoteLabelText12);
 
     pGraphics->AttachControl(navigationSyn1Seq, kCtrlTagNavigationSyn1Seq);
     pGraphics->AttachControl(navigationSyn2Seq, kCtrlTagNavigationSyn2Seq);
