@@ -31,33 +31,11 @@ The project submission consists of three parts:
 (1) Working code that can be downloaded via github
 (2) A written project report.
 (3) A brief video demonstrating your code in action.
-
-Details on the requirements and marking for each component.
-
-Research Report
-
-We start with (2) the written project report. The project report should identify and motivate a single Research Question. It should then identify the key research publications that were read and analysed in regards to this research question in a manner similar to that demontrated in the discussion class. With regard to the key research publications, you should have a Literature Review Section which does the following:
-
-- Identify current state of the art or understanding with regards to the research question
-- Identify methods or approaches that can be taken to answer your research question (this would often be various github codes available to start your exploration) and why you selected these methods and their advantages and disadvantages.
-- Identify any unknown understandings that arise when reading the background literature and include explanations for concepts you had to learn which were new to you
-
-After clarifying the current state of the art and methods of approach, you should describe your work in a Methods Section. With regards to the Methods Section, you should describe the approach/method that you are taking to address and answer your research question. You may not have completed all steps of the method/approach in your actual working, but you should describe the full intended method to answer the research question (the research work). The Methods Section should include:
-
-- A complete description of the method and a justification/explanation of how this approach should be able to provide some form of answer to your research question.
-- Clarify any new tools or techniques you had to learn about to understand and perform the methods
-
-After clarifying the Methods for your research, you should describe the results of your exploration. In other words, you will have developed some code and/or model that attempts to address the research question. After you implement the code/model, you should describe the results that you obtain when conducting various sets of tests. The set of tests should be sufficient to provide a reasonable understanding and coverage of your code/model's performance. The Results Section should include:
-
-- Presentation of results in an intutive and clear form - this could be performance graphs, confusion matrices for classifiers, accuracy tables, etc. It depends on your research question, what the best result presentation should be. Computational efficiencey, training time, model complexity can also be included in the results. For example, simpler models may performance less well compared to more complicated models. You might vary the assumptions in the model and these may give varying results/performance and these results should be presented in a clear manner. Variation of the inputs to the model may also influence performance, which can be another type of result that can be presented graphically or via table. 
-- The results section should include sufficient words to accompany the graphs and tables so that the reader can easily follow and understand the results.
-
-The final part of your report should be a Discussion/Conclusion section that indicates, your interpretation of what has been accomplished on the way to answering your research question. Have you fully answered the question, made a few small steps toward answering a part of the question? - This should be described. You should describe what worked well and what did not work and provide some explanation. You should compare the results in context of what has already been done - is your work consistent with previous work, contradicting previous work, or simply extending current understanding (in your opinion - the work is brand new, so not much direct comparison can be made).
 \end{comment}
 
 \maketitle
 
-\section{Project Overview}
+\section{Research Question}
 
 \quote{How do different oscillator anti-aliasing techniques and digital filter architectures influence the relationship between audio fidelity and computational efficiency in real-time browser-based synthesis?\cite{va_filter}}
 
@@ -87,15 +65,40 @@ Browser-Based Synthesis:
 
 \end{comment}
 
-\section{Definitions}
+\input{01_literature_review}
+\begin{comment}
+Research Report
 
-\section{Background and Motivation}
+We start with (2) the written project report. The project report should identify and motivate a single Research Question. It should then identify the key research publications that were read and analysed in regards to this research question in a manner similar to that demontrated in the discussion class. With regard to the key research publications, you should have a Literature Review Section which does the following:
 
-\section{Proposed Methodology}
+- Identify current state of the art or understanding with regards to the research question
+- Identify methods or approaches that can be taken to answer your research question (this would often be various github codes available to start your exploration) and why you selected these methods and their advantages and disadvantages.
+- Identify any unknown understandings that arise when reading the background literature and include explanations for concepts you had to learn which were new to you
+\end{comment}
 
-\section{Expected Outcomes}
+\input{02_methods}
+\begin{comment}
+After clarifying the current state of the art and methods of approach, you should describe your work in a Methods Section. With regards to the Methods Section, you should describe the approach/method that you are taking to address and answer your research question. You may not have completed all steps of the method/approach in your actual working, but you should describe the full intended method to answer the research question (the research work). The Methods Section should include:
 
-\section{Timeline}
+- A complete description of the method and a justification/explanation of how this approach should be able to provide some form of answer to your research question.
+- Clarify any new tools or techniques you had to learn about to understand and perform the methods
+\end{comment}
+
+\input{03_results}
+\begin{comment}
+After clarifying the Methods for your research, you should describe the results of your exploration. In other words, you will have developed some code and/or model that attempts to address the research question. After you implement the code/model, you should describe the results that you obtain when conducting various sets of tests. The set of tests should be sufficient to provide a reasonable understanding and coverage of your code/model's performance. The Results Section should include:
+
+- Presentation of results in an intutive and clear form - this could be performance graphs, confusion matrices for classifiers, accuracy tables, etc. It depends on your research question, what the best result presentation should be. Computational efficiencey, training time, model complexity can also be included in the results. For example, simpler models may performance less well compared to more complicated models. You might vary the assumptions in the model and these may give varying results/performance and these results should be presented in a clear manner. Variation of the inputs to the model may also influence performance, which can be another type of result that can be presented graphically or via table. 
+- The results section should include sufficient words to accompany the graphs and tables so that the reader can easily follow and understand the results.
+\end{comment}
+
+\input{04_discussion}
+\begin{comment}
+The final part of your report should be a Discussion/Conclusion section that indicates, your interpretation of what has been accomplished on the way to answering your research question. Have you fully answered the question, made a few small steps toward answering a part of the question? - This should be described. You should describe what worked well and what did not work and provide some explanation. You should compare the results in context of what has already been done - is your work consistent with previous work, contradicting previous work, or simply extending current understanding (in your opinion - the work is brand new, so not much direct comparison can be made).
+\end{comment}
+
+\section{Conclusion}
+Hello world
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
