@@ -40,7 +40,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamFilterSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamFilterRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-  GetParam(kParamFilterLFO)->InitDouble("LFO RATE", 0., 0., 20., 1., "Hz", IParam::kFlagsNone, "LFO", IParam::ShapePowCurve(3.) );
+  GetParam(kParamFilterLFO)->InitDouble("LFO RATE", 0., 0., 20., 0.1, "Hz", IParam::kFlagsNone, "LFO", IParam::ShapePowCurve(3.) );
   GetParam(kParamFilterCoreZDF)->InitBool("IIR/ZDF", false);
 
 #if IPLUG_EDITOR // Code only relevant to IPlugWasmUI...
