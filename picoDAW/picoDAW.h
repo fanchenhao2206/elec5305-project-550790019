@@ -28,11 +28,12 @@ enum EParams
   kParamFilterCoreIdx,
   kParamFilterCutoff,
   kParamFilterResonance,
+  kParamFilterTypeIdx,
   kParamFilterAttack,
   kParamFilterDecay,
   kParamFilterSustain,
   kParamFilterRelease,
-  kParamFilterTypeIdx,
+  kParamFilterLFO,
 
   kNumParams
 };
@@ -107,6 +108,7 @@ enum EControlTags
   kCtrlTagFilterDecayKnob,
   kCtrlTagFilterSustainKnob,
   kCtrlTagFilterReleaseKnob,
+  kCtrlTagFilterLFOKnob,
 
   // TODO: to remove 
   kCtrlTagMeter,

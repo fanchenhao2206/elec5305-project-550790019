@@ -40,6 +40,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamFilterSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamFilterRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
+  GetParam(kParamFilterLFO)->InitDouble("LFO RATE", 0., 0., 20., 1., "Hz", IParam::kFlagsNone, "LFO", IParam::ShapePowCurve(3.) );
+
 #if IPLUG_EDITOR // Code only relevant to IPlugWasmUI...
   mMakeGraphicsFunc = [this]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -329,7 +331,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto sustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 2), kParamVoiceSustain, "SUSTAIN", style);
     auto releaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 1).SubRectVertical(4, 3), kParamVoiceRelease, "RELEASE", style);
 
-    auto filterPanel = new IPanelControl(sequencerBounds.SubRectHorizontal(2, 1), COLOR_WHITE, true);
+    auto filterPanel = new IPanelControl(sequencerBounds.SubRectHorizontal(2, 1).Union(noteLabelBounds), COLOR_WHITE, true);
     auto filterIdxSwitch = new IVSwitchControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 0), kParamFilterCoreIdx, "FILTER CORE", style);
     auto cutoffKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 1), kParamFilterCutoff, "CUTOFF", style);
     auto resonanceKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 2).SubRectVertical(4, 2), kParamFilterResonance, "RESONANCE", style);
@@ -339,6 +341,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto filterDecayKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 1), kParamFilterDecay, "DECAY", style);
     auto filterSustainKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 2), kParamFilterSustain, "SUSTAIN", style);
     auto filterReleaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 3), kParamFilterRelease, "RELEASE", style);
+
+    auto filterLFOKnob = new IVKnobControl(noteLabelBounds.SubRectVertical(4,0), kParamFilterLFO, "LFO RATE", style);
 
     // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
     //
@@ -398,6 +402,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(filterDecayKnob, kCtrlTagFilterDecayKnob);
     pGraphics->AttachControl(filterSustainKnob, kCtrlTagFilterSustainKnob);
     pGraphics->AttachControl(filterReleaseKnob, kCtrlTagFilterReleaseKnob);
+
+    pGraphics->AttachControl(filterLFOKnob, kCtrlTagFilterLFOKnob);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);
