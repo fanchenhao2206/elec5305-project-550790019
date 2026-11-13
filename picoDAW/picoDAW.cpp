@@ -535,18 +535,16 @@ void picoDAW::OnParamChangeUI(int paramIdx, EParamSource source)
 {
   if (auto pGraphics = GetUI()) {
     auto root = pGraphics->GetControlWithTag(kCtrlTagRoot)->As<RootUIControl>();
+    int screen = root->mScreen;
     double value = GetParam(paramIdx)->Value();
-    switch (paramIdx) {
-      case kParamKeyboardModeIdx:
-        pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
-        pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
-        pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
-        pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
-        pGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->Hide(static_cast<int>(value) != 2);
-        root->mKeyboardModeIdx = static_cast<int>(value);
-        break;
-      default:
-        break;
+    if (paramIdx == kParamKeyboardModeIdx && (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
+        screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2)) {
+      pGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(static_cast<int>(value) != 0);
+      pGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(static_cast<int>(value) != 1);
+      pGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(static_cast<int>(value) != 1);
+      pGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(static_cast<int>(value) != 1);
+      pGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->Hide(static_cast<int>(value) != 2);
+      root->mKeyboardModeIdx = static_cast<int>(value);
     }
   }
 }
