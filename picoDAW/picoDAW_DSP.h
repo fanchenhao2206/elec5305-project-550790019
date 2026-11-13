@@ -38,6 +38,9 @@ public:
     // from the single gain and sustain values given to us in mParamsToSmooth via UI updates etc.
     mParamSmoother.ProcessBlock(mParamsToSmooth, mModulations.GetList(), nFrames); 
 
+    // TODO: should not be global to DSP; Ideally one per voice...
+    mLFO.ProcessBlock(mModulations.GetList()[kModLFOSmoother], nFrames, qnPos, transportIsRunning, tempo);
+
     // Now we pass in that list of individual frame-by-frame smoothed sustain values, to the 
     // instrument. Inside mSynth, already contains the A, D, and R durations, and note frequency
     // too; these are all single values that don't require smoothing in between ProcessBlocks...
@@ -58,6 +61,9 @@ public:
     // This function is called once on plugin load...
     mSynth.SetSampleRateAndBlockSize(sampleRate, blockSize);
     mSynth.Reset();
+
+    // TODO: should not be global to DSP; Ideally one per voice...
+    mLFO.SetSampleRate(sampleRate);
 
     // Initialise mModulations/Data, which ProcessBlock calls will use as buffer...
     mModulationsData.Resize(blockSize * kNumModulations);
@@ -121,6 +127,12 @@ public:
       case kParamFilterRelease:
         mSynth.GetVoice(voiceIdx)->mFilterEnv.SetStageTime(ADSREnvelope<sample>::EStage::kRelease, value); 
         break;
+      case kParamFilterLFO:
+        mLFO.SetFreqCPS(value); // TODO: should not be global to DSP; Ideally one per voice...
+        break;
+      case kParamFilterCoreZDF:
+        mSynth.GetVoice(voiceIdx)->SetFilterCoreZDF(static_cast<bool>(value));
+        break;
       default:
         break;
     }
@@ -138,4 +150,5 @@ public:
   WDL_PtrList<sample> mModulations; // Ptrlist for global modulations
   LogParamSmooth<sample, kNumModulations> mParamSmoother;
   sample mParamsToSmooth[kNumModulations];
+  LFO<sample> mLFO; // TODO: should not be global to DSP; Ideally one per voice...
 };

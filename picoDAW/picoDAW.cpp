@@ -28,7 +28,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
 
   GetParam(kParamSynthCoreIdx)->InitEnum("Osc. Core", 0, { "SINE", "TRIANGLE", "SAW", "SQUARE" });
   GetParam(kParamSynthCoreAntiAliasing)->InitBool("ANTI ALIASING", false);
-  GetParam(kParamFilterCoreIdx)->InitEnum("Filter Core", 0, { "STATEVARIABLE", "BIQUADIIR", "MOOGLADDER" });
+  GetParam(kParamFilterCoreIdx)->InitEnum("Filter Core", 0, { "NORMAL", "LADDER" });
 
   GetParam(kParamFilterCutoff)->InitDouble("Cutoff", 2000., 20., 20000., 1., "Hz", IParam::kFlagsNone, "Filter", IParam::ShapePowCurve(3.) );
   GetParam(kParamFilterResonance)->InitDouble("Resonance", 0.1, 0.1, 100., 0.1, "%", IParam::kFlagsNone, "Filter");
@@ -40,7 +40,8 @@ picoDAW::picoDAW(const InstanceInfo& info)
   GetParam(kParamFilterSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
   GetParam(kParamFilterRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
 
-  GetParam(kParamFilterLFO)->InitDouble("LFO RATE", 0., 0., 20., 1., "Hz", IParam::kFlagsNone, "LFO", IParam::ShapePowCurve(3.) );
+  GetParam(kParamFilterLFO)->InitDouble("LFO RATE", 0., 0., 150., 1., "Hz", IParam::kFlagsNone, "LFO", IParam::ShapePowCurve(3.) );
+  GetParam(kParamFilterCoreZDF)->InitBool("IIR/ZDF", false);
 
 #if IPLUG_EDITOR // Code only relevant to IPlugWasmUI...
   mMakeGraphicsFunc = [this]() {
@@ -343,6 +344,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     auto filterReleaseKnob = new IVKnobControl(sequencerBounds.SubRectHorizontal(4, 3).SubRectVertical(4, 3), kParamFilterRelease, "RELEASE", style);
 
     auto filterLFOKnob = new IVKnobControl(noteLabelBounds.SubRectVertical(4,0), kParamFilterLFO, "LFO RATE", style);
+    auto filterCoreZDFToggle = new IVToggleControl(noteLabelBounds.SubRectVertical(4,1), kParamFilterCoreZDF, "", style, "ZDF", "ZDF");
 
     // TODO: Sampler controls; Break sequencerBounds into a 4x4 grid...
     //
@@ -404,6 +406,7 @@ picoDAW::picoDAW(const InstanceInfo& info)
     pGraphics->AttachControl(filterReleaseKnob, kCtrlTagFilterReleaseKnob);
 
     pGraphics->AttachControl(filterLFOKnob, kCtrlTagFilterLFOKnob);
+    pGraphics->AttachControl(filterCoreZDFToggle, kCtrlTagFilterCoreZDFToggle);
 
     pGraphics->AttachControl(midiSeq, kCtrlTagMidiSequencer);
     pGraphics->AttachControl(gateSeq, kCtrlTagGateSequencer);

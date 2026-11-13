@@ -34,6 +34,7 @@ enum EParams
   kParamFilterSustain,
   kParamFilterRelease,
   kParamFilterLFO,
+  kParamFilterCoreZDF,
 
   kNumParams
 };
@@ -109,6 +110,7 @@ enum EControlTags
   kCtrlTagFilterSustainKnob,
   kCtrlTagFilterReleaseKnob,
   kCtrlTagFilterLFOKnob,
+  kCtrlTagFilterCoreZDFToggle,
 
   // TODO: to remove 
   kCtrlTagMeter,

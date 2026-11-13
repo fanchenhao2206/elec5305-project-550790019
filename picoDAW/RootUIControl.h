@@ -71,6 +71,7 @@ public:
     auto filterSustainKnob = mGraphics->GetControlWithTag(kCtrlTagFilterSustainKnob)->As<IVKnobControl>();
     auto filterReleaseKnob = mGraphics->GetControlWithTag(kCtrlTagFilterReleaseKnob)->As<IVKnobControl>();
     auto filterLFOKnob = mGraphics->GetControlWithTag(kCtrlTagFilterLFOKnob)->As<IVKnobControl>();
+    auto filterCoreZDFToggle = mGraphics->GetControlWithTag(kCtrlTagFilterCoreZDFToggle)->As<IVToggleControl>();
 
     auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVNoteSequencerControl>();
     auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVStepValueControl>();
@@ -189,6 +190,7 @@ public:
       filterSustainKnob->Hide(false);
       filterReleaseKnob->Hide(false);
       filterLFOKnob->Hide(false);
+      filterCoreZDFToggle->Hide(false);
     } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // TODO: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds

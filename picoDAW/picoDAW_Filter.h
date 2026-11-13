@@ -283,4 +283,110 @@ private:
   double mT[NC][4] = {}; // cached tanh of each stage
 };
 
+enum class EZDFLadderMode
+{
+  LowPass24 = 0,
+  LowPass12,
+  HighPass24,
+  BandPass,
+  NumModes
+};
+ 
+template <typename T = double, int NC = 1>
+class ZDFLadderFilter : public picoDAWFilter<T, NC>
+{
+public:
+  ZDFLadderFilter(EZDFLadderMode mode = EZDFLadderMode::LowPass24, double freqCPS = 1000.)
+  {
+    mMode = mode;
+    this->mFreq = freqCPS;
+  }
+ 
+  void SetMode(EZDFLadderMode mode) { mMode = mode; }
+ 
+  void SetMode(EMode mode) override
+  {
+    switch (mode)
+    {
+      case kHighPass:
+      case kHighPassShelf: SetMode(EZDFLadderMode::HighPass24); break;
+      case kBandPass:
+      case kPeak:
+      case kBell:          SetMode(EZDFLadderMode::BandPass); break;
+      default:             SetMode(EZDFLadderMode::LowPass24); break;
+    }
+  }
+ 
+  void SetDrive(double drive) { mDrive = Clip(drive, 0.1, 10.); }
+ 
+  inline T Process(T input, int channel = 0) override
+  {
+    assert(channel < NC);
+    this->Refresh();
+ 
+    double* s = mS[channel];
+    const double in = mDrive * static_cast<double>(input);
+ 
+    // Closed-form solve of the feedback loop:
+    //   y4 = G^4 * u + S,  u = in - k * y4
+    const double S = mG3b * s[0] + mG2b * s[1] + mGb * s[2] + mB * s[3];
+    const double y4lin = (mG4 * in + S) * mInvDen;
+    double u = in - mK * y4lin;
+    u = std::tanh(u);
+ 
+    // Run the four TPT one-poles with the resolved input
+    double y[4];
+    double x = u;
+    for (auto i = 0; i < 4; i++)
+    {
+      const double v = (x - s[i]) * mG;
+      y[i] = v + s[i];
+      s[i] = y[i] + v;
+      x = y[i];
+    }
+ 
+    double out = 0.;
+    switch (mMode)
+    {
+      case EZDFLadderMode::LowPass24:  out = y[3]; break;
+      case EZDFLadderMode::LowPass12:  out = y[1]; break;
+      case EZDFLadderMode::BandPass:   out = 2. * (y[1] - y[3]); break;
+      case EZDFLadderMode::HighPass24: out = u - 4. * y[0] + 6. * y[1] - 4. * y[2] + y[3]; break;
+      default: break;
+    }
+    return static_cast<T>(out);
+  }
+ 
+  void Reset() override
+  {
+    for (auto c = 0; c < NC; c++)
+      for (auto i = 0; i < 4; i++) mS[c][i] = 0.;
+  }
+ 
+protected:
+  void UpdateCoefficients() override
+  {
+    const double g = std::tan(PI * this->mFreq / this->mSampleRate);
+    mG = g / (1. + g);   // one-pole gain
+    mB = 1. - mG;        // state feed-through, = 1 / (1 + g)
+ 
+    const double G2 = mG * mG;
+    mG4 = G2 * G2;
+    mG3b = G2 * mG * mB;
+    mG2b = G2 * mB;
+    mGb = mG * mB;
+ 
+    const double res = Clip((this->mQ - 0.707) / (20. - 0.707), 0., 1.);
+    mK = 4. * res; // 4 = self-oscillation (bounded by the tanh)
+    mInvDen = 1. / (1. + mK * mG4);
+  }
+ 
+private:
+  EZDFLadderMode mMode = EZDFLadderMode::LowPass24;
+  double mG = 0., mB = 1., mG4 = 0., mG3b = 0., mG2b = 0., mGb = 0.;
+  double mK = 0., mInvDen = 1.;
+  double mDrive = 1.;
+  double mS[NC][4] = {};
+};
+
 END_IPLUG_NAMESPACE

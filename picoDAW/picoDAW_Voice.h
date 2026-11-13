@@ -40,6 +40,7 @@ public:
     mStateVariableFilter = new StateVariableFilter<sample>();
     mBiquadIIRFilter = new BiquadIIRFilter<sample>();
     mMoogLadderFilter = new MoogLadderFilter<sample>();
+    mZDFLadderFilter = new ZDFLadderFilter<sample>();
 
     mFilter = mStateVariableFilter; // FIXME: also buggy...
 
@@ -88,18 +89,39 @@ public:
     UpdateSynthCore();
   }
 
+  void UpdateFilterCore()
+  {
+    if (!mIsZDF) {  
+      if (mFilterCoreIdx == 0) {
+        mFilter = mBiquadIIRFilter; // Normal IIR
+      } else if (mFilterCoreIdx == 1) {
+        mFilter = mMoogLadderFilter; // Ladder IIR
+      } else {
+        // TODO: throw error...
+        assert(false);
+      }
+    } else {
+      if (mFilterCoreIdx == 0) {
+        mFilter = mStateVariableFilter; // Normal ZDF
+      } else if (mFilterCoreIdx == 1) {
+        mFilter = mZDFLadderFilter; // Ladder ZDF
+      } else {
+        // TODO: throw error...
+        assert(false);
+      }
+    } 
+  }
+
   void SetFilterCore(int filterCoreIdx) override
   {
-    if (filterCoreIdx == 0) {
-      mFilter = mStateVariableFilter;
-    } else if (filterCoreIdx == 1) {
-      mFilter = mBiquadIIRFilter;
-    } else if (filterCoreIdx == 2) {
-      mFilter = mMoogLadderFilter;
-    } else {
-      // TODO: throw error...
-      assert(false);
-    }
+    mFilterCoreIdx = filterCoreIdx;
+    UpdateFilterCore();
+  }
+
+  void SetFilterCoreZDF(bool isZDF) override
+  {
+    mIsZDF = isZDF;
+    UpdateFilterCore();
   }
 
   void SetFilterType(int filterTypeIdx) override
@@ -152,9 +174,12 @@ public:
     double pitch = mInputs[kVoiceControlPitch].endValue;
     double osc1Freq = 440. * pow(2., pitch + static_cast<double>(mOctave));
 
+    const double lfoDepth = 2.0;
+
     for (int i = startIdx; i < startIdx + nFrames; i++) {
       mFilter->SetMode(static_cast<EMode>(mFilterTypeIdx));
-      mFilter->SetFreqCPS(mCutoffFreq * pow(100., mFilterEnv.Process(inputs[kModFilterSustainSmoother][i])));
+      mFilter->SetFreqCPS(mCutoffFreq *
+        pow(2., mFilterEnv.Process(inputs[kModFilterSustainSmoother][i]) + lfoDepth * inputs[kModLFOSmoother][i]));
       mFilter->SetQ(mResonancePercentage);
 
       outputs[0][i] += mFilter->Process(mOSC->Process(osc1Freq) * mAMPEnv.Process(inputs[kModSustainSmoother][i]) * mGain);
@@ -176,6 +201,7 @@ public:
     mStateVariableFilter->SetSampleRate(sampleRate);
     mBiquadIIRFilter->SetSampleRate(sampleRate);
     mMoogLadderFilter->SetSampleRate(sampleRate);
+    mZDFLadderFilter->SetSampleRate(sampleRate);
     
     mAMPEnv.SetSampleRate(sampleRate);
     mFilterEnv.SetSampleRate(sampleRate);
@@ -205,9 +231,13 @@ private:
   IFilter<sample> *mStateVariableFilter; // Default filter provided by IPlug...
   IFilter<sample> *mBiquadIIRFilter; // Custom filters implementing IFilter interface...
   IFilter<sample> *mMoogLadderFilter;
+  IFilter<sample> *mZDFLadderFilter;
 
   int mSynthCoreIdx;
   bool mAntiAliasing;
+
+  int mFilterCoreIdx;
+  bool mIsZDF;
 
   int mOctave;
   int mFilterTypeIdx;
