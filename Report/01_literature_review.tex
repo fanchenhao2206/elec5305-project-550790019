@@ -178,7 +178,7 @@ Finally, the integrator states are updated for the next sample by the following 
 in the sense that $y[n+1]$ will be calculated from these values. So, the ZDF SVF remains 
 an IIR filter---in the sense that state from previous samples are preserved for the calculation of 
 new samples---but its topology offers advantages over conventional biquad implementations when filter 
-parameters are modulated rapidly.
+parameters are modulated rapidly, improving filter stability. 
 \begin{comment}
 Taken together, these topologies represent a trade-off between computational cost, stability
 and fidelity to the analogue response. The biquad is the cheapest but the least robust under
