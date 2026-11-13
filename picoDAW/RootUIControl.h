@@ -18,78 +18,13 @@ public:
 
   void Update(EScreens screen)
   {
-    auto titleText = mGraphics->GetControlWithTag(kCtrlTagTitleText)->As<ITextControl>();
-    auto homeButton = mGraphics->GetControlWithTag(kCtrlTagHomeButton)->As<IVButtonControl>();
-    auto stepButton = mGraphics->GetControlWithTag(kCtrlTagStepButton)->As<IVButtonControl>();
-
-    auto noteLabelText01 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText01)->As<ITextControl>();
-    auto noteLabelText02 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText02)->As<ITextControl>();
-    auto noteLabelText03 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText03)->As<ITextControl>();
-    auto noteLabelText04 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText04)->As<ITextControl>();
-    auto noteLabelText05 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText05)->As<ITextControl>();
-    auto noteLabelText06 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText06)->As<ITextControl>();
-    auto noteLabelText07 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText07)->As<ITextControl>();
-    auto noteLabelText08 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText08)->As<ITextControl>();
-    auto noteLabelText09 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText09)->As<ITextControl>();
-    auto noteLabelText10 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText10)->As<ITextControl>();
-    auto noteLabelText11 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText11)->As<ITextControl>();
-    auto noteLabelText12 = mGraphics->GetControlWithTag(kCtrlTagNoteLabelText12)->As<ITextControl>();
-
-    auto navigationSyn1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq);
-    auto navigationSyn2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq);
-    auto navigationSyn3Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq);
-    auto navigationSyn4Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Seq);
-    auto navigationSamp1Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Seq);
-    auto navigationSamp2Seq = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Seq);
-    auto navigationSyn1Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Edit);
-    auto navigationSyn2Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Edit);
-    auto navigationSyn3Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Edit);
-    auto navigationSyn4Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Edit);
-    auto navigationSamp1Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Edit);
-    auto navigationSamp2Edit = mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Edit);
-
-    auto mixerButton = mGraphics->GetControlWithTag(kCtrlTagMixerButton)->As<IVButtonControl>();
-
-    auto coreIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagSynthCoreSwitch)->As<IVSwitchControl>();
-    auto coreAntiAliasToggle = mGraphics->GetControlWithTag(kCtrlTagSynthCoreAntiAliasingToggle)->As<IVToggleControl>();
-    auto octaveSwitch = mGraphics->GetControlWithTag(kCtrlTagVoiceOctaveSwitch)->As<IVSwitchControl>();
-    auto gainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceGainKnob)->As<IVKnobControl>();
-
-    auto attackKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceAttackKnob)->As<IVKnobControl>();
-    auto decayKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceDecayKnob)->As<IVKnobControl>();
-    auto sustainKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceSustainKnob)->As<IVKnobControl>();
-    auto releaseKnob = mGraphics->GetControlWithTag(kCtrlTagVoiceReleaseKnob)->As<IVKnobControl>();
-
-    auto filterPanel = mGraphics->GetControlWithTag(kCtrlTagFilterPanel)->As<IPanelControl>();
-    auto filterIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagFilterCoreSwitch)->As<IVSwitchControl>();
-    auto cutoffKnob = mGraphics->GetControlWithTag(kCtrlTagFilterCutoffKnob)->As<IVKnobControl>();
-    auto resonanceKnob = mGraphics->GetControlWithTag(kCtrlTagFilterResonanceKnob)->As<IVKnobControl>();
-    auto typeIdxSwitch = mGraphics->GetControlWithTag(kCtrlTagFilterTypeSwitch)->As<IVSwitchControl>();
-
-    auto filterAttackKnob = mGraphics->GetControlWithTag(kCtrlTagFilterAttackKnob)->As<IVKnobControl>();
-    auto filterDecayKnob = mGraphics->GetControlWithTag(kCtrlTagFilterDecayKnob)->As<IVKnobControl>();
-    auto filterSustainKnob = mGraphics->GetControlWithTag(kCtrlTagFilterSustainKnob)->As<IVKnobControl>();
-    auto filterReleaseKnob = mGraphics->GetControlWithTag(kCtrlTagFilterReleaseKnob)->As<IVKnobControl>();
-    auto filterLFOKnob = mGraphics->GetControlWithTag(kCtrlTagFilterLFOKnob)->As<IVKnobControl>();
-    auto filterCoreZDFToggle = mGraphics->GetControlWithTag(kCtrlTagFilterCoreZDFToggle)->As<IVToggleControl>();
-
-    auto midiSeq = mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->As<IVNoteSequencerControl>();
-    auto gateSeq = mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->As<IVStepValueControl>();
-    auto gateLabelText01 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->As<ITextControl>();
-    auto gateLabelText02 = mGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->As<ITextControl>();
-    auto velocitySeq = mGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->As<IVStepValueControl>();
-    auto keyboard = mGraphics->GetControlWithTag(kCtrlTagKeyboard)->As<IVKeyboardControl>();
-    auto keyboardModeSwitch = mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->As<IVSwitchControl>();
-    auto playToggle = mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->As<IVToggleControl>();
-    auto soloToggle = mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->As<IVToggleControl>();
-
     // Hide all controls...
     for (auto ctrlTag : mGraphics->GetControlTags()) {
       ctrlTag.second->Hide(true); // Manually unhide later...
       ctrlTag.second->SetDisabled(false); // Manually disable later...
     }
 
-    // Update titleText control...
+    // Update controls...
     std::string str = "";
     switch (screen) {
       case kScreenNavigation:
@@ -140,78 +75,81 @@ public:
         str = "UNIMPLEMENTED";
         break;
     }
-    titleText->SetStr(str.c_str());
+    mGraphics->GetControlWithTag(kCtrlTagTitleText)->As<ITextControl>()->SetStr(str.c_str());
+
+    // TODO: the remaining controls... (like sequencer and editor)
+    //
 
     // Reveal only the controls relevant to the new screen we are changing to...
-    homeButton->Hide(false);
-    playToggle->Hide(false);
-    soloToggle->Hide(false); soloToggle->SetDisabled(true); // TODO: remove this solo disable when mixer done...
-    titleText->Hide(false);
-    stepButton->Hide(false); stepButton->SetDisabled(true); // TODO: remove this step disable when step done...
+    mGraphics->GetControlWithTag(kCtrlTagHomeButton)->Hide(false);
+    mGraphics->GetControlWithTag(kCtrlTagPlayToggle)->Hide(false);
+    mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->SetDisabled(true); // TODO: remove this solo disable when mixer done...
+    mGraphics->GetControlWithTag(kCtrlTagTitleText)->Hide(false);
+    mGraphics->GetControlWithTag(kCtrlTagStepButton)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagStepButton)->SetDisabled(true); // TODO: remove this step disable when step done...
     if (screen == kScreenSequencerSyn1 || screen == kScreenSequencerSyn2 || screen == kScreenSequencerSyn3 || screen == kScreenSequencerSyn4 ||
         screen == kScreenSequencerSamp1 || screen == kScreenSequencerSamp2) {
       int sync = mKeyboardModeIdx;
       std::cout << sync << std::endl;
-      keyboard->Hide(sync != 0);
-      gateSeq->Hide(sync != 1);
-      gateLabelText01->Hide(sync != 1);
-      gateLabelText02->Hide(sync != 1);
-      velocitySeq->Hide(sync != 2);
-      midiSeq->Hide(false);
-      keyboardModeSwitch->Hide(false);
-      noteLabelText01->Hide(false);
-      noteLabelText02->Hide(false);
-      noteLabelText03->Hide(false);
-      noteLabelText04->Hide(false);
-      noteLabelText05->Hide(false);
-      noteLabelText06->Hide(false);
-      noteLabelText07->Hide(false);
-      noteLabelText08->Hide(false);
-      noteLabelText09->Hide(false);
-      noteLabelText10->Hide(false);
-      noteLabelText11->Hide(false);
-      noteLabelText12->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagKeyboard)->Hide(sync != 0);
+      mGraphics->GetControlWithTag(kCtrlTagGateSequencer)->Hide(sync != 1);
+      mGraphics->GetControlWithTag(kCtrlTagGateLabelText01)->Hide(sync != 1);
+      mGraphics->GetControlWithTag(kCtrlTagGateLabelText02)->Hide(sync != 1);
+      mGraphics->GetControlWithTag(kCtrlTagVelocitySequencer)->Hide(sync != 2);
+      mGraphics->GetControlWithTag(kCtrlTagMidiSequencer)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagKeyboardModeSwitch)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText01)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText02)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText03)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText04)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText05)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText06)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText07)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText08)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText09)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText10)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText11)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagNoteLabelText12)->Hide(false);
     } else if (screen == kScreenEditorSyn1 || screen == kScreenEditorSyn2 || screen == kScreenEditorSyn3 || screen == kScreenEditorSyn4) {
-      coreIdxSwitch->Hide(false);
-      coreAntiAliasToggle->Hide(false);
-      octaveSwitch->Hide(false);
-      gainKnob->Hide(false);
-      attackKnob->Hide(false);
-      decayKnob->Hide(false);
-      sustainKnob->Hide(false);
-      releaseKnob->Hide(false);
-      filterPanel->Hide(false);
-      filterIdxSwitch->Hide(false);
-      cutoffKnob->Hide(false);
-      resonanceKnob->Hide(false);
-      typeIdxSwitch->Hide(false);
-      filterAttackKnob->Hide(false);
-      filterDecayKnob->Hide(false);
-      filterSustainKnob->Hide(false);
-      filterReleaseKnob->Hide(false);
-      filterLFOKnob->Hide(false);
-      filterCoreZDFToggle->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagSynthCoreSwitch)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagSynthCoreAntiAliasingToggle)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceOctaveSwitch)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceGainKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceAttackKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceDecayKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceSustainKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagVoiceReleaseKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterPanel)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterCoreSwitch)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterCutoffKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterResonanceKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterTypeSwitch)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterAttackKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterDecayKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterSustainKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterReleaseKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterLFOKnob)->Hide(false);
+      mGraphics->GetControlWithTag(kCtrlTagFilterCoreZDFToggle)->Hide(false);
     } else if (screen == kScreenEditorSamp1 || screen == kScreenEditorSamp2) {
       // sampler->Hide(false);    // TODO: the sampler screen, edit what sample is loaded
                                   // takes up the sequencerBounds
     } else /* if (screen == kScreenNavigation) */ {
-      navigationSyn1Seq->Hide(false); // For now just syn1 sequencer...
-      navigationSyn2Seq->Hide(false); navigationSyn2Seq->SetDisabled(true);
-      navigationSyn3Seq->Hide(false); navigationSyn3Seq->SetDisabled(true);
-      navigationSyn4Seq->Hide(false); navigationSyn4Seq->SetDisabled(true);
-      navigationSamp1Seq->Hide(false); navigationSamp1Seq->SetDisabled(true);
-      navigationSamp2Seq->Hide(false); navigationSamp2Seq->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Seq)->Hide(false); // For now just syn1 sequencer...
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Seq)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Seq)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Seq)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Seq)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Seq)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Seq)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Seq)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Seq)->SetDisabled(true);
 
-      navigationSyn1Edit->Hide(false); // For now just syn1 edit...
-      navigationSyn2Edit->Hide(false); navigationSyn2Edit->SetDisabled(true);
-      navigationSyn3Edit->Hide(false); navigationSyn3Edit->SetDisabled(true);
-      navigationSyn4Edit->Hide(false); navigationSyn4Edit->SetDisabled(true);
-      navigationSamp1Edit->Hide(false); navigationSamp1Edit->SetDisabled(true);
-      navigationSamp2Edit->Hide(false); navigationSamp2Edit->SetDisabled(true);
-      soloToggle->SetDisabled(true); // Except this disable!! Don't remove this disable!! Unless, can
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn1Edit)->Hide(false); // For now just syn1 edit...
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Edit)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn2Edit)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Edit)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn3Edit)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Edit)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSyn4Edit)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Edit)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSamp1Edit)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Edit)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagNavigationSamp2Edit)->SetDisabled(true);
+      mGraphics->GetControlWithTag(kCtrlTagSoloToggle)->SetDisabled(true); // Except this disable!! Don't remove this disable!! Unless, can
                                      // use mScreen (aka prev actual screen) to judge which one to solo,
                                      // in which case solo button should be valid on navigation screen...
-      mixerButton->Hide(false); mixerButton->SetDisabled(true); // TODO: remove all these disables when done...
+      mGraphics->GetControlWithTag(kCtrlTagMixerButton)->Hide(false); mGraphics->GetControlWithTag(kCtrlTagMixerButton)->SetDisabled(true); // TODO: remove all these disables when done...
     }
 
     // Finally, forget the previous mScreen, and transition to new screen...
