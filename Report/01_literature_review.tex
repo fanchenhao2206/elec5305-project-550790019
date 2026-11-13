@@ -67,8 +67,11 @@ oscillator frequency and $f_s$ the sampling frequency, a two-sample PolyBLEP res
   \end{cases}
 \end{equation}
 The corrected sawtooth is then obtained by subtracting this residual from the ideal but naive 
-sawtooth waveform $s(t)$,
-also smoothing the wrap-around over the samples adjacent to the discontinuity. The naive sawtooth 
+sawtooth waveform $s(t)$
+\begin{equation}
+  y(t) = s(t) - r(t) = (2t - 1) - r(t),
+\end{equation}
+which also smoothes the wrap-around over the samples adjacent to the discontinuity. The naive sawtooth 
 wave is chosen to be $s(t)=2t-1$ for simplicity of residual calculation and thus implementation 
 of PolyBLEP, because it reaches its minimal extreme of $s(t)=-1$ at $t=0$, and the maximum extreme 
 of $s(t)=1$ at $t=1$; the discontinuities exist at integer intervals.
@@ -107,4 +110,59 @@ the need for table selection and interpolation, which can introduce additional c
 may reduce flexibility when the waveform is dynamically modulated\cite{wavetable}.
 \end{comment}
 
+\subsection{Digital Filter Design Architectures}
+\noindent
+Filters shape the harmonic content of an oscillator's output. A lowpass filter attenuates components 
+above a cutoff frequency, a highpass filter
+attenuates those below it, and a bandpass filter passes a band around the cutoff while
+attenuating components on either side. In a synthesizer, the cutoff frequency and resonance
+are typically modulated in real time, so a digital filter must remain stable and accurate
+while its coefficients change from sample to sample.
 
+The biquad is the most widely used digital filter structure. It is a second-order infinite
+impulse response (IIR) filter with a transfer function
+\begin{equation}
+  H(z) = \frac{b_0 + b_1 z^{-1} + b_2 z^{-2}}{1 + a_1 z^{-1} + a_2 z^{-2}},
+\end{equation}
+whose coefficients are computed from the cutoff frequency, resonance and filter type, commonly
+using the closed-form expressions of the Audio EQ Cookbook\cite{cookbook}. Its advantages include low
+computational cost and the flexibility to obtain different filter responses through changes to the 
+numerator coefficients.
+
+However, its conventional difference-equation implementation presents
+some challenges under rapid real-time parameter modulation. Changes to the cutoff frequency or 
+resonance require recalculation of the filter 
+coefficients, while the internal delay states retain values generated under the previous coefficient 
+configuration. This mismatch can introduce transient artefacts during modulation\cite{biquad}.
+
+To address some of these limitations, the State Variable Filter (SVF) can be implemented using a 
+zero-delay feedback (ZDF) topology and a topology-preserving transform (TPT). Rather than implementing 
+the filter as a conventional difference equation, this structure uses integrator-equivalent states to 
+calculate the lowpass, bandpass and highpass responses. Specifically, the trapezoidal integration 
+method---a known mathematical technique for approximating integrals---allows the 
+feedback structure to be discretised without introducing an additional unit-sample delay into the 
+feedback path. This provides favourable numerical behaviour and makes the structure particularly 
+suitable for real-time modulation of cutoff frequency and resonance. To be clear, the ZDF SVF remains 
+an IIR filter, but its topology offers advantages over conventional biquad implementations when filter 
+parameters vary rapidly.
+
+The Moog ladder filter is a fourth-order lowpass structure comprising four cascaded one-pole
+stages with a global feedback path from the output to the input, which produces the resonance
+and the characteristic $24$\,dB per octave roll-off. Because the feedback loop contains four
+stages, a naive digital implementation that inserts a unit delay into the loop, as in early
+models such as that of Stilson and Smith, loses accuracy at high cutoff frequencies. The
+resonance is also coupled to the cutoff frequency, and the filter can become unstable at high
+resonance settings. In addition, only the lowpass response is available directly, so highpass
+and bandpass responses must be derived by combining the outputs of individual stages. The ZDF
+ladder resolves the delay-free loop by solving the nonlinear or linearised feedback equation
+for the current sample, again using trapezoidal integration, which preserves the cutoff and
+resonance behaviour of the analog circuit and improves stability, at a higher computational
+cost than the IIR ladder owing to the additional algebra, and potentially iterative solving
+when saturation is modelled\cite{moog}.
+
+Taken together, these topologies represent a trade-off between computational cost, stability
+and fidelity to the analogue response. The biquad is the cheapest but the least robust under
+modulation. The ZDF SVF offers a favourable balance, with accurate responses across all three
+filter modes at moderate cost. The Moog ladder offers a distinctive resonant character but at
+the greatest cost and complexity, and its ZDF form improves accuracy and stability over the IIR
+form at a further increase in computation.
