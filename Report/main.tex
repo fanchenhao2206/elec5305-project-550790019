@@ -13,7 +13,7 @@
 
 % \newcommand{\ttfont}[1]{{\fontfamily{cmtt}\selectfont #1}}
 
-\title{Design and Evaluation of Computationally Efficient Oscillator and Filter Architectures for Real-Time Browser-Based Digital Synthesis}
+\title{Exploring the Trade-offs Between Audio Fidelity and Computational Efficiency in a Custom Real-Time Browser-Based Synthesiser}
 \author{
 	Tim Fan (SID: 550790019) \\
 	fanchenhao2206 \\
@@ -24,8 +24,6 @@
 \begin{document}
 
 \begin{comment}
-https://www.w3.org/TR/audio-eq-cookbook/
-
 Project Submission Details
 
 The project submission consists of three parts:
@@ -61,9 +59,33 @@ The final part of your report should be a Discussion/Conclusion section that ind
 
 \section{Project Overview}
 
-\quote{How can computationally efficient oscillator anti-aliasing and digital filtering techniques be implemented in a real-time browser-based synthesizer while maintaining low computational complexity?}
+\quote{How do different oscillator anti-aliasing techniques and digital filter architectures influence the relationship between audio fidelity and computational efficiency in real-time browser-based synthesis?\cite{va_filter}}
 
-\cite{va_filter}
+\begin{comment}
+
+[1] https://www.w3.org/TR/audio-eq-cookbook/ 
+
+Sub-Questions:
+
+- How do naive, PolyBLEP, and PolyBLAMP methods compare in CPU cost versus high-frequency alias reduction across sawtooth, square, and triangle waves?
+- How do Biquad IIR, State Variable Filters (SVF), and Zero-Delay Feedback (ZDF) Moog ladder filters compare in stability, CPU usage, and filter response accuracy under lowpass, highpass, and bandpass configurations?
+
+Computational Overhead:
+- Method: Measure execution time per 128-sample block using performance.now() inside the AudioWorkletProcessor
+- Expected: Biquads will be cheapest; ZDF Moog and PolyBLAMP will consume more CPU cycles.
+
+Audio Fidelity (Aliasing):
+- Method: Spectral analysis / FFT snapshots of high notes (> 5kHz) to measure unwanted foldback frequencies.
+- Expected: Non-AA will show severe noise floor pollution; PolyBLEP/PolyBLAMP will cleanly suppress alias lines.
+
+Filter Stability:
+- Method: Sweep cutoff and resonance rapidly via automation; measure for feedback explosion or NaN errors.
+- Expected: Standard biquads will blow up or click under high modulation; ZDF filters will remain stable.
+
+Browser-Based Synthesis:
+- Also investigate how effectively these DSP algorithms can be implemented within the Web Audio API and AudioWorklet environment while maintaining reliable real-time audio processing.
+
+\end{comment}
 
 \section{Definitions}
 
