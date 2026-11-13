@@ -1,2 +1,110 @@
 \section{Literature Review}
-hello world
+\noindent
+Digital signal processing (DSP) refers to the manipulation of signals represented
+in discrete form, such as those stored or processed by computers. In computer music, DSP 
+provides the theoretical and practical foundation for digitally modelling and recreating the 
+behaviour of analog audio systems, including oscillators and filters. However, accurately 
+translating analog oscillators and filters into the digital domain presents several technical 
+challenges. Specifically, the choice of oscillator anti-aliasing techniques and digital filter 
+architectures introduces different considerations that influence the accuracy, stability, and 
+computational efficiency of the resulting audio. These considerations become particularly 
+important in real-time browser-based synthesis, where audio fidelity must be balanced against 
+computational constraints.
+
+This section examines these challenges through a review of existing 
+literature, focusing on the methods or approaches used or proposed to address them.
+
+\subsection{Digital Oscillators}
+\noindent
+Analog oscillators generate the fundamental voltage signals used in analog synthesisers,
+while digital oscillators aim to reproduce equivalent waveforms in the discrete-time domain.
+Common waveforms include the sine, sawtooth, square and triangle waves, each with distinct
+harmonic characteristics that contribute to its perceived timbre.
+
+A naive digital oscillator generates waveforms directly from mathematical functions or
+phase-based calculations. A sawtooth, for example, can be produced with a phase accumulator,
+which advances its phase on every sample by an amount determined by the oscillator frequency
+and the sample rate. The phase is mapped to an amplitude range and, once it reaches its
+maximum, wraps back to the minimum, producing the characteristic sawtooth shape. This abrupt
+jump is known as a \textit{discontinuity}, and it introduces infinitely many high-frequency 
+harmonics. The
+Nyquist--Shannon sampling theorem states that a signal can only be represented accurately if
+it contains no components above the Nyquist frequency, which is half the sampling frequency.
+A sawtooth always contains harmonics above this limit, so they cannot be represented and
+instead fold back into the audible range as inharmonic distortion known as aliasing.
+
+The problem worsens as the fundamental frequency rises. This applies to any waveform with
+discontinuities, such as the sawtooth and also the square wave, because a greater proportion of
+their harmonics then lies above the Nyquist frequency.
+
+\subsection{Anti-Aliasing Techniques}
+\noindent
+Anti-aliasing refers to techniques that reduce the effect of aliasing. One approach is the
+Band-Limited Step (BLEP) method. The idea is to replace the abrupt discontinuity in the naive
+waveform with a band-limited approximation, which reduces the high-frequency content introduced
+by the discontinuity and so improves the accuracy of the eventual reconstruction.
+
+An ideal step is the integral of an impulse, and an ideal band-limited step is therefore
+the integral of a band-limited impulse, typically a windowed sinc function\cite{BLEP}. 
+Rather than synthesising the entire waveform from band-limited components, the BLEP method 
+computes only the \textit{residual}---the difference between the band-limited step and the naive 
+(non-band-limited) step---and applies it as a correction to the naive waveform in the immediate 
+vicinity of each discontinuity, reducing the effect of aliasing.
+
+A widely used variant is the polynomial BLEP (PolyBLEP), which approximates the residual
+with a low-order polynomial instead of a table of sinc-derived values\cite{PolyBLEP}. For a 
+normalised phase
+$t \in [0, 1)$ and a per-sample phase increment $\Delta t = f_0 / f_s$, where $f_0$ is the
+oscillator frequency and $f_s$ the sampling frequency, a two-sample PolyBLEP residual is given by
+\begin{equation}
+  r(t) =
+  \begin{cases}
+    2\dfrac{t}{\Delta t} - \left(\dfrac{t}{\Delta t}\right)^{2} - 1,
+      & 0 \le t < \Delta t, \\[2ex]
+    \left(\dfrac{t - 1}{\Delta t}\right)^{2} + 2\dfrac{t - 1}{\Delta t} + 1,
+      & 1 - \Delta t < t < 1, \\[2ex]
+    0, & \text{otherwise.}
+  \end{cases}
+\end{equation}
+The corrected sawtooth is then obtained by subtracting this residual from the ideal but naive 
+sawtooth waveform $s(t)$,
+also smoothing the wrap-around over the samples adjacent to the discontinuity. The naive sawtooth 
+wave is chosen to be $s(t)=2t-1$ for simplicity of residual calculation and thus implementation 
+of PolyBLEP, because it reaches its minimal extreme of $s(t)=-1$ at $t=0$, and the maximum extreme 
+of $s(t)=1$ at $t=1$; the discontinuities exist at integer intervals.
+
+A square wave
+may be treated as the sum of two sawtooth-like discontinuities, one rising and one falling, so
+the same residual is applied at both transitions (with opposite sign). A triangle wave, being continuous, has no step discontinuities,
+but its first derivative is discontinuous; the slope discontinuity can be corrected with an
+analogous polynomial band-limited ramp (PolyBLAMP) residual\cite{PolyBLAMP}
+
+The principal advantages of PolyBLEP and PolyBLAMP are their low computational cost, the lack of 
+lookup tables,
+and suitability for real-time use with modulated frequency, since the correction depends
+only on the current phase and phase increment. Its limitation is that a low-order polynomial
+only approximates the ideal band-limited step, so some residual aliasing remains, particularly
+at high fundamental frequencies, where it is attenuated rather than eliminated.
+
+Alternative approaches offer different trade-offs. Oversampling reduces aliasing by generating 
+waveforms at higher sampling rates before filtering and decimation, but increases computational cost
+\cite{oversampling}. Wavetable synthesis uses precomputed band-limited waveforms to suppress harmonics 
+above the Nyquist frequency, but requires additional memory and table selection, reducing flexibility 
+especially during dynamic modulation\cite{wavetable}.
+\begin{comment}
+Alternative
+approaches offer other trade-offs
+between aliasing suppression, computational cost and flexibility. Oversampling improves anti-aliasing
+by generating the waveform at a higher sampling rate, thereby pushing aliasing components further above 
+the audible frequency range before low-pass filtering and decimation. 
+However, its limitation is the increased computational cost associated with generating and 
+filtering additional samples from the increased sampling rate\cite{oversampling}. Wavetable synthesis 
+improves aliasing suppression by using precomputed band-limited waveforms with progressively 
+reduced harmonic content at higher frequencies, ensuring that only harmonics below the Nyquist 
+frequency are used. However, its limitation is the memory required to store 
+multiple tables and 
+the need for table selection and interpolation, which can introduce additional complexity and 
+may reduce flexibility when the waveform is dynamically modulated\cite{wavetable}.
+\end{comment}
+
+
