@@ -103,4 +103,26 @@ This report compared naive, PolyBLEP and PolyBLAMP oscillators, and Biquad IIR a
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
+\appendix
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/[2]-square-no-aa.png}
+  \caption{Measuring computational complexity by using the Chrome browser's built-in tracing, recorded and inspected in the now-default Perfetto trace viewer UI.}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/[8]-36b5665b66c6-testcase1-edit.png}
+  \caption{Settings used to drive the filter output to instability, Experiment 3; LFO 150\,Hz, cutoff 57\,Hz, and resonance 100\%). Notice the switch for switching between IIR and ZDF filter, and the switch also for switching between the naive and anti-aliased oscillator cores.}
+  \label{fig:stability}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/[8]-36b5665b66c6-testcase1-seq.png}
+  \caption{The MIDI sequencer used for the experiments; by default the bottom control is a keyboard, and can be toggled to show a gate (aka legato/retrigger) sequencer, and a velocity sequencer too.}
+  \label{fig:stability}
+\end{figure}
+
 \end{document}
