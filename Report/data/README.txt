@@ -10,3 +10,5 @@ all computed using highest note on sequencer +2 octaves
 [6] saw (iir/zdf w 00Hz LFO) 59.20 vs 51.11 us
 
 [7] recording no/yes aa and comparing fft and aliasing energy
+
+[8] filter stability/instability; use the exploding obs capture
