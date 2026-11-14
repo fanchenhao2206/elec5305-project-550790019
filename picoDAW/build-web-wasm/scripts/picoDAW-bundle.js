@@ -126,9 +126,6 @@ window.Module = window.Module || {
      * @param {string} options.baseUrl - Base URL for loading scripts (default: '')
      */
     constructor(pluginName, options = {}) {
-      this.recChunks = [];
-      this.wavBlobUrl = null;
-
       this.pluginName = pluginName;
       this.pluginNameLC = pluginName.toLowerCase();
       this.uiModule = options.uiModule || options; // backwards compat: options can be uiModule directly
@@ -274,60 +271,10 @@ window.Module = window.Module || {
       this.uiModule = uiModule;
     }
 
-    makeWavUrl(chunks, sr) {
-      const numCh = chunks[0].length;
-      const frames = chunks.reduce((n, c) => n + c[0].length, 0);
-      const bytesPerSample = 4;
-      const dataBytes = frames * numCh * bytesPerSample;
-      const buf = new ArrayBuffer(44 + dataBytes);
-      const v = new DataView(buf);
-      const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-
-      str(0, 'RIFF'); v.setUint32(4, 36 + dataBytes, true); str(8, 'WAVE');
-      str(12, 'fmt '); v.setUint32(16, 16, true);
-      v.setUint16(20, 3, true);                       // format 3 = IEEE float
-      v.setUint16(22, numCh, true);
-      v.setUint32(24, sr, true);
-      v.setUint32(28, sr * numCh * bytesPerSample, true);
-      v.setUint16(32, numCh * bytesPerSample, true);
-      v.setUint16(34, 32, true);
-      str(36, 'data'); v.setUint32(40, dataBytes, true);
-
-      // interleave
-      let off = 44;
-      for (const c of chunks) {
-        for (let i = 0; i < c[0].length; i++) {
-          for (let ch = 0; ch < numCh; ch++) {
-            v.setFloat32(off, c[ch][i], true);
-            off += 4;
-          }
-        }
-      }
-      return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
-    }
-
-    showDownloadButton(url) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'picoDAW_30s.wav';
-      a.textContent = 'Download 30 s capture';
-      a.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;padding:8px;background:#fff;';
-      document.body.appendChild(a);
-    }
-
     _onDSPMessage(e) {
       const msg = e.data;
 
       switch (msg.verb) {
-        case 'recChunk':
-          this.recChunks.push(msg.channels);
-          break;
-        case 'recDone':
-          this.wavBlobUrl = this.makeWavUrl(this.recChunks, msg.sampleRate);
-          this.recChunks = [];
-          console.log('Recording done:', this.wavBlobUrl);
-          this.showDownloadButton(this.wavBlobUrl);
-          break;
         case 'SPVFD': // Send Parameter Value From Delegate
           this.emit('paramChange', { paramIdx: msg.paramIdx, value: msg.value });
           if (this.onParamChange) this.onParamChange(msg.paramIdx, msg.value);
