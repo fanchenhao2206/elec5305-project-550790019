@@ -45,7 +45,7 @@ The DSP code is organised in three main files.
 \paragraph{\texttt{picoDAW\_Voice.h}} defines a voice, which holds one instance of every algorithm under comparison and selects among them at run time through index parameters:
 \begin{itemize}
   \item \textbf{Oscillator cores} (via the \texttt{IOscillator} interface): the iPlug2 sine core; custom naive sawtooth, triangle and square cores; and custom band-limited sawtooth, triangle and square cores (PolyBLEP for the discontinuous waveforms, PolyBLAMP for the triangle).
-  \item \textbf{Filter cores} (via the \texttt{IFilter} interface): the iPlug2 ZDF state variable filter, and a custom Biquad IIR filter, both with three states set by \texttt{mFilterTypeIdx}; lowpass, highpass or bandpass. An IIR Moog ladder filter and ZDF ladder filter were also implemented, but are not discussed in this report.
+  \item \textbf{Filter cores} (via the \texttt{IFilter} interface): the ZDF state variable filter, reworked from the \texttt{SVF.h} filter included in IPlug2, and a custom Biquad IIR filter, both with three states set by \texttt{mFilterTypeIdx}; lowpass, highpass or bandpass. An IIR Moog ladder filter and ZDF ladder filter were also implemented, but are not discussed in this report.
 \end{itemize}
 A voice is thus configured by setting \texttt{mSynthCoreIdx}, \texttt{mAntiAliasing}, \texttt{mFilterCoreIdx}, \texttt{mIsZDF}, and the filter cutoff and resonance. Additionally, two ADSR envelopes were added to the signal chain for musical expression; one on the voice amplitude, and one on the filter cutoff. The custom oscillators and filters can be found implemented in \texttt{picoDAW\_Oscillator.h} and \texttt{picoDAW\_Filter.h} respectively.
 

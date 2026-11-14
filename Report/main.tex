@@ -97,7 +97,8 @@ The final part of your report should be a Discussion/Conclusion section that ind
 \end{comment}
 
 \section{Conclusion}
-Hello world
+\noindent
+This report compared naive, PolyBLEP and PolyBLAMP oscillators, and Biquad IIR and ZDF state variable filters, in a real-time browser-based synthesizer built with iPlug2 and WebAssembly. In this system the fidelity benefits were large and the computational costs small: PolyBLEP reduced aliasing energy by 19.82\,dB for a negligible change in processing time, the ZDF filter cost about 4\% more than the Biquad IIR, and only the ZDF filter remained stable under extreme modulation. All tested configurations used less than about 2.3\% of the available real-time budget for a single voice. These results indicate that, for this application, the more accurate algorithms are the better choice, since the saving from the simpler ones is too small to justify the loss in quality. The conclusions are limited by single measurements, partial coverage of waveforms and filter modes, and an informal stability test, so they should be read as a well-supported first answer to the research question and not as a complete one.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
