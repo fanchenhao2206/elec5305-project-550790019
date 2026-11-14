@@ -9,4 +9,4 @@ all computed using highest note on sequencer +2 octaves
 [5] saw (iir/zdf w 10Hz LFO) 56.76 vs 60.03 us
 [6] saw (iir/zdf w 00Hz LFO) 59.20 vs 51.11 us
 
-[7] 
+[7] recording no/yes aa and comparing fft and aliasing energy

@@ -3,109 +3,214 @@ clear;
 close all;
 clc;
 
-%% Load audio
-[x1, Fs1] = audioread('[7]-output1.wav');
-[x2, Fs2] = audioread('[7]-output2.wav');
+%% Configuration
+fundamental = 1760;
+Fs = 48000;
 
-% Select first channel
+files = {
+    '[7]-output1.wav'
+    '[7]-output2.wav'
+};
+
+names = {
+    'Naive (No Anti-Aliasing)'
+    'PolyBLEP'
+};
+
+%% Load audio
+[x1, Fs1] = audioread(files{1});
+[x2, Fs2] = audioread(files{2});
+
 x1 = x1(:,1);
 x2 = x2(:,1);
 
-% Ensure sample rates match
 assert(Fs1 == Fs2, 'Sample rates do not match!');
 
 Fs = Fs1;
 
-%% FFT analysis
-N1 = length(x1);
-N2 = length(x2);
+%% Analyse both signals
 
-% Apply Hann windows to reduce spectral leakage
-w1 = hann(N1);
-w2 = hann(N2);
+results = cell(2,1);
 
-X1 = fft(x1 .* w1);
-X2 = fft(x2 .* w2);
+for i = 1:2
 
-% Single-sided amplitude spectra
-P1 = abs(X1(1:floor(N1/2)+1)) / sum(w1);
-P2 = abs(X2(1:floor(N2/2)+1)) / sum(w2);
+    if i == 1
+        x = x1;
+    else
+        x = x2;
+    end
 
-P1(2:end-1) = 2*P1(2:end-1);
-P2(2:end-1) = 2*P2(2:end-1);
+    N = length(x);
 
-% Frequency axes
-f1 = Fs*(0:floor(N1/2))/N1;
-f2 = Fs*(0:floor(N2/2))/N2;
+    % Windowing
+    w = hann(N);
+    X = fft(x .* w);
 
-% Convert to dB
-P1_dB = 20*log10(P1 + eps);
-P2_dB = 20*log10(P2 + eps);
+    % Single-sided spectrum
+    P = abs(X(1:floor(N/2)+1)) / sum(w);
+    P(2:end-1) = 2*P(2:end-1);
 
-%% Find spectral peaks
+    f = Fs*(0:floor(N/2))/N;
 
-% Tune MinPeakProminence if too many or too few peaks appear
-[pks1, locs1] = findpeaks(P1_dB, f1, ...
-    'MinPeakProminence', 6, ...
-    'MinPeakDistance', 100);
+    % dB spectrum
+    PdB = 20*log10(P + eps);
 
-[pks2, locs2] = findpeaks(P2_dB, f2, ...
-    'MinPeakProminence', 6, ...
-    'MinPeakDistance', 100);
+    %% Expected harmonic frequencies
 
-%% Plot
-figure('Color', 'w', 'Position', [100 100 1200 800]);
+    maxHarmonic = floor((Fs/2) / fundamental);
 
-% Output 1: Without anti-aliasing
+    harmonicFreqs = (1:maxHarmonic)' * fundamental;
+
+    harmonicAmps = zeros(maxHarmonic,1);
+
+    for h = 1:maxHarmonic
+
+        [~, idx] = min(abs(f - harmonicFreqs(h)));
+
+        % Search nearby bins
+        search = max(1,idx-2):min(length(P),idx+2);
+
+        harmonicAmps(h) = max(P(search));
+
+    end
+
+    %% THD
+
+    V1 = harmonicAmps(1);
+
+    thd = sqrt(sum(harmonicAmps(2:end).^2)) / V1;
+
+    thd_dB = 20*log10(thd + eps);
+
+    %% Calculate expected aliased harmonic frequencies
+    %
+    % Sawtooth contains harmonics at:
+    % fundamental * n
+    %
+    % Harmonics above Nyquist fold back into
+    % the sampled frequency range.
+
+    maxN = 1000;
+
+    n = (1:maxN)';
+
+    harmonicFreq = n * fundamental;
+
+    % Fold frequencies into [0, Fs/2]
+    foldedFreq = abs(mod(harmonicFreq + Fs/2, Fs) - Fs/2);
+
+    % Identify harmonics above Nyquist
+    aliased = harmonicFreq > Fs/2;
+
+    aliasFreqs = foldedFreq(aliased);
+
+    % Exclude DC and frequencies coinciding with
+    % an in-band harmonic.
+    inBandHarmonics = harmonicFreq(harmonicFreq <= Fs/2);
+
+    aliasMask = true(size(aliasFreqs));
+
+    tolerance = max(Fs/N*3, 1);
+
+    for j = 1:length(aliasFreqs)
+
+        if any(abs(inBandHarmonics - aliasFreqs(j)) < tolerance)
+            aliasMask(j) = false;
+        end
+
+    end
+
+    aliasFreqs = aliasFreqs(aliasMask);
+
+    %% Estimate energy around predicted alias frequencies
+
+    aliasEnergy = 0;
+
+    for j = 1:length(aliasFreqs)
+
+        [~, idx] = min(abs(f - aliasFreqs(j)));
+
+        search = max(1,idx-2):min(length(P),idx+2);
+
+        aliasEnergy = aliasEnergy + sum(P(search).^2);
+
+    end
+
+    %% Store results
+
+    results{i}.f = f;
+    results{i}.P = P;
+    results{i}.PdB = PdB;
+    results{i}.harmonics = harmonicAmps;
+    results{i}.thd = thd;
+    results{i}.thd_dB = thd_dB;
+    results{i}.aliasEnergy = aliasEnergy;
+
+end
+
+%% Calculate alias energy improvement
+
+alias1 = results{1}.aliasEnergy;
+alias2 = results{2}.aliasEnergy;
+
+aliasImprovement = 10*log10((alias1 + eps)/(alias2 + eps));
+
+%% Print results
+
+fprintf('\n========== DSP ANALYSIS ==========\n');
+
+for i = 1:2
+
+    fprintf('\n%s\n', names{i});
+
+    fprintf('THD: %.4f %%\n', results{i}.thd*100);
+    fprintf('THD: %.2f dB\n', results{i}.thd_dB);
+
+    fprintf('Aliasing energy: %.8e\n', ...
+        results{i}.aliasEnergy);
+
+end
+
+fprintf('\nPolyBLEP alias energy improvement: %.2f dB\n', ...
+    aliasImprovement);
+
+%% Plot FFT comparison
+
+figure('Color','w');
+% figure('Color','w','Position',[100 100 1200 900]);
 subplot(2,1,1);
 
-plot(f1, P1_dB, 'b', 'LineWidth', 1);
+plot(results{1}.f, results{1}.PdB, ...
+    'Color',[0.85 0.25 0.25], 'LineWidth',1);
+
 hold on;
 
-plot(locs1, pks1, 'rv', ...
-    'MarkerFaceColor', 'r', ...
-    'MarkerSize', 5);
+plot(results{2}.f, results{2}.PdB, ...
+    'Color',[0.1 0.35 0.85], 'LineWidth',1);
 
+title('FFT Spectrum Comparison');
 xlabel('Frequency (Hz)');
 ylabel('Magnitude (dB)');
-title('Output 1 - Without Anti-Aliasing');
+legend(names);
 grid on;
 xlim([0 Fs/2]);
 
-for k = 1:length(pks1)
-    text(locs1(k), pks1(k)+3, ...
-        sprintf('%.0f Hz', locs1(k)), ...
-        'FontSize', 8, ...
-        'HorizontalAlignment', 'center');
-end
+%% Aliasing energy comparison
 
-% Output 2: With anti-aliasing
 subplot(2,1,2);
 
-plot(f2, P2_dB, 'b', 'LineWidth', 1);
-hold on;
+bar([results{1}.aliasEnergy, results{2}.aliasEnergy]);
 
-plot(locs2, pks2, 'rv', ...
-    'MarkerFaceColor', 'r', ...
-    'MarkerSize', 5);
+set(gca,'XTickLabel',names);
 
-xlabel('Frequency (Hz)');
-ylabel('Magnitude (dB)');
-title('Output 2 - With Anti-Aliasing');
+title(sprintf('Aliasing Energy Comparison (Improvement: %.2f dB)', ...
+    aliasImprovement));
+
+ylabel('Estimated Aliasing Energy');
 grid on;
-xlim([0 Fs/2]);
 
-for k = 1:length(pks2)
-    text(locs2(k), pks2(k)+3, ...
-        sprintf('%.0f Hz', locs2(k)), ...
-        'FontSize', 8, ...
-        'HorizontalAlignment', 'center');
-end
+sgtitle('1760 Hz Oscillator - Naive vs PolyBLEP');
 
-sgtitle('1760 Hz Waveform at 48kHz - FFT Comparison');
+%% Export figure
 
-%% Export PNG
-exportgraphics(gcf, '[7]-FFT_Comparison.png', ...
-    'Resolution', 300);
-
-disp('FFT comparison exported to FFT_Comparison.png');
+exportgraphics(gcf,'[7]-comparison.png','Resolution',300);
