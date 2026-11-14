@@ -1,2 +1,162 @@
 \section{Methods}
-hello world
+\noindent
+This section describes the full approach used to answer the research question: how audio fidelity trades off against computational efficiency in a real-time, browser-based synthesizer. The approach has two parts. First, a synthesizer, \emph{picoDAW}\footnote{picoDAW}, was implemented so that every algorithm under study (naive, PolyBLEP and PolyBLAMP oscillators; Biquad IIR and ZDF state variable filters) runs inside the same signal path, on the same platform, under the same real-time constraints. Second, three controlled experiments were run on that synthesizer, measuring CPU cost, aliasing and filter stability. A final, cross-cutting question is how well these algorithms hold up within the Web Audio API and AudioWorklet environment.
+
+Building a single shared platform, rather than benchmarking isolated reference code, is deliberate. Computational cost in a browser depends on the WebAssembly (WASM) compilation, the AudioWorklet scheduling model and the 128-sample block size, so a measurement taken outside this environment would not answer the question as posed.
+
+%----------------------------------------------------------------------
+\subsection{Implementation of a Browser-Based Synthesizer}
+\label{sec:impl}
+
+\subsubsection{Platform and development process}
+
+picoDAW was implemented with the iPlug2\footnote{iplug2} framework, compiled to WebAssembly with Emscripten. The project was built on top of the example instrument provided with iPlug2 (\texttt{IPlugInstrument}). The original goal was a multi-voice, multi-instrument synthesizer, but this proved too difficult within the project timeframe, and the scope was reduced to a single configurable voice architecture. No open-source reference implementation was used during development; a few comparable projects were found only while writing this report. \textbf{cite related implementations}\footnote{hello}
+
+A significant part of the effort went into understanding how iPlug2's WASM build is structured, in particular how the user interface and the audio code communicate. Components were built in the following order: a MIDI sequencer, a gate sequencer (controlling legato versus retrigger behaviour), and then the DSP components compared in the experiments.
+
+\subsubsection{Two-thread architecture and parameter pipeline}
+\label{sec:threads}
+
+The WASM build of picoDAW runs on two threads.
+\begin{itemize}
+  \item \textbf{The main JavaScript thread} runs the UI. It executes the compiled \texttt{main()} of \texttt{IPlugWasmUI} (emitted by \texttt{emcc} as \texttt{picoDAW-ui.js}) and handles all graphics and user input.
+  \item \textbf{The AudioWorklet thread} is spawned by the main thread before the UI loop starts. It repeatedly invokes the \texttt{process} function of the \texttt{AudioWorkletProcessor} defined in \texttt{picoDAW-processor}. Each invocation calls \texttt{processBlock}, which is bound to the C++ \texttt{IPlugWasmDSP::processBlock} in the DSP module \texttt{picoDAW-dsp.js}.
+\end{itemize}
+
+The two threads share no memory and communicate by message passing through the AudioWorklet's \texttt{MessagePort}. For example, when the user changes a parameter through the UI, like the gain knob of the synthesizer, \texttt{IPlugWasmUI::SendParameterValueFromUI} calls the JavaScript function \texttt{setParam(paramIdx, value)} of \texttt{IPlugWasmController}, which posts a message of type \texttt{'param'} to the worklet:
+
+\begin{verbatim}
+setParam(paramIdx, value) {
+  this.workletNode?.port.postMessage({
+    type: 'param', paramIdx, value });
+}
+\end{verbatim}
+
+On the other side---the DSP AudioWorklet thread---a \texttt{\_onMessage} handler checks the message type received on its port, and for \texttt{param}, calls \texttt{onParam}. Emscripten binds this to \texttt{IPlugWasmDSP::OnParamMessage}, which calls \texttt{IPlugAPIBase::SetParameterValue} and then the user-level \texttt{picoDAW::OnParamChange}. Finally, the message is routed to the actual DSP object through \texttt{mDSP.SetParam}, changing the parameters of the underlying filters and oscillators in response, for example.
+Understanding this pipeline was a prerequisite for the later experiments. 
+
+\subsubsection{DSP structure and voice design}
+\label{sec:voice}
+
+The DSP code is organised in three main files.
+
+\paragraph{\texttt{picoDAW\_DSP.h}} treats the DSP as a black box. It owns a \texttt{MidiSynth} instance (\texttt{mSynth}) that can hold multiple voices, the smoothers for parameters that are not set per voice, and a low-frequency oscillator (LFO).
+
+\paragraph{\texttt{picoDAW\_Voice.h}} defines a voice, which holds one instance of every algorithm under comparison and selects among them at run time through index parameters:
+\begin{itemize}
+  \item \textbf{Oscillator cores} (via the \texttt{IOscillator} interface): the iPlug2 sine core; custom naive sawtooth, triangle and square cores; and custom band-limited sawtooth, triangle and square cores (PolyBLEP for the discontinuous waveforms, PolyBLAMP for the triangle).
+  \item \textbf{Filter cores} (via the \texttt{IFilter} interface): the iPlug2 ZDF state variable filter, and a custom Biquad IIR filter, both with three states set by \texttt{mFilterTypeIdx}; lowpass, highpass or bandpass. An IIR Moog ladder filter and ZDF ladder filter were also implemented, but are not discussed in this report.
+\end{itemize}
+A voice is thus configured by setting \texttt{mSynthCoreIdx}, \texttt{mAntiAliasing}, \texttt{mFilterCoreIdx}, \texttt{mIsZDF}, and the filter cutoff and resonance. Additionally, two ADSR envelopes were added to the signal chain for musical expression; one on the voice amplitude, and one on the filter cutoff. The custom oscillators and filters can be found implemented in \texttt{picoDAW\_Oscillator.h} and \texttt{picoDAW\_Filter.h} respectively.
+
+All of these are set through the parameter pipeline above. Because every algorithm sits behind a common interface, the experiments can swap one algorithm for another without changing anything else in the signal path. This is what makes the comparisons controlled.
+
+\subsubsection{Per-sample signal path and modulation}
+
+In each sample, the voice computes the oscillator output at the pitch-derived frequency, multiplies it by the amplitude envelope and gain, and passes it through the selected filter. The filter cutoff is modulated by two sources: the filter ADSR envelope and the LFO output. Both modulate in the octave domain:
+\begin{equation}
+  f_c(n) = f_{c,0}\cdot 2^{\,e(n) \,+\, d\,\ell(n)}
+\end{equation}
+where $f_{c,0}$ is the base cutoff, $e(n)$ the filter envelope value, $\ell(n)$ the LFO value, and $d$ the LFO depth (fixed at 2 octaves). Cutoff and resonance are updated every sample. This is the most demanding case for a filter, because its coefficients change at audio rate, and it is what the filter stability experiment later stresses.
+
+%----------------------------------------------------------------------
+\subsection{Experiment 1: Computational Effiency}
+\label{sec:cpu}
+
+\paragraph{Aim} Compare the CPU cost of the naive, PolyBLEP and PolyBLAMP oscillators, and of the Biquad IIR and ZDF SVF filters, within the real-time audio path.
+
+\paragraph{Method} The execution time of each 128-sample block was measured with Chrome's built-in tracing, recorded and inspected in the Perfetto trace viewer, rather than by timing code inside the AudioWorkletProcessor. Instrumenting the worklet manually was avoided because it adds code to the very path being measured and depends on browser timer resolution. 
+
+For each configuration, the synthesizer was set to play a single constant note (for example, a high-pitched sawtooth for the anti-aliasing comparison), and a trace of about 30 seconds was recorded in Chrome while the note sounded. In Perfetto, the whole recording was selected and the slices table was filtered to the \texttt{AudioWorkletProcessor::Process} slices, one of which is emitted for every 128-sample block. Perfetto reports, for each slice name, the number of calls, the total wall duration and the mean wall duration, and the mean wall duration per call was recorded as the cost of that configuration. At a sample rate of 48\,kHz, a 30-second trace contains 11{,}250 blocks per configuration (the call count in the trace matches this figure), so means are taken over a large number of blocks.
+
+Each \texttt{Process} slice contains child slices. Of these, ``author script execution'' covers the JavaScript and WebAssembly code of the worklet\footnote{why?} (including the C++ \texttt{processBlock}) and is the part affected by the algorithm under test, whereas the remainder is browser overhead. To provide a more realistic view of the overall effect of different algorithms, the complete \texttt{Process} duration was considered the key metric.
+
+\paragraph{Justification} Cost per block, compared against the block's real-time budget (128 samples $\approx$ 2.67\,ms at 48\,kHz), shows directly how much headroom an algorithm leaves and so whether it is practical in a browser. The expectation, from the algorithm structures, is that the Biquad IIR is cheapest, since it needs only a handful of multiplications per sample, and the ZDF filter costs more, since it solves an implicit feedback equation per sample. Furthermore, that using PolyBLEP or PolyBLAMP anti-aliasing costs more than not using anti-aliasing at all. The experiment tests whether that expectation holds in WASM and by how much.
+
+%----------------------------------------------------------------------
+\subsection{Experiment 2: Audio Fidelity (Aliasing)}
+\label{sec:alias}
+
+\paragraph{Aim} Quantify how much aliasing each oscillator algorithm produces and how well PolyBLEP and PolyBLAMP suppress it.
+
+\paragraph{Method} A high note---A6, fundamental frequency of $f_0 = 1760$Hz---was played on the anti-aliased and naive sawtooth core, with the filter bypassed so that the spectrum reflects the oscillator alone. High fundamentals are used because as discussed in the literature review, few harmonics will fit below the Nyquist frequency, so the rest fold back audibly into the spectrum if not anti-aliased. 
+
+The output was captured and analysed with an FFT, using a Hann window and averaging over several frames. Specifically, the output samples of the audio processor were recorded directly in
+the AudioWorklet, before they reach the browser's audio output, and
+offered to the user as a 30-second mono WAV download; recording begins
+when the audio context is initialised. Because the capture is lossless
+and taken before any system-level processing, the spectra reflect
+the oscillator alone.
+
+In addition to visual inspection, an alias measure---which we define as the energy of the aliasing present---is computed by using the FFT output. Specifcally, any values that fell within three FFT
+bin widths of an in-band harmonic were discarded, since they cannot be
+told apart from the wanted signal. The aliasing energy of a recording
+was then defined as the sum of the squared spectral magnitude in a
+window of $\pm 2$ bins around each remaining predicted alias frequency:
+\begin{equation}
+  E_{\text{alias}} = \sum_{j} \sum_{b=-2}^{2} P^2\!\left[ i_j + b \right]
+\end{equation}
+where $i_j$ is the bin nearest the $j$-th predicted alias frequency and
+$P$ is the normalised magnitude spectrum. The two cores are compared by
+the improvement
+$10\log_{10}\!\left(E_{\text{alias,naive}} / E_{\text{alias,PolyBLEP}}\right)$
+in dB.
+
+\paragraph{Justification} The FFT directly shows the unwanted foldback components, and the same note played through different cores isolates the effect of the algorithm. The expectation is that the naive waveforms show a high alias floor, and that PolyBLEP (sawtooth, square) and PolyBLAMP (triangle) reduce these lines substantially. Combined with Experiment 1, this gives the cost and the benefit of each method, so the trade-off in the title can be stated quantitatively.
+
+%----------------------------------------------------------------------
+\subsection{Experiment 3: Filter Stability}
+\label{sec:stability}
+
+\paragraph{Aim} Compare how the Biquad IIR and ZDF SVF filters behave
+under extreme modulation, where coefficient updates are most likely to
+cause instability.
+
+\paragraph{Intended method} A controlled version of this experiment
+would sweep cutoff and resonance rapidly through automation and
+monitor the output for non-finite samples, unbounded growth, and
+discontinuities (clicks), recording these automatically in the
+processor, for each filter in lowpass, highpass and bandpass mode.
+
+\paragraph{Method as carried out} Implementing the automated version
+was not completed within the project timeframe, so a simpler informal
+stress test was used. The LFO modulating the filter cutoff was
+raised to audio rate (up to 1000Hz), resonance was set to its
+maximum (100\%), and the base cutoff was lowered, which is the harshest
+combination of modulation depth, rate and feedback available in the
+synthesizer. The output was recorded with OBS as part of a screen
+capture, and the compressed MP3 audio track was extracted and
+inspected in MATLAB.
+
+% \paragraph{Observations.} With the Biquad IIR filter selected, the
+% output diverged under these settings: the signal grew to full scale and
+% stayed there, producing extremely loud, harsh noise even with the
+% system volume at its minimum. This is the behaviour expected of a
+% feedback instability, where the filter's internal state grows rather
+% than decays, and not of ordinary clipping from a hot but well-behaved
+% signal. When the filter was switched to the ZDF SVF with all other
+% settings unchanged, no divergence occurred and the output remained
+% bounded. \todo{State the filter mode (lowpass/highpass/bandpass) tested,
+% and whether the ZDF output was audibly distorted or just loud/resonant.}
+
+\paragraph{Limitations} This test is qualitative. Not only is the recording passed 
+through the
+system audio path and lossy MP3 compression, the Web Audio output is
+limited to the range $[-1, 1]$, so the recording shows only that the
+output saturated, and cannot show how far the internal filter state had
+grown. The capture also passed through the system audio path and lossy
+MP3 compression. The result therefore establishes that a
+filter became unstable under extreme settings, but does not measure by
+how much one filter is more stable than another.
+
+%----------------------------------------------------------------------
+\subsection{New Tools and Techniques Learned}
+
+To carry out this work, the following had to be learned from scratch:
+\begin{itemize}
+  \item the iPlug2 framework, including its WASM build, the UI/DSP split, and the \texttt{IParam} parameter pipeline;
+  \item the Web Audio \texttt{AudioWorklet} model and its \texttt{MessagePort}-based communication;
+  \item the Emscripten toolchain, including how C++ methods are bound to JavaScript;
+  \item implementation of PolyBLEP/PolyBLAMP band-limiting and of zero-delay-feedback filter structures\cite{PolyBLEP}\cite{PolyBLAMP}\cite{va_filter};
+  \item in-browser performance measurement and spectral analysis techniques.
+\end{itemize}
