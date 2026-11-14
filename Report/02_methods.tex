@@ -9,14 +9,14 @@ Building a single shared platform, rather than benchmarking isolated reference c
 \label{sec:impl}
 
 \subsubsection{Platform and development process}
-
+\noindent
 picoDAW was implemented with the iPlug2\footnote{iplug2} framework, compiled to WebAssembly with Emscripten. The project was built on top of the example instrument provided with iPlug2 (\texttt{IPlugInstrument}). The original goal was a multi-voice, multi-instrument synthesizer, but this proved too difficult within the project timeframe, and the scope was reduced to a single configurable voice architecture. No open-source reference implementation was used during development; a few comparable projects were found only while writing this report. \textbf{cite related implementations}\footnote{hello}
 
 A significant part of the effort went into understanding how iPlug2's WASM build is structured, in particular how the user interface and the audio code communicate. Components were built in the following order: a MIDI sequencer, a gate sequencer (controlling legato versus retrigger behaviour), and then the DSP components compared in the experiments.
 
 \subsubsection{Two-thread architecture and parameter pipeline}
 \label{sec:threads}
-
+\noindent
 The WASM build of picoDAW runs on two threads.
 \begin{itemize}
   \item \textbf{The main JavaScript thread} runs the UI. It executes the compiled \texttt{main()} of \texttt{IPlugWasmUI} (emitted by \texttt{emcc} as \texttt{picoDAW-ui.js}) and handles all graphics and user input.
@@ -37,7 +37,7 @@ Understanding this pipeline was a prerequisite for the later experiments.
 
 \subsubsection{DSP structure and voice design}
 \label{sec:voice}
-
+\noindent
 The DSP code is organised in three main files.
 
 \paragraph{\texttt{picoDAW\_DSP.h}} treats the DSP as a black box. It owns a \texttt{MidiSynth} instance (\texttt{mSynth}) that can hold multiple voices, the smoothers for parameters that are not set per voice, and a low-frequency oscillator (LFO).
@@ -52,7 +52,7 @@ A voice is thus configured by setting \texttt{mSynthCoreIdx}, \texttt{mAntiAlias
 All of these are set through the parameter pipeline above. Because every algorithm sits behind a common interface, the experiments can swap one algorithm for another without changing anything else in the signal path. This is what makes the comparisons controlled.
 
 \subsubsection{Per-sample signal path and modulation}
-
+\noindent
 In each sample, the voice computes the oscillator output at the pitch-derived frequency, multiplies it by the amplitude envelope and gain, and passes it through the selected filter. The filter cutoff is modulated by two sources: the filter ADSR envelope and the LFO output. Both modulate in the octave domain:
 \begin{equation}
   f_c(n) = f_{c,0}\cdot 2^{\,e(n) \,+\, d\,\ell(n)}
@@ -62,7 +62,7 @@ where $f_{c,0}$ is the base cutoff, $e(n)$ the filter envelope value, $\ell(n)$ 
 %----------------------------------------------------------------------
 \subsection{Experiment 1: Computational Effiency}
 \label{sec:cpu}
-
+\noindent
 \paragraph{Aim} Compare the CPU cost of the naive, PolyBLEP and PolyBLAMP oscillators, and of the Biquad IIR and ZDF SVF filters, within the real-time audio path.
 
 \paragraph{Method} The execution time of each 128-sample block was measured with Chrome's built-in tracing, recorded and inspected in the Perfetto trace viewer, rather than by timing code inside the AudioWorkletProcessor. Instrumenting the worklet manually was avoided because it adds code to the very path being measured and depends on browser timer resolution. 
@@ -76,17 +76,17 @@ Each \texttt{Process} slice contains child slices. Of these, ``author script exe
 %----------------------------------------------------------------------
 \subsection{Experiment 2: Audio Fidelity (Aliasing)}
 \label{sec:alias}
-
+\noindent
 \paragraph{Aim} Quantify how much aliasing each oscillator algorithm produces and how well PolyBLEP and PolyBLAMP suppress it.
 
-\paragraph{Method} A high note---A6, fundamental frequency of $f_0 = 1760$Hz---was played on the anti-aliased and naive sawtooth core, with the filter bypassed so that the spectrum reflects the oscillator alone. High fundamentals are used because as discussed in the literature review, few harmonics will fit below the Nyquist frequency, so the rest fold back audibly into the spectrum if not anti-aliased. 
+\paragraph{Method} A high note---A6, fundamental frequency of $f_0 = 1760$Hz---was played on the anti-aliased and naive sawtooth core, with the filter bypassed so that the spectrum reflects the oscillator alone. High fundamentals are used because as discussed in the literature review, few harmonics will fit below the Nyquist frequency, so the rest fold back audibly into the spectrum if not anti-aliased. The output was captured and analysed with an FFT, using a Hann window and averaging over several frames. 
 
-The output was captured and analysed with an FFT, using a Hann window and averaging over several frames. Specifically, the output samples of the audio processor were recorded directly in
+Specifically, the output samples of the audio processor were recorded directly in
 the AudioWorklet, before they reach the browser's audio output, and
 offered to the user as a 30-second mono WAV download; recording begins
 when the audio context is initialised. Because the capture is lossless
 and taken before any system-level processing, the spectra reflect
-the oscillator alone.
+the oscillator alone. This is why a download link will appear in picoDAW after 30 seconds of using it (if it hasn't been updated since the time of writing).
 
 In addition to visual inspection, an alias measure---which we define as the energy of the aliasing present---is computed by using the FFT output. Specifcally, any values that fell within three FFT
 bin widths of an in-band harmonic were discarded, since they cannot be
@@ -107,7 +107,7 @@ in dB.
 %----------------------------------------------------------------------
 \subsection{Experiment 3: Filter Stability}
 \label{sec:stability}
-
+\noindent
 \paragraph{Aim} Compare how the Biquad IIR and ZDF SVF filters behave
 under extreme modulation, where coefficient updates are most likely to
 cause instability.
@@ -151,7 +151,7 @@ how much one filter is more stable than another.
 
 %----------------------------------------------------------------------
 \subsection{New Tools and Techniques Learned}
-
+\noindent
 To carry out this work, the following had to be learned from scratch:
 \begin{itemize}
   \item the iPlug2 framework, including its WASM build, the UI/DSP split, and the \texttt{IParam} parameter pipeline;
