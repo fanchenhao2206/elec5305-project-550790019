@@ -148,23 +148,26 @@ approximation method allows the
 feedback structure to be discretised without introducing an additional unit-sample delay into the 
 feedback path\cite{va_filter}.
 Taken from the same source\cite{va_filter}, the analog SVF has the transfer functions
-\begin{align*}
-	H_{\mathrm{LP}}(s) = \frac{1}{s^{2} + 2Rs + 1}&\quad H_{\mathrm{BP}}(s) = \frac{s}{s^{2} + 2Rs + 1} \\
+\begin{align}
+	H_{\mathrm{LP}}(s) &= \frac{1}{s^{2} + 2Rs + 1}\\ 
+  H_{\mathrm{BP}}(s) &= \frac{s}{s^{2} + 2Rs + 1} \\
 	H_{\mathrm{HP}}(s) &= \frac{s^{2}}{s^{2} + 2Rs + 1}
-\end{align*}
+\end{align}
 where $s$ is normalised to the cutoff frequency and $R = 1/(2Q)$ is the damping factor. Applying the 
 trapezoidal rule to each integrator, with the cutoff frequency pre-warped to compensate for the 
 nonlinear frequency mapping introduced by the discretisation, gives
 \begin{equation}
   g := \tan\!\left(\frac{\pi f_c}{f_s}\right)
 \end{equation}
-the feedback loop can be solved for the current input sample $x[n]$ without a unit delay applied onto 
-the outputs. Let $s_1$ and $s_2$ denote the states of the two integrators. The highpass output is then 
+so that the feedback loop can be solved for the current input sample $x[n]$ without a unit delay 
+applied onto 
+the outputs. Specificially, the highpass output is
 obtained in closed form
 \begin{equation}
-  y_{\mathrm{HP}}[n] = \frac{x[n] - (2R + g)\,s_1[n-1] - s_2[n-1]}{1 + 2Rg + g^{2}},
+  y_{\mathrm{HP}}[n] = \frac{x[n] - (2R + g)\,s_1[n-1] - s_2[n-1]}{1 + 2Rg + g^{2}}
 \end{equation}
-where notice that each new output does not rely on the past outputs of the filter. And the bandpass and 
+where notice that each new output does not rely on the past outputs of the filter, and $s_1$ and $s_2$ 
+denote the states of the two integrators. The bandpass and 
 lowpass outputs follow from the two integrators in sequence
 \begin{align}
   y_{\mathrm{BP}}[n] &= g\,y_{\mathrm{HP}}[n] + s_1[n-1] \\
@@ -172,10 +175,10 @@ lowpass outputs follow from the two integrators in sequence
 \end{align}
 Finally, the integrator states are updated for the next sample by the following closed forms
 \begin{align}
-  s_1[n] &= y_{\mathrm{BP}}[n] + g\,y_{\mathrm{HP}}[n], \\
-  s_2[n] &= y_{\mathrm{LP}}[n] + g\,y_{\mathrm{BP}}[n].
+  s_1[n] &= y_{\mathrm{BP}}[n] + g\,y_{\mathrm{HP}}[n] \\
+  s_2[n] &= y_{\mathrm{LP}}[n] + g\,y_{\mathrm{BP}}[n]
 \end{align}
-in the sense that $y[n+1]$ will be calculated from these values. So, the ZDF SVF remains 
+so that $y[n+1]$ will be calculated from these new state values. To be clear then, the ZDF SVF remains 
 an IIR filter---in the sense that state from previous samples are preserved for the calculation of 
 new samples---but its topology offers advantages over conventional biquad
 difference equation implementations when filter 
