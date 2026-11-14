@@ -6,6 +6,6 @@ all computed using highest note on sequencer +2 octaves
 [3] tri (no/yes aa) 57.01 vs 58.95 us
 
 [4] saw (iir/zdf w 20Hz LFO) 57.46 vs 62.08 us
-[5] saw (iir/zdf w 10Hz LFO) 
-[6] saw (iir/zdf w 00Hz LFO) 
-[7] saw (iir/zdf w 00Hz LFO) 
+[5] saw (iir/zdf w 10Hz LFO) 56.76 vs 60.03 us
+[6] saw (iir/zdf w 00Hz LFO) 59.20 vs 51.11 us
+[7] saw (iir/zdf w 00Hz LFO) 56.99 vs 50.09 us
