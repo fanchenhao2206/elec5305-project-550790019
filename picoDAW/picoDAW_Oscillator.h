@@ -40,18 +40,6 @@ public:
 
   inline T Process(double freqHz) override
   {
-    static int counter = 0;
-    if (++counter == 1000)
-    {
-      std::cout
-        << "TRIANGLE Frequency: " << freqHz
-        << " Phase increment: "
-        << picoDAWOscillator<T>::mPhaseIncr
-        << " Sample rate: "
-        << picoDAWOscillator<T>::mSampleRate
-        << std::endl;
-      counter = 0;
-    }
     picoDAWOscillator<T>::SetFreqCPS(freqHz);
     return Process();
   }
@@ -78,18 +66,6 @@ public:
 
   inline T Process(double freqHz) override
   {
-    static int counter = 0;
-    if (++counter == 1000)
-    {
-      std::cout
-        << "SAW Frequency: " << freqHz
-        << " Phase increment: "
-        << picoDAWOscillator<T>::mPhaseIncr
-        << " Sample rate: "
-        << picoDAWOscillator<T>::mSampleRate
-        << std::endl;
-      counter = 0;
-    }
     picoDAWOscillator<T>::SetFreqCPS(freqHz);
     return Process();
   }
@@ -116,19 +92,6 @@ public:
 
   inline T Process(double freqHz) override
   {
-    static int counter = 0;
-    if (++counter == 1000)
-    {
-      std::cout
-        << "SQUARE Frequency: " << freqHz
-        << " Phase increment: "
-        << picoDAWOscillator<T>::mPhaseIncr
-        << " Sample rate: "
-        << picoDAWOscillator<T>::mSampleRate
-        << std::endl;
-      counter = 0;
-    }
-
     picoDAWOscillator<T>::SetFreqCPS(freqHz);
     return Process();
   }
