@@ -103,5 +103,5 @@ same testing methodology...
 
 but even with that change, the comparision seen in [1.2].png vs [2.2].png, the
 the difference is marginal; in fact, the no-aa still takes longer on average
-for some reason; 54.59 vs 53.54
+for some reason; 54.59us for the no-aa vs 53.54us for the yes-aa...
 
