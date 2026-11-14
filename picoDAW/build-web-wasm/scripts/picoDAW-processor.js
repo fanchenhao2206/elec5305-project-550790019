@@ -15,6 +15,12 @@ class picoDAWProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super();
 
+    // Recording state
+    this.recording = false;
+    this.recChunkFrames = 8192;
+    this.recBufs = null;
+    this.recPos = 0;
+
     this.bufsize = 128; // Fixed by Web Audio API
     this.sr = sampleRate;
     this.numInputChannels = options.processorOptions?.numInputChannels || 0;
@@ -65,12 +71,43 @@ class picoDAWProcessor extends AudioWorkletProcessor {
     // Initialize DSP
     this.Module.init(this.instanceId, this.sr, this.bufsize);
 
+    // Start recording...
+    this.recSeconds = options.processorOptions?.recordSeconds ?? 30;
+    this.recFramesLeft = Math.round(this.recSeconds * this.sr);
+    this._recStart();
+
     // Send plugin info to main thread (for headless UI generation)
     this._sendPluginInfo();
 
     // Handle messages from main thread (parameter/MIDI changes)
     this.port.onmessage = this._onMessage.bind(this);
     this.port.start();
+  }
+
+  _recStart() {
+    this.recBufs = [];
+    for (let ch = 0; ch < this.numOutputChannels; ch++) {
+      this.recBufs.push(new Float32Array(this.recChunkFrames));
+    }
+    this.recPos = 0;
+    this.recording = true;
+  }
+
+  _recFlush() {
+    if (!this.recBufs || this.recPos === 0) return;
+    const chans = this.recBufs.map(b => b.slice(0, this.recPos)); // trim partial chunk
+    this.port.postMessage(
+      { verb: 'recChunk', channels: chans, sampleRate: this.sr },
+      chans.map(c => c.buffer)                                    // transfer, no copy
+    );
+    this.recBufs = this.recBufs.map(() => new Float32Array(this.recChunkFrames));
+    this.recPos = 0;
+  }
+
+  _recStop() {
+    this.recording = false;
+    this._recFlush();
+    this.port.postMessage({ verb: 'recDone', sampleRate: this.sr });
   }
 
   _allocateBuffers() {
@@ -206,6 +243,12 @@ class picoDAWProcessor extends AudioWorkletProcessor {
         // Explicit cleanup request - free WASM buffers and destroy instance
         this._cleanup();
         break;
+      case 'recStart':
+        this._recStart();
+        break;
+      case 'recStop':
+        this._recStop();
+        break;
     }
   }
 
@@ -338,6 +381,22 @@ class picoDAWProcessor extends AudioWorkletProcessor {
         outputs[0][ch].set(
           Module.HEAPF32.subarray(this.outputPtrs[ch] >> 2, (this.outputPtrs[ch] >> 2) + bufsize)
         );
+      }
+    }
+
+    if (this.recording && outputs.length > 0) {
+      const out = outputs[0];
+      const n = Math.min(bufsize, this.recFramesLeft);   // last block may be partial
+      for (let ch = 0; ch < this.numOutputChannels && ch < out.length; ch++) {
+        this.recBufs[ch].set(out[ch].subarray(0, n), this.recPos);
+      }
+      this.recPos += n;
+      this.recFramesLeft -= n;
+
+      if (this.recFramesLeft <= 0) {
+        this._recStop();                                  // flushes + posts 'recDone'
+      } else if (this.recPos >= this.recChunkFrames) {
+        this._recFlush();
       }
     }
 

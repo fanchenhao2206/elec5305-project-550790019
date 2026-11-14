@@ -45,17 +45,17 @@ How do different oscillator anti-aliasing techniques and digital filter architec
 Sub-Questions:
 
 - How do naive, PolyBLEP, and PolyBLAMP methods compare in CPU cost versus high-frequency alias reduction across sawtooth, square, and triangle waves?
-- How do Biquad IIR, ZDF State Variable Filters (SVF), and Moog ladder IIR, and Moog Ladder ZDF filters compare in stability, CPU usage, and filter response accuracy under lowpass, highpass, and bandpass configurations?
+- How do Biquad IIR and ZDF State Variable Filters (SVF) filters compare in stability, CPU usage, and filter response accuracy under lowpass, highpass, and bandpass configurations?
 
-Computational Overhead:
+[DONE!!] Computational Overhead:
 - Method: Measure execution time per 128-sample block using performance.now() inside the AudioWorkletProcessor
 - Expected: IIR will be cheapest; ZDF will consume more CPU cycles.
 
-Audio Fidelity (Aliasing):
+[...] Audio Fidelity (Aliasing):
 - Method: Spectral analysis / FFT snapshots of high notes (> 5kHz) to measure unwanted foldback frequencies.
 - Expected: Non-AA will show severe noise floor pollution; PolyBLEP/PolyBLAMP will cleanly suppress alias lines.
 
-Filter Stability:
+[...] Filter Stability:
 - Method: Sweep cutoff and resonance rapidly via automation; measure for feedback explosion or NaN errors.
 - Expected: Standard IIR will blow up or click under high modulation; ZDF filters will remain stable.
 

@@ -8,3 +8,5 @@ all computed using highest note on sequencer +2 octaves
 [4] saw (iir/zdf w 20Hz LFO) 57.46 vs 62.08 us
 [5] saw (iir/zdf w 10Hz LFO) 56.76 vs 60.03 us
 [6] saw (iir/zdf w 00Hz LFO) 59.20 vs 51.11 us
+
+[7] 
