@@ -55,33 +55,6 @@ for i = 1:2
     % dB spectrum
     PdB = 20*log10(P + eps);
 
-    %% Expected harmonic frequencies
-
-    maxHarmonic = floor((Fs/2) / fundamental);
-
-    harmonicFreqs = (1:maxHarmonic)' * fundamental;
-
-    harmonicAmps = zeros(maxHarmonic,1);
-
-    for h = 1:maxHarmonic
-
-        [~, idx] = min(abs(f - harmonicFreqs(h)));
-
-        % Search nearby bins
-        search = max(1,idx-2):min(length(P),idx+2);
-
-        harmonicAmps(h) = max(P(search));
-
-    end
-
-    %% THD
-
-    V1 = harmonicAmps(1);
-
-    thd = sqrt(sum(harmonicAmps(2:end).^2)) / V1;
-
-    thd_dB = 20*log10(thd + eps);
-
     %% Calculate expected aliased harmonic frequencies
     %
     % Sawtooth contains harmonics at:
@@ -141,9 +114,6 @@ for i = 1:2
     results{i}.f = f;
     results{i}.P = P;
     results{i}.PdB = PdB;
-    results{i}.harmonics = harmonicAmps;
-    results{i}.thd = thd;
-    results{i}.thd_dB = thd_dB;
     results{i}.aliasEnergy = aliasEnergy;
 
 end
@@ -162,10 +132,6 @@ fprintf('\n========== DSP ANALYSIS ==========\n');
 for i = 1:2
 
     fprintf('\n%s\n', names{i});
-
-    fprintf('THD: %.4f %%\n', results{i}.thd*100);
-    fprintf('THD: %.2f dB\n', results{i}.thd_dB);
-
     fprintf('Aliasing energy: %.8e\n', ...
         results{i}.aliasEnergy);
 
